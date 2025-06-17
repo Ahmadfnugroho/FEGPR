@@ -2,7 +2,6 @@ import { Swiper } from "swiper/react";
 import NavCard from "../components/navCard";
 import { SwiperSlide } from "swiper/react";
 import { useEffect, useState } from "react";
-import { FaFacebook, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 
 import {
   Product,
@@ -12,8 +11,7 @@ import {
 } from "../types/type";
 import axios from "axios";
 import { Link, useParams } from "react-router-dom";
-import { FaInstagram } from "react-icons/fa6";
-import { IconContext } from "react-icons";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
 import { SlSocialFacebook } from "react-icons/sl";
 import { GrCart } from "react-icons/gr";
 import { MdOutlineCamera } from "react-icons/md";
