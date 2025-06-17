@@ -1,121 +1,88 @@
-import { Swiper } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
 import NavCard from "../components/navCard";
-import { SwiperSlide } from "swiper/react";
-import { useEffect, useState } from "react";
-
-import {
+import { useParams, Link } from "react-router-dom";
+import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
+import { SlSocialFacebook } from "react-icons/sl";
+import { GrCart } from "react-icons/gr";
+import { MdOutlineCamera } from "react-icons/md";
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import type {
   Product,
   ProductPhoto,
   productSpecification,
   RentalInclude,
 } from "../types/type";
-import axios from "axios";
-import { Link, useParams } from "react-router-dom";
-import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
-import { SlSocialFacebook } from "react-icons/sl";
-import { GrCart } from "react-icons/gr";
-import { MdOutlineCamera } from "react-icons/md";
+
+const fetchProduct = async (slug: string | undefined) => {
+  if (!slug) throw new Error("No slug provided");
+  const { data } = await axios.get(`http://gpr.test/api/product/${slug}`, {
+    headers: {
+      "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
+    },
+  });
+  return data.data as Product;
+};
 
 export default function Details() {
   const { slug } = useParams<{ slug: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  useEffect(() => {
-    axios
-      .get(`http://gpr.test/api/product/${slug}`, {
-        headers: {
-          "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
-        },
-      })
-      .then((response) => {
-        setProduct(response.data.data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError(error.message);
-        setLoading(false);
-      });
-  }, [slug]);
-  if (loading) {
-    return <p>Loading...</p>;
+  const baseURL = "http://gpr.test/storage";
+  const {
+    data: product,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<Product, Error>({
+    queryKey: ["product", slug],
+    queryFn: () => fetchProduct(slug),
+    enabled: !!slug,
+  });
+
+  if (isLoading) {
+    // Skeleton loader sederhana
+    return (
+      <div className="max-w-[1130px] mx-auto mt-10 animate-pulse">
+        <div className="h-[550px] bg-gray-200 rounded mb-6" />
+        <div className="h-8 bg-gray-200 rounded w-1/2 mb-2" />
+        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
+      </div>
+    );
   }
 
-  if (error) {
-    return <p>Error: {error}</p>;
+  if (isError) {
+    return <p className="text-red-500">Error: {error?.message}</p>;
   }
 
   if (!product) {
     return <p>Product not found</p>;
   }
 
-  const baseURL = "http://gpr.test/storage";
-
   return (
     <>
-      <NavCard></NavCard>
-
+      <NavCard />
       <section id="Gallery" className="-mb-[50px]">
         <div className="swiper w-full">
-          <div className="swiper-wrapper">
-            <Swiper
-              direction="horizontal"
-              spaceBetween={3}
-              slidesPerView="auto"
-              slidesOffsetAfter={3}
-              slidesOffsetBefore={3}
-            >
-              {product?.productPhotos?.map((photo: ProductPhoto) => (
-                <SwiperSlide key={photo.id} className="swiper-slide !w-fit">
-                  <div className="w-[700px] h-[550px] overflow-hidden">
-                    <img
-                      src={`${baseURL}/${photo.photo}`}
-                      className="w-full h-full object-cover"
-                      alt="thumbnail"
-                    />
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-            <Swiper
-              direction="horizontal"
-              spaceBetween={3}
-              slidesPerView="auto"
-              slidesOffsetAfter={3}
-              slidesOffsetBefore={3}
-            >
-              {product?.productPhotos?.map((photo: ProductPhoto) => (
-                <SwiperSlide key={photo.id} className="swiper-slide !w-fit">
-                  <div className="w-[700px] h-[550px] overflow-hidden">
-                    <img
-                      src={`${baseURL}/${photo.photo}`}
-                      className="w-full h-full object-cover"
-                      alt="thumbnail"
-                    />
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-            <Swiper
-              direction="horizontal"
-              spaceBetween={3}
-              slidesPerView="auto"
-              slidesOffsetAfter={3}
-              slidesOffsetBefore={3}
-            >
-              {product?.productPhotos?.map((photo: ProductPhoto) => (
-                <SwiperSlide key={photo.id} className="swiper-slide !w-fit">
-                  <div className="w-[700px] h-[550px] overflow-hidden">
-                    <img
-                      src={`${baseURL}/${photo.photo}`}
-                      className="w-full h-full object-cover"
-                      alt="thumbnail"
-                    />
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
+          <Swiper
+            direction="horizontal"
+            spaceBetween={3}
+            slidesPerView="auto"
+            slidesOffsetAfter={3}
+            slidesOffsetBefore={3}
+          >
+            {product?.productPhotos?.map((photo: ProductPhoto) => (
+              <SwiperSlide key={photo.id} className="swiper-slide !w-fit">
+                <div className="w-[700px] h-[550px] overflow-hidden">
+                  <img
+                    src={`${baseURL}/${photo.photo}`}
+                    className="w-full h-full object-cover"
+                    alt={`Foto produk ${product.name}`}
+                    loading="lazy"
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
         </div>
       </section>
       <section
