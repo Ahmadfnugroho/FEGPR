@@ -1,6 +1,6 @@
 import BrowseBrandWrapper from "../wrappers/BrowseBrandWrapper";
 import BrowseCategoryWrapper from "../wrappers/BrowseCategoryWrapper";
-import BrowseeProductWrapper from "../wrappers/BrowseProductWrapper";
+import BrowseProductWrapper from "../wrappers/BrowseProductWrapper";
 import NavCard from "../components/navCard";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -529,7 +529,7 @@ export default function Browse() {
             </div>
           </div>
         </section>
-        <BrowseeProductWrapper></BrowseeProductWrapper>
+        <BrowseProductWrapper></BrowseProductWrapper>
       </div>
     </>
   );
