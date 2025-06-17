@@ -2,6 +2,7 @@ import BrowseBrandWrapper from "../wrappers/BrowseBrandWrapper";
 import BrowseCategoryWrapper from "../wrappers/BrowseCategoryWrapper";
 import BrowseProductWrapper from "../wrappers/BrowseProductWrapper";
 import NavCard from "../components/navCard";
+
 export default function Browse() {
   return (
     <>
