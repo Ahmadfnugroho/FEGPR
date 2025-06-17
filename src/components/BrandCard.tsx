@@ -1,6 +1,7 @@
 import { Brand } from "../types/type";
+import { memo } from "react";
 
-export default function BrandCard({ brand }: BrandCardProps) {
+const BrandCard = memo(function BrandCard({ brand }: BrandCardProps) {
   const baseURL = "http://gpr.test/storage";
 
   return (
@@ -8,11 +9,14 @@ export default function BrandCard({ brand }: BrandCardProps) {
       <img
         src={`${baseURL}/${brand.logo}`}
         alt="brands logo"
-        className="md:h-9 h-4 w-auto  bg-transparent md:px-7px-5"
+        className="md:h-9 h-4 w-auto bg-transparent"
+        loading="lazy"
       />
     </div>
   );
-}
+});
+export default BrandCard;
+
 interface BrandCardProps {
   brand: Brand;
 }

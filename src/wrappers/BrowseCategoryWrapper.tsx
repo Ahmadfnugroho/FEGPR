@@ -1,7 +1,7 @@
 import { Swiper } from "swiper/react";
 import { SwiperSlide } from "swiper/react";
 import CategoryCard from "../components/CategoryCard.";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Category } from "../types/type";
 import axios from "axios";
 import { Link } from "react-router-dom";
@@ -10,22 +10,36 @@ export default function BrowseCategoryWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchCategories = useCallback(() => {
+    const controller = new AbortController();
     axios
       .get("http://gpr.test/api/categories", {
         headers: {
           "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
         },
+        signal: controller.signal,
       })
       .then((response) => {
         setCategories(response.data.data);
         setLoading(false);
       })
       .catch((error) => {
-        setError(error.message);
-        setLoading(false);
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          setError(error.message);
+          setLoading(false);
+        }
       });
+    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const abortFetch = fetchCategories();
+    return () => {
+      abortFetch();
+    };
+  }, [fetchCategories]);
 
   if (loading) {
     return <p>Loading...</p>;

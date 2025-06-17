@@ -1,30 +1,44 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Product } from "../types/type";
 import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom";
 
-export default function BrowseeProductWrapper() {
+export default function BrowseProductWrapper() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchProducts = useCallback(() => {
+    const controller = new AbortController();
     axios
       .get("http://gpr.test/api/BrowseProduct", {
         headers: {
           "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
         },
+        signal: controller.signal,
       })
       .then((response) => {
         setProducts(response.data.data);
         setLoading(false);
       })
       .catch((error) => {
-        setError(error.message);
-        setLoading(false);
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          setError(error.message);
+          setLoading(false);
+        }
       });
+    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const abortFetch = fetchProducts();
+    return () => {
+      abortFetch();
+    };
+  }, [fetchProducts]);
 
   if (loading) {
     return <p>Loading...</p>;

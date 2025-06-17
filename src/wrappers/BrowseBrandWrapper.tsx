@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import BrandCard from "../components/BrandCard";
 import { Brand } from "../types/type";
 import axios from "axios";
@@ -8,24 +8,36 @@ export default function BrowseBrandWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchBrands = useCallback(() => {
+    const controller = new AbortController();
     axios
       .get("http://gpr.test/api/brands-premiere", {
         headers: {
           "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
         },
+        signal: controller.signal,
       })
       .then((response) => {
-        console.log(response.data);
-
         setBrands(response.data.data);
         setLoading(false);
       })
       .catch((error) => {
-        setError(error.message);
-        setLoading(false);
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          setError(error.message);
+          setLoading(false);
+        }
       });
+    return () => controller.abort();
   }, []);
+
+  useEffect(() => {
+    const abortFetch = fetchBrands();
+    return () => {
+      abortFetch();
+    };
+  }, [fetchBrands]);
 
   if (loading) {
     return <p>Loading...</p>;
