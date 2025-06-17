@@ -2,9 +2,6 @@ import BrowseBrandWrapper from "../wrappers/BrowseBrandWrapper";
 import BrowseCategoryWrapper from "../wrappers/BrowseCategoryWrapper";
 import BrowseProductWrapper from "../wrappers/BrowseProductWrapper";
 import NavCard from "../components/navCard";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import BrandCard from "../components/BrandCard";
 export default function Browse() {
   return (
     <>
