@@ -17,17 +17,20 @@ import FooterSection from "../components/FooterSection";
 
 const fetchBundling = async (slug: string | undefined) => {
   if (!slug) throw new Error("No slug provided");
-  const { data } = await axios.get(`http://gpr.id/api/bundling/${slug}`, {
-    headers: {
-      "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
-    },
-  });
+  const { data } = await axios.get(
+    `https://gpr-b5n3q.sevalla.app/api/bundling/${slug}`,
+    {
+      headers: {
+        "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
+      },
+    }
+  );
   return data.data as Bundling;
 };
 
 export default function BundlingDetails() {
   const { slug } = useParams<{ slug: string }>();
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
 
   const {
     data: bundling,
@@ -81,7 +84,10 @@ export default function BundlingDetails() {
       <NavCard />
       <main className="max-w-[1130px] mx-auto px-6 pb-24 pt-24 scroll-fade-in">
         {/* Grid: Gambar + Info */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start scroll-fade-in" data-delay="100">
+        <div
+          className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start scroll-fade-in"
+          data-delay="100"
+        >
           {/* Kolom 1: Swiper */}
           <div className="lg:col-span-3 flex flex-col">
             <div
@@ -142,9 +148,20 @@ export default function BundlingDetails() {
               </div>
 
               {/* Produk dalam Bundling */}
-              <div className="pt-4 border-t border-light dark:border-dark scroll-fade-in" data-delay="300">
-                <h2 className="font-bold text-lg mb-4 scroll-fade-in" data-delay="400">Produk dalam Paket</h2>
-                <div className="space-y-6 stagger-fade-in" data-staggerdelay="100">
+              <div
+                className="pt-4 border-t border-light dark:border-dark scroll-fade-in"
+                data-delay="300"
+              >
+                <h2
+                  className="font-bold text-lg mb-4 scroll-fade-in"
+                  data-delay="400"
+                >
+                  Produk dalam Paket
+                </h2>
+                <div
+                  className="space-y-6 stagger-fade-in"
+                  data-staggerdelay="100"
+                >
                   {bundling.products.map((product: BundlingProduct, index) => (
                     <div
                       key={product.id}
@@ -256,7 +273,10 @@ export default function BundlingDetails() {
               </div>
 
               {/* Tengah */}
-              <div className="flex flex-col gap-5 mb-5 scroll-fade-in" data-delay="400">
+              <div
+                className="flex flex-col gap-5 mb-5 scroll-fade-in"
+                data-delay="400"
+              >
                 <h1 className="font-extrabold text-3xl lg:text-4xl">
                   {bundling.name}
                 </h1>

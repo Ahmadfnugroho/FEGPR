@@ -18,8 +18,8 @@ import FooterSection from "../components/FooterSection";
 import FullScreenLoader from "../components/FullScreenLoader";
 
 // Constants
-const API_BASE_URL = "http://gpr.id/api";
-const STORAGE_BASE_URL = "http://gpr.id/storage";
+const API_BASE_URL = "https://gpr-b5n3q.sevalla.app/api";
+const STORAGE_BASE_URL = "https://gpr-b5n3q.sevalla.app/storage";
 const API_KEY = "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf";
 const WHATSAPP_NUMBER = "6281212349564";
 

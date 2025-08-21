@@ -14,7 +14,7 @@ export default function BrowseCategoryWrapper() {
   const fetchCategories = useCallback(() => {
     const controller = new AbortController();
     axios
-      .get("http://gpr.id/api/categories", {
+      .get("https://gpr-b5n3q.sevalla.app/api/categories", {
         headers: {
           "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },

@@ -92,8 +92,12 @@ export default function PriceRange({
           />
         </div>
 
-        <div className="text-muted dark:text-muted-dark font-semibold text-center sm:mx-2 hidden sm:block">—</div>
-        <div className="text-muted dark:text-muted-dark font-semibold text-center text-xs sm:hidden">sampai</div>
+        <div className="text-muted dark:text-muted-dark font-semibold text-center sm:mx-2 hidden sm:block">
+          —
+        </div>
+        <div className="text-muted dark:text-muted-dark font-semibold text-center text-xs sm:hidden">
+          sampai
+        </div>
 
         {/* Input Harga Maksimum */}
         <div className="flex-1">

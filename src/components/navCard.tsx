@@ -19,10 +19,13 @@ export default function NavCard() {
 
     const fetchSuggestions = async () => {
       try {
-        const res = await axios.get("http://gpr.id/api/search-suggestions", {
-          params: { q: query },
-          headers: { "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf" },
-        });
+        const res = await axios.get(
+          "https://gpr-b5n3q.sevalla.app/api/search-suggestions",
+          {
+            params: { q: query },
+            headers: { "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf" },
+          }
+        );
         setSuggestions(res.data.suggestions);
       } catch (err) {
         console.error(err);
@@ -191,7 +194,7 @@ export default function NavCard() {
                   >
                     {item.thumbnail && (
                       <img
-                        src={`http://gpr.id/storage/${item.thumbnail}`}
+                        src={`https://gpr-b5n3q.sevalla.app/storage/${item.thumbnail}`}
                         alt=""
                         className="w-6 h-6 md:w-8 md:h-8 object-cover rounded flex-shrink-0"
                       />

@@ -44,7 +44,7 @@ interface ProductCardProps {
 }
 
 const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
 
   // Ambil semua foto, fallback ke placeholder
   const photos =

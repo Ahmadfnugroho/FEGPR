@@ -14,7 +14,7 @@ export default function BrowseProductWrapper() {
     const controller = new AbortController();
 
     axios
-      .get("http://gpr.id/api/BrowseProduct", {
+      .get("https://gpr-b5n3q.sevalla.app/api/BrowseProduct", {
         // ✅ Endpoint benar: produk unggulan (premiere=1)
         headers: {
           "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",

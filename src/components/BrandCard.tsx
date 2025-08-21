@@ -3,7 +3,7 @@ import { memo } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BrandCard = memo(function BrandCard({ brand }: BrandCardProps) {
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
   const navigate = useNavigate();
 
   const handleClick = () => {

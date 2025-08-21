@@ -5,7 +5,7 @@ interface CategoryCardProps {
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
 
   // Responsive card sizes
   const cardVariants = [

@@ -16,7 +16,7 @@ import type {
 } from "../types/type";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 
-const API_BASE = "http://gpr.id/api";
+const API_BASE = "https://gpr-b5n3q.sevalla.app/api";
 const API_KEY = "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf";
 
 const sortOptions = [

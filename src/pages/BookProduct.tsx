@@ -42,7 +42,7 @@ export default function BookProduct() {
   const [totalamount, setTotalAmount] = useState<number>(0);
   useEffect(() => {
     axios
-      .get(`http://gpr.id/api/product/${slug}`, {
+      .get(`https://gpr-b5n3q.sevalla.app/api/product/${slug}`, {
         headers: {
           "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },
@@ -83,7 +83,7 @@ export default function BookProduct() {
   if (error) {
     return <p>Error: {error}</p>;
   }
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -106,7 +106,7 @@ export default function BookProduct() {
 
     try {
       const response = await axios.post(
-        `http://gpr.id/api/transaction`,
+        `https://gpr-b5n3q.sevalla.app/api/transaction`,
         {
           ...formData,
         },

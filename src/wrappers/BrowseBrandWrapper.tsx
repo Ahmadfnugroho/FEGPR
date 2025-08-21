@@ -12,7 +12,7 @@ export default function BrowseBrandWrapper() {
   const fetchBrands = useCallback(() => {
     const controller = new AbortController();
     axios
-      .get("http://gpr.id/api/brands-premiere", {
+      .get("https://gpr-b5n3q.sevalla.app/api/brands-premiere", {
         headers: {
           "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },

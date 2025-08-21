@@ -6,7 +6,7 @@ interface BundlingCardProps {
 }
 
 const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
 
   // Get thumbnail from first product with photo
   const getThumbnail = () => {

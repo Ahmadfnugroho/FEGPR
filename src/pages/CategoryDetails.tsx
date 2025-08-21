@@ -14,7 +14,7 @@ export default function CategoryDetails() {
 
   useEffect(() => {
     axios
-      .get(`http://gpr.id/api/category/${slug}`, {
+      .get(`https://gpr-b5n3q.sevalla.app/api/category/${slug}`, {
         headers: {
           "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },
@@ -41,7 +41,7 @@ export default function CategoryDetails() {
     return <p>Category not found</p>;
   }
 
-  const baseURL = "http://gpr.id/storage";
+  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
   return (
     <>
       <NavCard></NavCard>
