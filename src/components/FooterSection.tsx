@@ -7,7 +7,7 @@ export default function FooterSection() {
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 md:gap-8">
           {/* Brand Info */}
           <div className="flex-1 min-w-[250px]">
-            <h6 className="uppercase font-bold text-base md:text-lg tracking-wide">
+            <h6 className="uppercase font-bold text-base-dark-primary dark:text-base-light-primary md:text-lg tracking-wide">
               GLOBAL.PHOTORENTAL
             </h6>
             <div className="w-12 md:w-16 h-1 bg-primary my-2 md:my-3 rounded" />
