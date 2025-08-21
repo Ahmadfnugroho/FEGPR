@@ -4,6 +4,7 @@ import { Product } from "../types/type";
 import axios from "axios";
 import { z } from "zod";
 import { bookingSchema } from "../types/ValidationBooking";
+import FullScreenLoader from "../components/FullScreenLoader";
 
 export default function BookProduct() {
   const { slug } = useParams<{ slug: string }>();
@@ -36,15 +37,14 @@ export default function BookProduct() {
   });
 
   const [formErrors, setFormErrors] = useState<z.ZodIssue[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   const [uniqueCode, setUniqueCode] = useState<number>(0);
   const [totalamount, setTotalAmount] = useState<number>(0);
   useEffect(() => {
     axios
-      .get(`http://gpr.test/api/product/${slug}`, {
+      .get(`http://gpr.id/api/product/${slug}`, {
         headers: {
-          "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
+          "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },
       })
       .then((response) => {
@@ -77,13 +77,13 @@ export default function BookProduct() {
       });
   }, [slug]);
   if (loading) {
-    return <p>Loading...</p>;
+    return <FullScreenLoader />;
   }
 
   if (error) {
     return <p>Error: {error}</p>;
   }
-  const baseURL = "http://gpr.test/storage";
+  const baseURL = "http://gpr.id/storage";
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -102,17 +102,17 @@ export default function BookProduct() {
     }
 
     console.log("Form data is Valid. Submitting:", formData);
-    setIsLoading(true);
+    setLoading(true);
 
     try {
       const response = await axios.post(
-        `http://gpr.test/api/transaction`,
+        `http://gpr.id/api/transaction`,
         {
           ...formData,
         },
         {
           headers: {
-            "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
+            "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
           },
         }
       );
@@ -132,14 +132,14 @@ export default function BookProduct() {
         setError("An error occurred while creating the booking.");
       }
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
   return (
     <>
       <div
         id="Banner"
-        className="relative w-full h-[240px] flex items-center shrink-0 overflow-hidden -mb-[50px]"
+        className="relative w-full h-[240px] flex items-center shrink-0 overflow-hidden -mb-[50px] parallax-container"
       >
         <h1 className="text-center mx-auto font-extrabold text-[40px] leading-[60px] text-white mb-5 z-20">
           Mulai Sewa Produk yang Anda Inginkan
@@ -147,7 +147,8 @@ export default function BookProduct() {
         <div className="absolute w-full h-full bg-[linear-gradient(180deg,_rgba(0,0,0,0)_0%,#000000_91.83%)] z-10" />
         <img
           src="/assets/images/thumbnails/thumbnail-details-4.png"
-          className="absolute w-full h-full object-cover object-top"
+          className="absolute w-full h-full object-cover object-top parallax-bg scale-110"
+          data-parallax-speed="-0.1"
           alt=""
         />
       </div>
@@ -441,10 +442,10 @@ export default function BookProduct() {
           <hr className="border-[#F6F5FD]" />
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={loading}
             className="flex items-center justify-center w-full rounded-full p-[16px_26px] gap-3 bg-[#0D903A] font-bold text-[#F7F7FD]"
           >
-            <span>{isLoading ? "Loading..." : "I’ve Made The Payment"}</span>
+            <span>I’ve Made The Payment</span>
           </button>
         </div>
       </form>

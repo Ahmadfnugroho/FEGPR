@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import BrandCard from "../components/BrandCard";
 import { Brand } from "../types/type";
 import axios from "axios";
+import FullScreenLoader from "../components/FullScreenLoader";
 
 export default function BrowseBrandWrapper() {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -11,9 +12,9 @@ export default function BrowseBrandWrapper() {
   const fetchBrands = useCallback(() => {
     const controller = new AbortController();
     axios
-      .get("http://gpr.test/api/brands-premiere", {
+      .get("http://gpr.id/api/brands-premiere", {
         headers: {
-          "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
+          "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },
         signal: controller.signal,
       })
@@ -40,7 +41,11 @@ export default function BrowseBrandWrapper() {
   }, [fetchBrands]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div>
+        <FullScreenLoader />
+      </div>
+    );
   }
 
   if (error) {
@@ -48,14 +53,20 @@ export default function BrowseBrandWrapper() {
   }
 
   return (
-    <>
-      <div className="flex flex-col pt-10 md:pt-[150px] pb-10 md:px-[120px] px-5 gap-10 bg-light">
-        <div className="logo-container flex items-center justify-between md:justify-center md:flex-wrap  md:h-[38px] h-1 md:mx-auto md:gap-[60px]">
-          {brands.map((brand) => (
-            <BrandCard key={brand.id} brand={brand}></BrandCard>
-          ))}
-        </div>
+    <div
+      className="w-full bg-[#c5c7cb] dark:bg-[#222429] py-4 md:py-10 px-3 md:px-[120px] scroll-fade-in mt-28"
+      data-delay="100"
+    >
+      <div
+        className="flex flex-wrap justify-center items-center gap-3 md:gap-8 stagger-fade-in"
+        data-staggerdelay="100"
+      >
+        {brands.map((brand, index) => (
+          <div key={brand.id} className="stagger-item" data-index={index}>
+            <BrandCard brand={brand} />
+          </div>
+        ))}
       </div>
-    </>
+    </div>
   );
 }

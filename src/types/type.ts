@@ -49,7 +49,12 @@ export interface productSpecification {
 }
 export interface RentalInclude {
   id: number;
-  includedProduct: Product;
+  quantity: string;
+  included_product: {
+    id: number;
+    name: string;
+    slug: string;
+  };
 }
 
 interface User {
@@ -63,6 +68,43 @@ interface UserPhone {
   id: number;
   phone_number: number[];
 }
+export interface Bundling {
+  id: number;
+  name: string;
+  price: number;
+  slug: string;
+  premiere: boolean;
+  products: BundlingProduct[];
+}
+
+export interface BundlingProduct {
+  id: number;
+  name: string;
+  slug: string;
+  thumbnail: string;
+  status: "available" | "unavailable";
+  price: number;
+  quantity: number;
+  category?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  brand?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  subCategory?: {
+    id: number;
+    name: string;
+    slug: string;
+  };
+  productPhotos: ProductPhoto[];
+  productSpecifications: productSpecification[];
+  rentalIncludes: RentalInclude[];
+}
+
 export interface BookingDetails {
   id: number;
   user: User;

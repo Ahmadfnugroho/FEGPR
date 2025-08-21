@@ -1,0 +1,329 @@
+/* animations.css - Utility file for animations and transitions */
+
+/* ===== TRANSITIONS ===== */
+/* Smooth transition for all elements */
+.transition-all {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Smooth transition for specific properties */
+.transition-transform {
+  transition: transform 0.3s ease-in-out;
+}
+
+.transition-opacity {
+  transition: opacity 0.3s ease-in-out;
+}
+
+.transition-colors {
+  transition: color 0.3s ease-in-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+}
+
+/* ===== HOVER EFFECTS ===== */
+/* Scale up on hover */
+.hover-scale:hover {
+  transform: scale(1.05);
+}
+
+/* Scale down on hover */
+.hover-scale-down:hover {
+  transform: scale(0.95);
+}
+
+/* Lift up on hover */
+.hover-lift:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* ===== LOADING ANIMATIONS ===== */
+/* Pulse animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Shimmer effect for loading skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Spinner animation */
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Bounce animation */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+.animate-bounce {
+  animation: bounce 1s infinite;
+}
+
+/* ===== SCROLL ANIMATIONS ===== */
+/* Fade in on scroll */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scroll-fade-in {
+  opacity: 0;
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.scroll-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scroll-slide-left {
+  opacity: 0;
+}
+
+.scroll-slide-left.visible {
+  animation: slideInLeft 0.6s ease-out forwards;
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scroll-slide-right {
+  opacity: 0;
+}
+
+.scroll-slide-right.visible {
+  animation: slideInRight 0.6s ease-out forwards;
+}
+
+/* ===== PARALLAX EFFECT ===== */
+.parallax-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  transition: transform 0.1s ease-out;
+}
+
+.parallax {
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  transition: background-position 0.1s ease-out;
+}
+
+/* Parallax layers with different speeds */
+.parallax-layer-1 {
+  transform: translateY(0);
+  z-index: 1;
+}
+
+.parallax-layer-2 {
+  transform: translateY(0);
+  z-index: 2;
+}
+
+.parallax-layer-3 {
+  transform: translateY(0);
+  z-index: 3;
+}
+
+/* ===== TEXT ANIMATIONS ===== */
+/* Fade in text animation */
+@keyframes textFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-text-fade-in {
+  animation: textFadeIn 0.5s ease-out forwards;
+}
+
+/* Typing text animation */
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes blink {
+  50% {
+    border-color: transparent;
+  }
+}
+
+.animate-typing {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 3px solid;
+  width: 0;
+  animation: typing 2s steps(40, end) forwards, blink 0.75s step-end infinite;
+}
+
+/* ===== MICRO-INTERACTIONS ===== */
+/* Button click effect */
+.click-effect:active {
+  transform: scale(0.95);
+  transition: transform 0.1s;
+}
+
+/* Subtle shake animation for errors or notifications */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-5px);
+  }
+  40%, 80% {
+    transform: translateX(5px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+/* Subtle pop effect for success feedback */
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pop {
+  animation: pop 0.3s ease-in-out;
+}
+
+/* ===== SECTION TRANSITIONS ===== */
+/* Staggered fade-in for list items */
+.stagger-fade-in {
+  opacity: 1; /* Container should be visible */
+}
+
+.stagger-fade-in > * {
+  opacity: 0;
+}
+
+.stagger-item {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+.stagger-item.visible {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+}
+
+/* Legacy stagger animation using nth-child */
+.stagger-fade-in.visible > *:nth-child(1) {
+  animation: fadeIn 0.5s ease-out 0.1s forwards;
+}
+
+.stagger-fade-in.visible > *:nth-child(2) {
+  animation: fadeIn 0.5s ease-out 0.2s forwards;
+}
+
+.stagger-fade-in.visible > *:nth-child(3) {
+  animation: fadeIn 0.5s ease-out 0.3s forwards;
+}
+
+.stagger-fade-in.visible > *:nth-child(4) {
+  animation: fadeIn 0.5s ease-out 0.4s forwards;
+}
+
+.stagger-fade-in.visible > *:nth-child(5) {
+  animation: fadeIn 0.5s ease-out 0.5s forwards;
+}
+
+.stagger-fade-in.visible > *:nth-child(n+6) {
+  animation: fadeIn 0.5s ease-out 0.6s forwards;
+}

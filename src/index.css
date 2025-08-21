@@ -2,12 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fallback styles to ensure content visibility */
+.scroll-fade-in:not(.visible),
+.stagger-fade-in:not(.visible),
+.stagger-item:not(.visible) {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+}
+
 @layer base {
-  @font-face {
-    font-family: "Poppins";
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url(/fonts/Poppins-Regular.ttf) format("truetype");
+  /* Poppins font is now loaded via Google Fonts CDN in index.html */
+
+  html {
+    font-family: "Poppins", system-ui, sans-serif;
+    background-color: theme("colors.base-light.primary"); /* #eaf0f7 - navy-blue-50 */
+    color: theme("colors.support-light.primary"); /* #0a173b - navy-blue-950 */
+    transition: background-color 0.3s, color 0.3s;
+    scroll-behavior: smooth;
+  }
+  html.dark {
+    background-color: theme("colors.base-dark.primary"); /* #0a173b - navy-blue-950 */
+    color: theme("colors.support-dark.primary"); /* #eaf0f7 - navy-blue-50 */
+  }
+  body {
+    min-height: 100vh;
+    background: inherit;
+    color: inherit;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  a {
+    @apply transition-colors duration-200 outline-none focus-visible:ring-2 focus-visible:ring-navy-blue-800;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    @apply outline-none focus-visible:ring-2 focus-visible:ring-navy-blue-800;
+  }
+
+  /* Additional base element styles with new palette */
+  h1, h2, h3, h4, h5, h6 {
+    color: theme("colors.support-light.primary"); /* #0a173b */
+  }
+  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
+    color: theme("colors.support-dark.primary"); /* #eaf0f7 */
+  }
+
+  /* Ensure proper text contrast */
+  .text-primary {
+    color: theme("colors.support-light.primary") !important; /* #0a173b */
+  }
+  html.dark .text-primary {
+    color: theme("colors.support-dark.primary") !important; /* #eaf0f7 */
+  }
+
+  .text-secondary {
+    color: theme("colors.support-light.secondary") !important; /* #0f1c52 */
+  }
+  html.dark .text-secondary {
+    color: theme("colors.support-dark.secondary") !important; /* #f3f4f6 */
+  }
+
+  .text-muted {
+    color: theme("colors.support-light.tertiary") !important; /* #4c5971 - improved contrast */
+  }
+  html.dark .text-muted {
+    color: theme("colors.support-dark.tertiary") !important; /* #a0a8b8 - improved contrast */
   }
 }

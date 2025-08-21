@@ -1,12 +1,11 @@
+import { useMemo, useCallback } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import NavCard from "../components/navCard";
+import { Navigation, Pagination } from "swiper/modules";
 import { useParams, Link } from "react-router-dom";
-import { FaInstagram, FaWhatsapp } from "react-icons/fa6";
-import { SlSocialFacebook } from "react-icons/sl";
-import { GrCart } from "react-icons/gr";
-import { MdOutlineCamera } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { MdOutlineCamera, MdArrowBack, MdError } from "react-icons/md";
+
 import type {
   Product,
   ProductPhoto,
@@ -14,284 +13,364 @@ import type {
   RentalInclude,
 } from "../types/type";
 
-const fetchProduct = async (slug: string | undefined) => {
-  if (!slug) throw new Error("No slug provided");
-  const { data } = await axios.get(`http://gpr.test/api/product/${slug}`, {
-    headers: {
-      "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
-    },
-  });
-  return data.data as Product;
+import NavCard from "../components/navCard";
+import FooterSection from "../components/FooterSection";
+import FullScreenLoader from "../components/FullScreenLoader";
+
+// Constants
+const API_BASE_URL = "http://gpr.id/api";
+const STORAGE_BASE_URL = "http://gpr.id/storage";
+const API_KEY = "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf";
+const WHATSAPP_NUMBER = "6281212349564";
+
+// --- API HELPER ---
+const fetchProduct = async (slug: string | undefined): Promise<Product> => {
+  if (!slug) throw new Error("Slug produk tidak ditemukan");
+
+  const { data } = await axios.get<{ data: Product }>(
+    `${API_BASE_URL}/product/${slug}`,
+    { headers: { "X-API-KEY": API_KEY }, timeout: 10000 }
+  );
+
+  if (!data?.data) throw new Error("Produk tidak ditemukan");
+  return data.data;
 };
 
+// --- SUB COMPONENTS ---
+const ProductImageGallery = ({
+  productName,
+  photos,
+}: {
+  productName: string;
+  photos: ProductPhoto[];
+}) => {
+  const handleImageError = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      e.currentTarget.src = "/assets/images/placeholder.jpg";
+    },
+    []
+  );
+
+  if (!photos?.length) {
+    return (
+      <div className="lg:col-span-3">
+        <div className="w-full h-[250px] md:h-[350px] lg:h-[450px] rounded-xl bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+          <div className="text-center">
+            <MdError className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+            <span className="text-gray-500 dark:text-gray-400">
+              Tidak ada gambar tersedia
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="lg:col-span-3">
+      <Swiper
+        modules={[Navigation, Pagination]}
+        spaceBetween={10}
+        slidesPerView={1}
+        loop={photos.length > 2}
+        navigation
+        pagination={{ clickable: true, dynamicBullets: true }}
+        className="w-full h-[100px] md:h-[200px] lg:h-[300px] rounded-xl overflow-hidden shadow-lg"
+        aria-label={`Galeri foto ${productName}`}
+      >
+        {photos.map((photo, index) => (
+          <SwiperSlide key={photo.id}>
+            <div className="w-full h-full  flex items-center justify-center bg-light dark:bg-dark-light">
+              <img
+                src={`${STORAGE_BASE_URL}/${photo.photo}`}
+                alt={`Foto ${productName} ${index + 1}`}
+                className="object-contain w-full h-full transition-opacity duration-300"
+                loading={index === 0 ? "eager" : "lazy"}
+                onError={handleImageError}
+              />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  );
+};
+
+const ProductInfo = ({ product }: { product: Product }) => {
+  const whatsappLink = useMemo(() => {
+    const message = `Halo, saya tertarik untuk menyewa ${product.name}. Bisa beri info lebih lanjut?`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+      message
+    )}`;
+  }, [product.name]);
+
+  const categoryItems = useMemo(
+    () =>
+      [product.category, product.subCategory, product.brand]
+        .filter(Boolean)
+        .map((item) => item?.name)
+        .filter(Boolean),
+    [product.category, product.subCategory, product.brand]
+  );
+
+  const isAvailable = product.status === "available";
+  const formattedPrice = new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(product.price);
+
+  return (
+    <div className="lg:col-span-2 flex flex-col gap-6">
+      <span
+        className={`inline-block rounded-full px-4 py-2 text-sm font-bold text-white ${
+          isAvailable ? "bg-green-600" : "bg-red-600"
+        }`}
+        role="status"
+      >
+        {isAvailable ? "✓ Tersedia" : "✗ Tidak Tersedia"}
+      </span>
+
+      <header>
+        <h1 className="font-extrabold text-3xl lg:text-4xl text-dark dark:text-white leading-tight">
+          {product.name}
+        </h1>
+
+        {categoryItems.length > 0 && (
+          <nav
+            className="flex flex-wrap items-center gap-x-2 gap-y-1 text-md text-muted mt-2"
+            aria-label="Kategori produk"
+          >
+            {categoryItems.map((item, index) => (
+              <span key={index} className="font-semibold">
+                {item}
+                {index < categoryItems.length - 1 && (
+                  <span className="mx-1 text-gray-400">•</span>
+                )}
+              </span>
+            ))}
+          </nav>
+        )}
+      </header>
+
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <p className="font-extrabold text-3xl text-dark dark:text-white">
+          {formattedPrice}
+          <span className="text-lg font-normal text-muted ml-1">/hari</span>
+        </p>
+      </div>
+
+      <a
+        href={whatsappLink}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`flex items-center justify-center rounded-full py-4 px-6 gap-3 font-bold text-lg transition-all duration-300 shadow-lg ${
+          isAvailable
+            ? "bg-accent hover:bg-accent-dark text-white"
+            : "bg-gray-400 text-gray-600 cursor-not-allowed"
+        }`}
+        {...(!isAvailable && { "aria-disabled": "true", tabIndex: -1 })}
+      >
+        <MdOutlineCamera className="w-6 h-6" aria-hidden="true" />
+        <span>{isAvailable ? "Pesan via WhatsApp" : "Tidak Tersedia"}</span>
+      </a>
+    </div>
+  );
+};
+
+const ProductSpecifications = ({
+  specifications,
+}: {
+  specifications: productSpecification[];
+}) => {
+  const specLines = useMemo(() => {
+    if (!specifications?.length) return [];
+    return specifications[0].name
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line, index) => ({
+        id: index,
+        text: line,
+        isHeader: line.includes(":") && !line.startsWith("•"),
+      }));
+  }, [specifications]);
+
+  if (!specLines.length) return null;
+
+  return (
+    <section className="lg:col-span-3 pt-6 border-t border-light dark:border-dark">
+      <h2 className="font-bold text-2xl mb-4 text-dark dark:text-white">
+        Spesifikasi Produk
+      </h2>
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <dl className="space-y-3 text-muted leading-relaxed">
+          {specLines.map((spec) => (
+            <div key={spec.id} className="flex items-start gap-3">
+              {!spec.isHeader && (
+                <span className="text-accent mt-1.5 text-sm">•</span>
+              )}
+              <dd
+                className={`flex-1 ${
+                  spec.isHeader
+                    ? "font-semibold text-dark dark:text-white"
+                    : "text-sm"
+                }`}
+              >
+                {spec.text}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+  );
+};
+
+const RentalIncludes = ({
+  productName,
+  includes,
+}: {
+  productName: string;
+  includes: RentalInclude[];
+}) => {
+  const includeItems = useMemo(() => {
+    if (!includes?.length) {
+      return [{ id: "default", name: productName, quantity: 1 }];
+    }
+    return includes.map((item) => ({
+      id: item.id,
+      name: item.included_product?.name || "Item tidak diketahui",
+      quantity: item.quantity ? parseInt(item.quantity, 10) : 1,
+    }));
+  }, [includes, productName]);
+
+  return (
+    <section className="lg:col-span-2 pt-6 border-t border-light dark:border-dark">
+      <h2 className="font-bold text-2xl mb-4 text-dark dark:text-white">
+        Termasuk Dalam Sewa
+      </h2>
+      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <ul className="space-y-3 text-muted">
+          {includeItems.map((item) => (
+            <li key={item.id} className="flex items-start gap-3">
+              <span className="text-accent mt-1.5 text-sm">✓</span>
+              <span className="flex-1 text-sm">
+                {item.quantity > 1 && (
+                  <span className="font-semibold text-accent mr-1">
+                    {item.quantity}x
+                  </span>
+                )}
+                {item.name}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+};
+
+// --- MAIN COMPONENT ---
 export default function Details() {
   const { slug } = useParams<{ slug: string }>();
-  const baseURL = "http://gpr.test/storage";
+
   const {
     data: product,
     isLoading,
     isError,
     error,
-  } = useQuery<Product, Error>({
+    refetch,
+  } = useQuery<Product>({
     queryKey: ["product", slug],
     queryFn: () => fetchProduct(slug),
-    enabled: !!slug,
+    staleTime: 10 * 60 * 1000, // fresh 10 menit
+    gcTime: 30 * 60 * 1000, // cache hilang setelah 30 menit idle
   });
 
-  if (isLoading) {
-    // Skeleton loader sederhana
+  if (isLoading) return <FullScreenLoader />;
+
+  if (isError || !product) {
     return (
-      <div className="max-w-[1130px] mx-auto mt-10 animate-pulse">
-        <div className="h-[550px] bg-gray-200 rounded mb-6" />
-        <div className="h-8 bg-gray-200 rounded w-1/2 mb-2" />
-        <div className="h-6 bg-gray-200 rounded w-1/3 mb-2" />
-        <div className="h-4 bg-gray-200 rounded w-2/3 mb-2" />
+      <div className="min-h-screen flex items-center justify-center px-4">
+        <div className="text-center max-w-md">
+          <MdError className="w-16 h-16 text-red-600 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-red-600 mb-4">
+            {error instanceof Error ? error.message : "Produk Tidak Ditemukan"}
+          </h2>
+          <div className="space-y-3">
+            <button
+              onClick={() => refetch()}
+              className="w-full bg-accent hover:bg-accent-dark text-white font-bold py-3 px-6 rounded-lg transition"
+            >
+              Coba Lagi
+            </button>
+            <Link
+              to="/"
+              className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"
+            >
+              <MdArrowBack className="inline mr-2" />
+              Kembali ke Beranda
+            </Link>
+          </div>
+        </div>
       </div>
     );
-  }
-
-  if (isError) {
-    return <p className="text-red-500">Error: {error?.message}</p>;
-  }
-
-  if (!product) {
-    return <p>Product not found</p>;
   }
 
   return (
     <>
       <NavCard />
-      <section id="Gallery" className="-mb-[50px]">
-        <div className="swiper w-full">
-          <Swiper
-            direction="horizontal"
-            spaceBetween={3}
-            slidesPerView="auto"
-            slidesOffsetAfter={3}
-            slidesOffsetBefore={3}
-          >
-            {product?.productPhotos?.map((photo: ProductPhoto) => (
-              <SwiperSlide key={photo.id} className="swiper-slide !w-fit">
-                <div className="w-[700px] h-[550px] overflow-hidden">
-                  <img
-                    src={`${baseURL}/${photo.photo}`}
-                    className="w-full h-full object-cover"
-                    alt={`Foto produk ${product.name}`}
-                    loading="lazy"
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </section>
-      <section
-        id="Details"
-        className="relative flex max-w-[1130px] mx-auto gap-[30px] mb-20 z-10"
-      >
-        <div className="flex flex-col w-full rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[30px] bg-white">
-          <p
-            className={`w-fit rounded-full p-[6px_16px] font-bold text-sm leading-[21px] text-[#F7F7FD] ${
-              product.status === "available" ? "bg-secondary" : "bg-red-500"
-            }`}
-          >
-            {product.status}
-          </p>
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="font-extrabold text-[32px] leading-[44px]">
-                {product?.name}
-              </h1>
-              <div className="flex items-center gap-[6px] mt-[10px]">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth="1.5"
-                  className="size-6 stroke-secondary"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
-                  />
-                </svg>
-                <p className="font-semibold">{product.category.name}</p>
-                {product.subCategory && (
-                  <>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      className="size-6 stroke-secondary"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"
-                      />
-                    </svg>
-
-                    <p className="font-semibold">{product.subCategory.name}</p>
-                  </>
-                )}
-                {product.brand && (
-                  <div className="flex items-center justify-end gap-[6px]">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="1.5"
-                      className="size-6 stroke-secondary"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 6h.008v.008H6V6Z"
-                      />
-                    </svg>
-                    <p className="font-semibold">{product.brand.name}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="flex flex-col gap-[6px]">
-              <div className="flex items-center gap-1">
-                {product.quantity > 0 ? (
-                  <p className="font-bold text-xl">Sisa: {product.quantity}</p>
-                ) : (
-                  <p className="font-bold text-xl text-red-600">
-                    Produk Tidak Tersedia
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-          <p className="leading-[30px]">{product.description}</p>
-          <hr className="border-[#F6F5FD]" />
-          <h2 className="font-bold text-xl">Spesifikasi Produk</h2>
-
-          <div className=" gap-x-5 gap-y-[30px]">
-            <div className="flex items-center gap-4">
-              <div className="grid grid-cols-2  gap-[7px]">
-                {product.productSpecifications.map(
-                  (spec: productSpecification) => (
-                    <p
-                      key={spec.id}
-                      className="font-semibold text-lg flex justify items-start gap-x-2"
-                    >
-                      <span>&bull;</span>
-                      <span>{spec.name}</span>
-                    </p>
-                  )
-                )}
-              </div>
-            </div>
-          </div>
-
-          <hr className="border-[#F6F5FD]" />
-          <div className="flex flex-col gap-[6px]">
-            <h2 className="font-bold">Alamat Pengambilan</h2>
-            <p>Global Photo Rental</p>
-            <p>
-              Jl. Kepu Sel. No.11A 3, RT.3/RW.3 10460 Daerah Khusus Ibukota
-              Jakarta{" "}
-            </p>
-          </div>
-          <div className="overflow-hidden w-full h-[280px]">
-            <div
-              id="my-map-display"
-              className="h-full w-full max-w-[none] bg-none"
-            >
-              <iframe
-                className="h-full w-full border-0"
-                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15866.871702864491!2d106.8439828!3d-6.1685137!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f59ab7791adb%3A0xbd23ce14a107aee2!2sGlobal%20Photo%20Rental!5e0!3m2!1sid!2sid!4v1711423981245!5m2!1sid!2sid"
-              />
-            </div>
-          </div>
-        </div>
-        <div className="w-[392px] flex flex-col shrink-0 gap-[30px]">
-          <div className="flex flex-col rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[30px] bg-white">
-            <div>
-              <p className="font-extrabold text-[32px] leading-[48px] text-dark">
-                Rp{product.price.toLocaleString("id-ID")}
-              </p>
-              <p className="font-semibold mt-1">/Hari</p>
-            </div>
-            <hr className="border-[#F6F5FD]" />
-            <div className="flex flex-col gap-5">
-              <div className=" gap-x-5 gap-y-[30px]">
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col gap-[2px]">
-                    <h3 className="font-bold text-xl">Rental Includes</h3>
-                    {product.rentalIncludes.map((include: RentalInclude) => (
-                      <p key={include.id} className="font-semibold text-lg">
-                        {include.includedProduct.name}
-                      </p>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            <hr className="border-[#F6F5FD]" />
-            <div className="flex flex-col gap-[14px]">
-              <Link
-                to={`/product/${slug}/book`}
-                className="flex items-center justify-center w-full rounded-full p-[16px_26px] gap-3 bg-[#0D903A] font-bold text-[#F7F7FD]"
-              >
-                <MdOutlineCamera className="w-6 h-6" />
-
-                <span>Sewa Sekarang</span>
+      <main className="max-w-[1130px] mx-auto px-4 sm:px-6 pb-24 pt-28">
+        {/* Breadcrumb */}
+        <nav className="mb-8" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-sm text-muted">
+            <li>
+              <Link to="/" className="hover:text-accent transition-colors">
+                Beranda
               </Link>
-              <button className="flex items-center justify-center w-full rounded-full border border-[#000929] p-[16px_26px] gap-3 bg-white font-semibold">
-                <GrCart className="w-6 h-6" />
+            </li>
+            <li className="mx-2">/</li>
+            {product.category ? (
+              <li>
+                <Link
+                  to={`/category/${product.category.slug || ""}`}
+                  className="text-accent font-semibold hover:underline"
+                >
+                  {product.category.name}
+                </Link>
+              </li>
+            ) : (
+              <li>
+                <span className="text-gray-500">Tanpa Kategori</span>
+              </li>
+            )}
+            <li
+              className="text-dark dark:text-white font-medium"
+              aria-current="page"
+            >
+              {product.name}
+            </li>
+          </ol>
+        </nav>
 
-                <span>Masukkan Keranjang</span>
-              </button>
-            </div>
-          </div>
-          <div className="flex flex-col rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[20px] bg-white">
-            <h2 className="font-bold">Kontak Kami</h2>
-            <div className="flex flex-col gap-[30px]">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-4">
-                  <div className="flex flex-col gap-[2px]">
-                    <p className="font-bold">Global Photo Rental</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Link to="https://api.whatsapp.com/message/RKVS5KQ7NXZFJ1?autoload=1&app_absent=0">
-                    <span>
-                      <FaWhatsapp className="w-8 h-8" />
-                    </span>
-                  </Link>
-                  <Link to="https://www.instagram.com/global.photorental/">
-                    <span>
-                      <FaInstagram className="w-8 h-8" />
-                    </span>
-                  </Link>
-                  <Link to="https://www.facebook.com/global.photorental">
-                    <span>
-                      <SlSocialFacebook className="w-8 h-8 color-white" />
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Grid Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-10 items-start">
+          <ProductImageGallery
+            productName={product.name}
+            photos={product.productPhotos || []}
+          />
+          <ProductInfo product={product} />
+          <ProductSpecifications
+            specifications={product.productSpecifications || []}
+          />
+          <RentalIncludes
+            productName={product.name}
+            includes={product.rentalIncludes || []}
+          />
         </div>
-      </section>
+      </main>
+      <FooterSection />
     </>
   );
 }

@@ -1,5 +1,6 @@
+// src/wrappers/BrowseProductWrapper.tsx
 import axios from "axios";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Product } from "../types/type";
 import ProductCard from "../components/ProductCard";
 import { Link } from "react-router-dom";
@@ -9,12 +10,14 @@ export default function BrowseProductWrapper() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProducts = useCallback(() => {
+  useEffect(() => {
     const controller = new AbortController();
+
     axios
-      .get("http://gpr.test/api/BrowseProduct", {
+      .get("http://gpr.id/api/BrowseProduct", {
+        // ✅ Endpoint benar: produk unggulan (premiere=1)
         headers: {
-          "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
+          "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },
         signal: controller.signal,
       })
@@ -22,46 +25,78 @@ export default function BrowseProductWrapper() {
         setProducts(response.data.data);
         setLoading(false);
       })
-      .catch((error) => {
-        if (axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
+      .catch((err) => {
+        if (axios.isCancel(err)) {
+          console.log("Request dibatalkan");
         } else {
-          setError(error.message);
+          setError(err.message);
           setLoading(false);
         }
       });
+
     return () => controller.abort();
   }, []);
 
-  useEffect(() => {
-    const abortFetch = fetchProducts();
-    return () => {
-      abortFetch();
-    };
-  }, [fetchProducts]);
-
   if (loading) {
-    return <p>Loading...</p>;
+    return <p className="text-center py-10">Memuat produk unggulan...</p>;
   }
 
   if (error) {
-    return <p>Error: {error}</p>;
+    return <p className="text-center text-red-500">Error: {error}</p>;
+  }
+
+  if (products.length === 0) {
+    return (
+      <section
+        id="Fresh-Space"
+        className="max-w-[1280px] mx-auto mt-[50px] px-3 py-6 text-center"
+      >
+        <h2 className="font-bold text-[32px] text-dark dark:text-light">
+          Tidak ada produk unggulan saat ini.
+        </h2>
+      </section>
+    );
   }
 
   return (
     <section
       id="Fresh-Space"
-      className="flex flex-col gap-[30px]  max-w-[1130px] mx-auto mt-[50px]  bg-white/80 dark:bg-gray-900 dark:border-gray-700 px-3 py-3 shadow backdrop-blur-lg md:top-6 md:rounded-3xl "
+      className="flex flex-col gap-5 md:gap-[30px] max-w-[1280px] mx-auto mt-0 md:mt-[50px] bg-transparent md:bg-white/80 dark:md:bg-gray-900 dark:border-gray-700 px-3 md:px-3 py-4 md:py-6 md:shadow md:backdrop-blur-lg md:rounded-3xl scroll-fade-in"
     >
-      <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-center text-dark dark:text-light">
-        Browse Our Fresh Space.
-        <br />
-        For Your Better Productivity.
-      </h2>
-      <div className="grid grid-cols-3 gap-[30px]">
-        {products.map((product) => (
-          <Link key={product.id} to={`/product/${product.slug}`}>
-            <ProductCard product={product}></ProductCard>
+      {/* Hide heading on mobile since it's shown in parent section */}
+      <div
+        className="relative w-full max-w-[1130px] mx-auto mb-[30px] scroll-fade-in"
+        data-delay="300"
+      >
+        {/* Judul di tengah */}
+        <h2
+          className="text-center font-bold text-[24px] md:text-[32px] leading-[36px] md:leading-[48px] text-dark dark:text-light scroll-fade-in"
+          data-delay="200"
+        >
+          Produk Unggulan Kami
+        </h2>
+
+        {/* Link di kanan */}
+        <Link
+          to="/browse-product"
+          className="absolute right-0 top-1/2 -translate-y-1/2 font-bold text-support-light-secondary dark:text-support-light-border-subtle whitespace-nowrap scroll-fade-in"
+        >
+          Explore All
+        </Link>
+      </div>
+
+      <div
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-3 md:gap-4 lg:gap-[20px] stagger-fade-in"
+        data-delay="400"
+      >
+        {products.map((product, index) => (
+          <Link
+            key={product.id}
+            to={`/product/${product.slug}`}
+            className="stagger-item"
+            data-index={index}
+          >
+            <ProductCard product={product} />
           </Link>
         ))}
       </div>

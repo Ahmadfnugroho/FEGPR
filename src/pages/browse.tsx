@@ -1,205 +1,107 @@
+import { Link } from "react-router-dom";
+
 import BrowseBrandWrapper from "../wrappers/BrowseBrandWrapper";
 import BrowseCategoryWrapper from "../wrappers/BrowseCategoryWrapper";
 import BrowseProductWrapper from "../wrappers/BrowseProductWrapper";
 import NavCard from "../components/navCard";
-
+import FooterSection from "../components/FooterSection";
 export default function Browse() {
   return (
     <>
-      <div className="md:hidden bg-white border-gray-200 dark:bg-dark">
-        <main className="max-w-[640px] mx-auto min-h-screen flex flex-col relative has-[#Bottom-nav]:pb-[144px] pt-[50px]">
+      <div className="md:hidden bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border-gray-200 dark:bg-dark">
+        <main className="max-w-[640px] mx-auto min-h-screen flex flex-col relative has-[#Bottom-nav]:pb-[144px] pt-[60px]">
           <NavCard></NavCard>
+          {/* Welcome Section */}
+          <section className="px-6 mt-6 mb-8 scroll-fade-in">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-100 dark:border-gray-700">
+              <h1 className="font-bold text-2xl leading-7 text-gray-800 dark:text-white mb-2">
+                Selamat Datang! 👋
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 text-base leading-6">
+                Temukan peralatan kamera terbaik untuk kebutuhan fotografi Anda
+              </p>
+            </div>
+          </section>
+
           <section
             id="Categories"
-            className="flex flex-col gap-[10px] mt-[30px] px-5"
+            className="flex flex-col gap-4 px-6 scroll-fade-in"
+            data-delay="100"
           >
-            <h2 className="font-semibold text-lg leading-5 text-dark dark:text-light">
-              Kategori
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-xl leading-6 text-gray-800 dark:text-white">
+                📂 Kategori
+              </h2>
+              <Link
+                to="/browse-product"
+                className="text-blue-600 dark:text-blue-400 text-sm font-medium hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+              >
+                Lihat Semua →
+              </Link>
+            </div>
             <BrowseCategoryWrapper></BrowseCategoryWrapper>
           </section>
 
-          <section id="New" className="flex flex-col gap-[10px] mt-[30px]">
-            <h2 className="font-semibold text-lg leading-[27px] px-5 text-dark dark:text-light">
-              Brand Kami
-            </h2>
+          <section
+            id="New"
+            className="flex flex-col gap-4 mt-8 px-6 scroll-fade-in"
+            data-delay="200"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-xl leading-6 text-gray-800 dark:text-white">
+                🏢 Brand Kami
+              </h2>
+              <span className="text-gray-500 dark:text-gray-400 text-sm font-medium">
+                Terpercaya
+              </span>
+            </div>
             <BrowseBrandWrapper></BrowseBrandWrapper>
           </section>
+          {/* Fresh-Space Mobile Section - Super Compact */}
           <section
-            id="Recommendation"
-            className="flex flex-col gap-[10px] mt-[30px] px-5"
+            id="Fresh-Space-Mobile"
+            className="flex flex-col gap-3 mt-6 px-4 mb-6 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm mx-2 rounded-2xl p-4 shadow-md border border-gray-100 dark:border-gray-700 scroll-fade-in"
+            data-delay="300"
           >
-            <h2 className="font-semibold text-lg leading-[27px]">
-              You Might Like
-            </h2>
-            <div className="flex flex-col gap-5">
-              <a href="details.html" className="card">
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 flex shrink-0 rounded-2xl overflow-hidden bg-[#F6F6F6] items-center">
-                    <div className="w-full h-[50px] flex shrink-0 justify-center">
-                      <img
-                        src="/assets/images/thumbnails/iphone15pro-digitalmat-gallery-3-202309-Photoroom 1.png"
-                        className="h-full w-full object-contain"
-                        alt="thumbnail"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full flex flex-col gap-1">
-                    <p className="font-semibold">iPhone 15 Pro</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm leading-[21px] text-[#6E6E70]">
-                        Rp 180.000/day
-                      </p>
-                      <div className="flex items-center w-fit gap-[2px]">
-                        <div className="w-4 h-4 flex shrink-0">
-                          <img
-                            src="/assets/images/icons/Star 1.svg"
-                            alt="star"
-                          />
-                        </div>
-                        <p className="text-sm leading-[21px]">
-                          <span className="font-semibold">4/5</span>{" "}
-                          <span className="text-[#6E6E70]">(777)</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="details.html" className="card">
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 flex shrink-0 rounded-2xl overflow-hidden bg-[#F6F6F6] items-center">
-                    <div className="w-full h-[50px] flex shrink-0 justify-center">
-                      <img
-                        src="/assets/images/thumbnails/color_back_green__buxxfjccqjzm_large_2x-Photoroom 1.png"
-                        className="h-full w-full object-contain"
-                        alt="thumbnail"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full flex flex-col gap-1">
-                    <p className="font-semibold">iMac Powerless</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm leading-[21px] text-[#6E6E70]">
-                        Rp 5.800.000/day
-                      </p>
-                      <div className="flex items-center w-fit gap-[2px]">
-                        <div className="w-4 h-4 flex shrink-0">
-                          <img
-                            src="/assets/images/icons/Star 1.svg"
-                            alt="star"
-                          />
-                        </div>
-                        <p className="text-sm leading-[21px]">
-                          <span className="font-semibold">4/5</span>{" "}
-                          <span className="text-[#6E6E70]">(123)</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="details.html" className="card">
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 flex shrink-0 rounded-2xl overflow-hidden bg-[#F6F6F6] items-center">
-                    <div className="w-full h-[50px] flex shrink-0 justify-center">
-                      <img
-                        src="/assets/images/thumbnails/airpods-max-select-skyblue-202011-Photoroom 1.png"
-                        className="h-full w-full object-contain"
-                        alt="thumbnail"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full flex flex-col gap-1">
-                    <p className="font-semibold">AirPod Deluxe</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm leading-[21px] text-[#6E6E70]">
-                        Rp 5.800.000/day
-                      </p>
-                      <div className="flex items-center w-fit gap-[2px]">
-                        <div className="w-4 h-4 flex shrink-0">
-                          <img
-                            src="/assets/images/icons/Star 1.svg"
-                            alt="star"
-                          />
-                        </div>
-                        <p className="text-sm leading-[21px]">
-                          <span className="font-semibold">4/5</span>{" "}
-                          <span className="text-[#6E6E70]">(45)</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </a>
-              <a href="details.html" className="card">
-                <div className="flex items-center gap-3">
-                  <div className="w-20 h-20 flex shrink-0 rounded-2xl overflow-hidden bg-[#F6F6F6] items-center">
-                    <div className="w-full h-[50px] flex shrink-0 justify-center">
-                      <img
-                        src="/assets/images/thumbnails/mba13-m2-digitalmat-gallery-1-202402-Photoroom 2.png"
-                        className="h-full w-full object-contain"
-                        alt="thumbnail"
-                      />
-                    </div>
-                  </div>
-                  <div className="w-full flex flex-col gap-1">
-                    <p className="font-semibold">Macbook Pro 13”</p>
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm leading-[21px] text-[#6E6E70]">
-                        Rp 124.000.000/day
-                      </p>
-                      <div className="flex items-center w-fit gap-[2px]">
-                        <div className="w-4 h-4 flex shrink-0">
-                          <img
-                            src="/assets/images/icons/Star 1.svg"
-                            alt="star"
-                          />
-                        </div>
-                        <p className="text-sm leading-[21px]">
-                          <span className="font-semibold">4/5</span>{" "}
-                          <span className="text-[#6E6E70]">(66)</span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </a>
+            <div className="text-center">
+              <h2 className="font-bold text-lg leading-5 text-gray-800 dark:text-white mb-1">
+                🌟 Produk Unggulan
+              </h2>
+              <p className="text-blue-600 dark:text-blue-400 text-sm">
+                Direkomendasikan untuk Anda
+              </p>
             </div>
+            <BrowseProductWrapper />
           </section>
           <div
             id="Bottom-nav"
-            className="fixed bottom-0 max-w-[640px] w-full mx-auto border-t border-[#F1F1F1] overflow-hidden z-10"
+            className="fixed bottom-0 max-w-[640px] w-full mx-auto border-t border-gray-200 dark:border-gray-700 overflow-hidden z-10 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md"
           >
-            <div className="bg-white/50 backdrop-blur-sm absolute w-full h-full" />
-            <ul className="flex items-center gap-3 justify-evenly p-5 relative z-10">
+            <ul className="flex items-center justify-evenly py-3 px-2 relative z-10">
+              {/* Home - Sesuai dengan logo di navbar web */}
               <li>
-                <a href="index.html">
-                  <div className="group flex flex-col items-center text-center gap-2 transition-all duration-300 hover:text-black">
-                    <div className="w-6 h-6 flex shrink-0">
+                <Link
+                  to="/"
+                  className="flex flex-col items-center p-2 rounded-xl transition-all duration-300"
+                >
+                  <div className="flex flex-col items-center text-center gap-1 transition-all duration-300 text-blue-600 dark:text-blue-400">
+                    <div className="w-7 h-7 flex shrink-0 p-1 bg-blue-50 dark:bg-blue-900/30 rounded-lg">
                       <svg
-                        width={25}
-                        height={24}
-                        viewBox="0 0 25 24"
+                        width={20}
+                        height={20}
+                        viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M17.325 18.98H7.92495C7.50495 18.98 7.03495 18.65 6.89495 18.25L2.75495 6.66999C2.16496 5.00999 2.85496 4.49999 4.27496 5.51999L8.17495 8.30999C8.82495 8.75999 9.56495 8.52999 9.84495 7.79999L11.605 3.10999C12.165 1.60999 13.095 1.60999 13.655 3.10999L15.415 7.79999C15.695 8.52999 16.435 8.75999 17.075 8.30999L20.735 5.69999C22.295 4.57999 23.045 5.14999 22.405 6.95999L18.365 18.27C18.215 18.65 17.745 18.98 17.325 18.98Z"
+                          d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z"
                           stroke="currentColor"
                           strokeWidth={2}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                         <path
-                          d="M7.125 22H18.125"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M10.125 14H15.125"
+                          d="M9 22V12H15V22"
                           stroke="currentColor"
                           strokeWidth={2}
                           strokeLinecap="round"
@@ -207,105 +109,78 @@ export default function Browse() {
                         />
                       </svg>
                     </div>
-                    <p className="font-semibold text-sm leading-[21px] text-[]">
-                      Browse
+                    <p className="font-bold text-xs text-blue-600 dark:text-blue-400">
+                      Home
                     </p>
                   </div>
-                </a>
+                </Link>
               </li>
+              {/* Kategori - Sesuai dengan navbar web */}
               <li>
-                <a href="check-booking.html">
-                  <div className="group flex flex-col items-center text-center gap-2 transition-all duration-300 hover:text-black text-[#9D9DAD]">
-                    <div className="w-6 h-6 flex shrink-0">
+                <Link
+                  to="/browse-product"
+                  className="flex flex-col items-center p-2 rounded-xl transition-all duration-300"
+                >
+                  <div className="flex flex-col items-center text-center gap-1 transition-all duration-300 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                    <div className="w-7 h-7 flex shrink-0 p-1 rounded-lg">
                       <svg
-                        width={25}
-                        height={24}
-                        viewBox="0 0 25 24"
+                        width={20}
+                        height={20}
+                        viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M8.875 2V5"
+                          d="M4 6H20L18 14H6L4 6Z"
                           stroke="currentColor"
                           strokeWidth={2}
-                          strokeMiterlimit={10}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
                         <path
-                          d="M16.875 2V5"
+                          d="M4 6L2 2H1"
                           stroke="currentColor"
                           strokeWidth={2}
-                          strokeMiterlimit={10}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
-                        <path
-                          d="M7.875 13H15.875"
+                        <circle
+                          cx="7"
+                          cy="20"
+                          r="1"
                           stroke="currentColor"
                           strokeWidth={2}
-                          strokeMiterlimit={10}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
                         />
-                        <path
-                          d="M7.875 17H12.875"
+                        <circle
+                          cx="17"
+                          cy="20"
+                          r="1"
                           stroke="currentColor"
                           strokeWidth={2}
-                          strokeMiterlimit={10}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M16.875 3.5C20.205 3.68 21.875 4.95 21.875 9.65V15.83C21.875 19.95 20.875 22.01 15.875 22.01H9.875C4.875 22.01 3.875 19.95 3.875 15.83V9.65C3.875 4.95 5.545 3.69 8.875 3.5H16.875Z"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeMiterlimit={10}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
                         />
                       </svg>
                     </div>
-                    <p className="font-semibold text-sm leading-[21px] text-[]">
-                      Orders
-                    </p>
+                    <p className="font-semibold text-xs">Kategori</p>
                   </div>
-                </a>
+                </Link>
               </li>
+              {/* Cara Sewa - Sesuai dengan navbar web */}
               <li>
-                <a href="">
-                  <div className="group flex flex-col items-center text-center gap-2 transition-all duration-300 hover:text-black text-[#9D9DAD]">
-                    <div className="w-6 h-6 flex shrink-0">
+                <Link
+                  to="/cara-sewa"
+                  className="flex flex-col items-center p-2 rounded-xl transition-all duration-300"
+                >
+                  <div className="flex flex-col items-center text-center gap-1 transition-all duration-300 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                    <div className="w-7 h-7 flex shrink-0 p-1 rounded-lg">
                       <svg
-                        width={25}
-                        height={24}
-                        viewBox="0 0 25 24"
+                        width={20}
+                        height={20}
+                        viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M19.625 12.5C19.625 11.12 20.745 10 22.125 10V9C22.125 5 21.125 4 17.125 4H7.125C3.125 4 2.125 5 2.125 9V9.5C3.505 9.5 4.625 10.62 4.625 12C4.625 13.38 3.505 14.5 2.125 14.5V15C2.125 19 3.125 20 7.125 20H17.125C21.125 20 22.125 19 22.125 15C20.745 15 19.625 13.88 19.625 12.5Z"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M9.125 14.75L15.125 8.75"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M15.1195 14.75H15.1285"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M9.11951 9.25H9.12849"
+                          d="M9.663 17H7.5C6.11929 17 5 15.8807 5 14.5S6.11929 12 7.5 12H9.663M14.337 17H16.5C17.8807 17 19 15.8807 19 14.5S17.8807 12 16.5 12H14.337M8 14.5H16"
                           stroke="currentColor"
                           strokeWidth={2}
                           strokeLinecap="round"
@@ -313,40 +188,50 @@ export default function Browse() {
                         />
                       </svg>
                     </div>
-                    <p className="font-semibold text-sm leading-[21px] text-[]">
-                      Promos
-                    </p>
+                    <p className="font-semibold text-xs">Cara Sewa</p>
                   </div>
-                </a>
+                </Link>
               </li>
+              {/* Registrasi - Sesuai dengan navbar web (external link) */}
               <li>
-                <a href="">
-                  <div className="group flex flex-col items-center text-center gap-2 transition-all duration-300 hover:text-black text-[#9D9DAD]">
-                    <div className="w-6 h-6 flex shrink-0">
+                <a
+                  href="http://bit.ly/formglobalphotorental"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex flex-col items-center p-2 rounded-xl transition-all duration-300"
+                >
+                  <div className="flex flex-col items-center text-center gap-1 transition-all duration-300 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                    <div className="w-7 h-7 flex shrink-0 p-1 rounded-lg">
                       <svg
-                        width={25}
-                        height={24}
-                        viewBox="0 0 25 24"
+                        width={20}
+                        height={20}
+                        viewBox="0 0 24 24"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                       >
                         <path
-                          d="M18.375 18.86H17.615C16.815 18.86 16.055 19.17 15.495 19.73L13.785 21.42C13.005 22.19 11.735 22.19 10.955 21.42L9.245 19.73C8.685 19.17 7.915 18.86 7.125 18.86H6.375C4.715 18.86 3.375 17.53 3.375 15.89V4.97998C3.375 3.33998 4.715 2.01001 6.375 2.01001H18.375C20.035 2.01001 21.375 3.33998 21.375 4.97998V15.89C21.375 17.52 20.035 18.86 18.375 18.86Z"
-                          stroke="currentColor"
-                          strokeWidth={2}
-                          strokeMiterlimit={10}
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <path
-                          d="M7.375 9.16003C7.375 8.23003 8.135 7.46997 9.065 7.46997C9.995 7.46997 10.755 8.23003 10.755 9.16003C10.755 11.04 8.085 11.24 7.495 13.03C7.375 13.4 7.685 13.77 8.075 13.77H10.755"
+                          d="M16 21V19C16 17.9391 15.5786 16.9217 14.8284 16.1716C14.0783 15.4214 13.0609 15 12 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21"
                           stroke="currentColor"
                           strokeWidth={2}
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         />
+                        <circle
+                          cx="8.5"
+                          cy="7"
+                          r="4"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        />
                         <path
-                          d="M16.415 13.76V8.05003C16.415 7.79003 16.245 7.55997 15.995 7.48997C15.745 7.41997 15.475 7.51997 15.335 7.73997C14.615 8.89997 13.835 10.22 13.155 11.38C13.045 11.57 13.045 11.82 13.155 12.01C13.265 12.2 13.475 12.3199 13.705 12.3199H17.375"
+                          d="M20 8V14"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <path
+                          d="M23 11H17"
                           stroke="currentColor"
                           strokeWidth={2}
                           strokeLinecap="round"
@@ -354,9 +239,7 @@ export default function Browse() {
                         />
                       </svg>
                     </div>
-                    <p className="font-semibold text-sm leading-[21px] text-[]">
-                      Contact
-                    </p>
+                    <p className="font-semibold text-xs">Daftar</p>
                   </div>
                 </a>
               </li>
@@ -365,16 +248,16 @@ export default function Browse() {
         </main>
       </div>
       {/* TAMPILAN WEB */}
-      <div className="hidden md:block bg-gray-10 border-gray-200 dark:bg-dark">
+      <div className="hidden md:block bg-gray-10 border-gray-200 dark:bg-base-dark-primary">
         <NavCard></NavCard>
         <header className="flex flex-col w-full">
           <section
             id="Hero-Banner"
-            className="relative flex h-[720px] -mb-[93px]"
+            className="relative flex h-[720px] -mb-[93px] parallax-container overflow-hidden"
           >
             <div
               id="Hero-Text"
-              className="relative flex flex-col w-full max-w-[650px] h-fit rounded-[30px] border border-[#E0DEF7] dark:border-gray-700 p-10 gap-[30px] bg-white dark:bg-gray-800 mt-[70px] ml-[calc((100%-1130px)/2)] z-10"
+              className="relative flex flex-col w-full max-w-[650px] h-fit rounded-[30px] border border-[#E0DEF7] dark:border-gray-700 p-10 gap-[30px] bg-white dark:bg-gray-800 mt-[70px] ml-[calc((100%-1130px)/2)] z-10 scroll-fade-in"
             >
               <div className="flex items-center w-fit rounded-full py-2 px-4 gap-[10px] bg-[#000929] dark:bg-primary">
                 <img
@@ -385,19 +268,19 @@ export default function Browse() {
                   Sewa Kamera Terbaik di Jakarta
                 </span>
               </div>
-              <h1 className="font-extrabold text-[50px] leading-[60px] text-dark dark:text-light">
+              <h1 className="font-extrabold text-[50px] leading-[60px] text-pop-light-primary dark:text-support-light-border-subtle">
                 All Perfect Shots.
                 <br />
                 Capture the Spots.
               </h1>
-              <p className="text-lg leading-8 text-[#000929] dark:text-light">
+              <p className="text-lg leading-8 text-[#000929] dark:text-support-light-border-subtle">
                 Kamera yang tepat dapat memberikan dampak besar pada hasil karya
                 Anda, meningkatkan kualitas foto, dan membantu karir fotografi
                 tumbuh lebih baik.
               </p>
               <div className="flex items-center gap-5">
-                <a
-                  href="#"
+                <Link
+                  to="/browse-product"
                   className="flex items-center rounded-full p-[20px_26px] gap-3 bg-primary"
                 >
                   <img
@@ -408,16 +291,18 @@ export default function Browse() {
                   <span className="font-bold text-xl leading-[30px] text-[#F7F7FD]">
                     Telusuri
                   </span>
-                </a>
+                </Link>
               </div>
             </div>
             <div
               id="Hero-Image"
-              className="absolute right-0 w-[calc(100%-((100%-1130px)/2)-305px)] h-[720px] rounded-bl-[40px] overflow-hidden"
+              className="absolute right-0 w-[calc(100%-((100%-1130px)/2)-305px)] h-[620px] rounded-bl-[40px] overflow-hidden parallax-bg scroll-fade-in"
+              data-parallax-speed="-0.2"
+              data-delay="200"
             >
               <img
                 src="/assets/hero-bg.png"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover scale-110"
                 alt="hero background"
                 style={{ transform: "scaleX(-1)" }}
               />
@@ -428,23 +313,34 @@ export default function Browse() {
         <BrowseCategoryWrapper></BrowseCategoryWrapper>
         <section
           id="Benefits"
-          className="flex items-center justify-center w-[1015px] mx-auto gap-[100px] mt-[100px]"
+          className="flex items-center justify-center w-[1015px] mx-auto gap-[100px] mt-[100px] scroll-fade-in"
+          data-delay="100"
         >
-          <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-dark dark:text-light">
+          <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-dark dark:text-light scroll-fade-in">
             The Best Solution <br />
             For Your Camera Needs
           </h2>
-          <div className="grid grid-cols-2 gap-[30px]">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white dark:bg-gray-900 overflow-hidden">
+          <div
+            className="grid grid-cols-2 gap-[30px] stagger-fade-in"
+            data-staggerdelay="100"
+          >
+            <div
+              className="flex items-center gap-4 stagger-item"
+              data-index="0"
+            >
+              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white dark:bg-dark overflow-hidden">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  className="w-[50px] h-[50px] stroke:dark dark:stroke-light"
+                  strokeWidth="1.5"
+                  className="w-[50px] h-[50px]"
+                  stroke="black"
                 >
-                  <path d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                  <path
+                    d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    className="text-primary dark:text-primary-dark"
+                  />
                 </svg>
               </div>
               <div className="flex flex-col gap-[5px]">
@@ -457,16 +353,23 @@ export default function Browse() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px]  bg-white dark:bg-gray-900  overflow-hidden">
+            <div
+              className="flex items-center gap-4 stagger-item"
+              data-index="1"
+            >
+              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white dark:bg-dark overflow-hidden">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  className="w-[50px] h-[50px] stroke:dark dark:stroke-light"
+                  strokeWidth="1.5"
+                  className="w-[50px] h-[50px]"
+                  stroke="black"
                 >
-                  <path d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+                  <path
+                    d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9"
+                    className="text-secondary dark:text-secondary-dark"
+                  />
                 </svg>
               </div>
               <div className="flex flex-col gap-[5px]">
@@ -479,16 +382,23 @@ export default function Browse() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px]  bg-white dark:bg-gray-900  overflow-hidden">
+            <div
+              className="flex items-center gap-4 stagger-item"
+              data-index="2"
+            >
+              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white dark:bg-dark overflow-hidden">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  className="w-[50px] h-[50px] stroke:dark dark:stroke-lights"
+                  strokeWidth="1.5"
+                  className="w-[50px] h-[50px]"
+                  stroke="black"
                 >
-                  <path d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z" />
+                  <path
+                    d="M3 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061A1.125 1.125 0 0 1 3 16.811V8.69ZM12.75 8.689c0-.864.933-1.406 1.683-.977l7.108 4.061a1.125 1.125 0 0 1 0 1.954l-7.108 4.061a1.125 1.125 0 0 1-1.683-.977V8.69Z"
+                    className="text-accent dark:text-accent-dark"
+                  />
                 </svg>
               </div>
               <div className="flex flex-col gap-[5px]">
@@ -502,16 +412,23 @@ export default function Browse() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px]  bg-white dark:bg-gray-900  overflow-hidden">
+            <div
+              className="flex items-center gap-4 stagger-item"
+              data-index="3"
+            >
+              <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white dark:bg-dark overflow-hidden">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  className="w-[50px] h-[50px] stroke:dark dark:stroke-light"
+                  strokeWidth="1.5"
+                  className="w-[50px] h-[50px]"
+                  stroke="black"
                 >
-                  <path d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                  <path
+                    d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z"
+                    className="text-muted dark:text-muted-dark"
+                  />
                 </svg>
               </div>
               <div className="flex flex-col gap-[5px]">
@@ -527,8 +444,17 @@ export default function Browse() {
             </div>
           </div>
         </section>
-        <BrowseProductWrapper></BrowseProductWrapper>
+        <section
+          className="mt-[50px] mb-[100px] scroll-fade-in"
+          data-delay="200"
+        >
+          <div className="scroll-fade-in" data-delay="400">
+            <BrowseProductWrapper></BrowseProductWrapper>
+          </div>
+        </section>
       </div>
+      {/* FOOTER SECTION */}
+      <FooterSection />
     </>
   );
 }

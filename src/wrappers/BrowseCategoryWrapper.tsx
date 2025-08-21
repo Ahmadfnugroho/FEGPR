@@ -5,6 +5,7 @@ import { useEffect, useState, useCallback } from "react";
 import { Category } from "../types/type";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import FullScreenLoader from "../components/FullScreenLoader";
 export default function BrowseCategoryWrapper() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -13,9 +14,9 @@ export default function BrowseCategoryWrapper() {
   const fetchCategories = useCallback(() => {
     const controller = new AbortController();
     axios
-      .get("http://gpr.test/api/categories", {
+      .get("http://gpr.id/api/categories", {
         headers: {
-          "X-API-KEY": "6cNWymcs6W094LdZm9pa326lGlS4rEYx",
+          "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
         },
         signal: controller.signal,
       })
@@ -42,7 +43,7 @@ export default function BrowseCategoryWrapper() {
   }, [fetchCategories]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <FullScreenLoader />;
   }
 
   if (error) {
@@ -52,8 +53,8 @@ export default function BrowseCategoryWrapper() {
   return (
     <>
       {/* MOBILE */}
-      <section className="md:hidden ">
-        <div className="swiper w-full">
+      <section className="md:hidden scroll-fade-in">
+        <div className="swiper w-full scroll-fade-in" data-delay="200">
           <div className="swiper-wrapper">
             <Swiper
               direction="horizontal"
@@ -62,7 +63,7 @@ export default function BrowseCategoryWrapper() {
               slidesOffsetAfter={5}
               slidesOffsetBefore={5}
             >
-              {categories.map((category) => (
+              {categories.map((category, _index) => (
                 <SwiperSlide
                   key={category.id}
                   className="!w-fit first-of-type:pl-[calc((50%-1130px-60px)/2)] last-of-type:pr-[calc((50%-1130px-60px)/2)]"
@@ -77,15 +78,20 @@ export default function BrowseCategoryWrapper() {
         </div>
       </section>
       {/* WEB */}
-      <section id="Cities" className="hidden md:block flex-col gap-[30px]">
-        <div className="w-full max-w-[1130px] mx-auto flex items-center justify-between">
-          <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-primary mt-10 mb-10">
-            Cek <br />
-            Kategori Favorit Kami
+      <section
+        id="Cities"
+        className="hidden md:block flex-col gap-[30px] scroll-fade-in"
+      >
+        <div className="w-full max-w-[1130px] mx-auto flex items-center justify-between scroll-fade-in">
+          <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-primary mt-10 mb-10 scroll-fade-in">
+            Cek Kategori Favorit Kami
           </h2>
-          <a href="#" className="font-bold text-primary">
+          <Link
+            to="/browse-product"
+            className="font-bold text-primary scroll-slide-right"
+          >
             Explore All
-          </a>
+          </Link>
         </div>
         <div className="swiper w-full">
           <div className="swiper-wrapper">
@@ -96,10 +102,11 @@ export default function BrowseCategoryWrapper() {
               slidesOffsetAfter={30}
               slidesOffsetBefore={-200}
             >
-              {categories.map((category) => (
+              {categories.map((category, index) => (
                 <SwiperSlide
                   key={category.id}
-                  className="!w-fit first-of-type:pl-[calc((100%-1130px-60px)/2)] last-of-type:pr-[calc((100%-1130px-60px)/2)]"
+                  className="!w-fit first-of-type:pl-[calc((100%-1130px-60px)/2)] last-of-type:pr-[calc((100%-1130px-60px)/2)] stagger-item"
+                  data-index={index}
                 >
                   <Link to={`/category/${category.slug}`}>
                     <CategoryCard category={category}></CategoryCard>
