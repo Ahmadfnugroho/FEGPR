@@ -20,7 +20,7 @@ export default function FooterSection() {
           </div>
           {/* Social Media & Contact */}
           <div className="flex-1 min-w-[250px]">
-            <h6 className="uppercase font-bold text-base md:text-lg tracking-wide mb-2 md:mb-3">
+            <h6 className="uppercase font-bold text-base-dark-primary dark:text-base-light-primary md:text-lg tracking-wide mb-2 md:mb-3">
               Sosial Media
             </h6>
             <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
@@ -73,7 +73,7 @@ export default function FooterSection() {
                 </svg>
               </a>
             </div>
-            <h6 className="uppercase font-bold mt-3 md:mt-4 mb-2 text-base md:text-lg tracking-wide">
+            <h6 className="uppercase font-bold mt-3 md:mt-4 mb-2 text-base-dark-primary dark:text-base-light-primary md:text-lg tracking-wide">
               Contact
             </h6>
             <div className="space-y-1 md:space-y-2">
