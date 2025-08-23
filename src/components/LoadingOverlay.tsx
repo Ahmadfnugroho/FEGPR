@@ -27,7 +27,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
   const overlayClasses = `
     flex flex-col items-center justify-center
     ${fullScreen ? 'fixed inset-0 z-50' : 'absolute inset-0 z-10'}
-    ${transparent ? 'bg-white/70 dark:bg-dark/70 backdrop-blur-sm' : 'bg-white dark:bg-dark'}
+    ${transparent ? 'bg-white/70 backdrop-blur-sm' : 'bg-white'}
     transition-all duration-300
   `;
 
@@ -43,7 +43,7 @@ const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
         />
         
         {message && (
-          <p className="mt-4 text-dark dark:text-light font-medium animate-pulse">
+          <p className="mt-4 text-dark font-medium animate-pulse">
             {message}
           </p>
         )}

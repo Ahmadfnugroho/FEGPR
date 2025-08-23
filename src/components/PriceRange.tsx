@@ -71,7 +71,7 @@ export default function PriceRange({
 
   return (
     <div className="space-y-2">
-      <label className="block text-xs md:text-sm font-medium text-muted dark:text-muted-dark">
+      <label className="block text-xs md:text-sm font-medium text-muted">
         Rentang Harga
       </label>
       <div className="flex flex-col sm:flex-row gap-2 sm:items-center">
@@ -80,8 +80,8 @@ export default function PriceRange({
           <input
             type="text"
             placeholder={min.toLocaleString("id-ID")}
-            className="w-full sm:w-20 md:w-24 px-2 md:px-3 py-1.5 rounded-lg border border-muted dark:border-muted-dark 
-                       bg-light dark:bg-dark text-dark dark:text-light text-xs md:text-sm
+            className="w-full sm:w-20 md:w-24 px-2 md:px-3 py-1.5 rounded-lg border border-muted 
+                       bg-light text-dark text-xs md:text-sm
                        focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
             value={format(localMin)}
             onChange={(e) => {
@@ -92,10 +92,10 @@ export default function PriceRange({
           />
         </div>
 
-        <div className="text-muted dark:text-muted-dark font-semibold text-center sm:mx-2 hidden sm:block">
+        <div className="text-muted font-semibold text-center sm:mx-2 hidden sm:block">
           —
         </div>
-        <div className="text-muted dark:text-muted-dark font-semibold text-center text-xs sm:hidden">
+        <div className="text-muted font-semibold text-center text-xs sm:hidden">
           sampai
         </div>
 
@@ -104,8 +104,8 @@ export default function PriceRange({
           <input
             type="text"
             placeholder={max.toLocaleString("id-ID")}
-            className="w-full sm:w-20 md:w-24 px-2 md:px-3 py-1.5 rounded-lg border border-muted dark:border-muted-dark 
-                       bg-light dark:bg-dark text-dark dark:text-light text-xs md:text-sm
+            className="w-full sm:w-20 md:w-24 px-2 md:px-3 py-1.5 rounded-lg border border-muted 
+                       bg-light text-dark text-xs md:text-sm
                        focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition"
             value={format(localMax)}
             onChange={(e) => {

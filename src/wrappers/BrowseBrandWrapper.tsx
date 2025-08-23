@@ -2,7 +2,8 @@ import { useEffect, useState, useCallback } from "react";
 import BrandCard from "../components/BrandCard";
 import { Brand } from "../types/type";
 import axios from "axios";
-import FullScreenLoader from "../components/FullScreenLoader";
+import axiosInstance from "../api/axiosInstance";
+import BrandCardSkeleton from "../components/BrandCardSkeleton";
 
 export default function BrowseBrandWrapper() {
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -11,11 +12,8 @@ export default function BrowseBrandWrapper() {
 
   const fetchBrands = useCallback(() => {
     const controller = new AbortController();
-    axios
-      .get("https://gpr-b5n3q.sevalla.app/api/brands-premiere", {
-        headers: {
-          "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
-        },
+    axiosInstance
+      .get("/brands-premiere", {
         signal: controller.signal,
       })
       .then((response) => {
@@ -23,7 +21,7 @@ export default function BrowseBrandWrapper() {
         setLoading(false);
       })
       .catch((error) => {
-        if (axios.isCancel(error)) {
+        if (axios.isCancel && axios.isCancel(error)) {
           console.log("Request canceled", error.message);
         } else {
           setError(error.message);
@@ -42,8 +40,12 @@ export default function BrowseBrandWrapper() {
 
   if (loading) {
     return (
-      <div>
-        <FullScreenLoader />
+      <div className="w-auto bg-[#c5c7cb] py-4 md:py-3 px-3 md:px-3 rounded-2xl shadow-lg border border-gray-200">
+        <div className="flex flex-nowrap justify-center items-center gap-2 md:gap-16 overflow-x-auto">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <BrandCardSkeleton key={`skeleton-${i}`} />
+          ))}
+        </div>
       </div>
     );
   }
@@ -54,11 +56,11 @@ export default function BrowseBrandWrapper() {
 
   return (
     <div
-      className="w-full bg-[#c5c7cb] dark:bg-[#222429] py-4 md:py-10 px-3 md:px-[120px] scroll-fade-in mt-28"
+      className="w-auto bg-[#c5c7cb] py-4 md:py-3 px-3 md:px-3 scroll-fade-in rounded-2xl shadow-lg border border-gray-200"
       data-delay="100"
     >
       <div
-        className="flex flex-wrap justify-center items-center gap-3 md:gap-8 stagger-fade-in"
+        className="flex flex-nowrap justify-center items-center gap-2 md:gap-16 stagger-fade-in overflow-x-auto"
         data-staggerdelay="100"
       >
         {brands.map((brand, index) => (

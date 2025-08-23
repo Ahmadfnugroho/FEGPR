@@ -1,12 +1,17 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import ReactSelect from "react-select";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
+import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/20/solid";
 import NavCard from "../components/navCard";
 import ProductSkeleton from "../components/ProductSkeleton";
-import PriceRange from "../components/PriceRange";
+import BundlingCardSkeleton from "../components/BundlingCardSkeleton";
+import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import ProductCard from "../components/ProductCard";
 import BundlingCard from "../components/BundlingCard";
+import MobileFilterDialog from "../components/FilterComponents/MobileFilterDialog";
+import DesktopFilterSidebar from "../components/FilterComponents/DesktopFilterSidebar";
+import FilterHeader from "../components/FilterComponents/FilterHeader";
 import type {
   Product,
   Category,
@@ -14,10 +19,9 @@ import type {
   SubCategory,
   Bundling,
 } from "../types/type";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
+import axiosInstance from "../api/axiosInstance";
 
-const API_BASE = "https://gpr-b5n3q.sevalla.app/api";
-const API_KEY = "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf";
+// Menggunakan konstanta dari axiosInstance.ts
 
 const sortOptions = [
   { label: "Nama (A-Z)", value: "name_asc" },
@@ -51,7 +55,7 @@ export default function BrowseProduct() {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  // Filter / sort
+  // Filter / sort - Main filter state (applied)
   const [filter, setFilter] = useState({
     category: params.getAll("category") || [],
     brand: params.getAll("brand") || [],
@@ -60,24 +64,23 @@ export default function BrowseProduct() {
     q: params.get("q") || "",
   });
 
-  // Check if "bundling" category is selected
-  const isBundlingMode = filter.category.includes("bundling");
-  // Gunakan state terpisah untuk harga
-  // Price filter: null = not active
+  // Temporary filter state for user input (before apply)
+  const [tempFilter, setTempFilter] = useState(filter);
   const [priceRange, setPriceRange] = useState<{
     min: number;
     max: number;
   } | null>(null);
-  const [sort, setSort] = useState(params.get("sort") || "name");
-  const [order, setOrder] = useState<"asc" | "desc">(
-    (params.get("order") as "asc" | "desc") || "asc"
-  );
-  // State sementara untuk filter di sidebar/drawer
-  const [tempFilter, setTempFilter] = useState(filter);
   const [tempPriceRange, setTempPriceRange] = useState<{
     min: number;
     max: number;
   } | null>(null);
+
+  // Check if "bundling" category is selected
+  const isBundlingMode = filter.category.includes("bundling");
+  const [sort, setSort] = useState(params.get("sort") || "name");
+  const [order, setOrder] = useState<"asc" | "desc">(
+    (params.get("order") as "asc" | "desc") || "asc"
+  );
 
   // Sidebar / drawer
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -127,28 +130,31 @@ export default function BrowseProduct() {
 
   // Build params helper
   const buildParams = useCallback(
-    (p: number = 1) => {
+    (p: number = 1, customFilter?: typeof filter, customPriceRange?: typeof priceRange) => {
+      const currentFilter = customFilter || filter;
+      const currentPriceRange = customPriceRange || priceRange;
+      
       const ps = new URLSearchParams();
-      if (filter.q) ps.set("q", filter.q);
-      filter.category.forEach((c) => ps.append("category", c));
-      filter.brand.forEach((b) => ps.append("brand", b));
-      filter.subcategory.forEach((s) => ps.append("subcategory", s));
-      filter.available.forEach((a) => ps.append("available", a));
+      if (currentFilter.q) ps.set("q", currentFilter.q);
+      currentFilter.category.forEach((c) => ps.append("category", c));
+      currentFilter.brand.forEach((b) => ps.append("brand", b));
+      currentFilter.subcategory.forEach((s) => ps.append("subcategory", s));
+      currentFilter.available.forEach((a) => ps.append("available", a));
 
       // Only add if priceRange is set and values are valid
       if (
-        priceRange &&
-        typeof priceRange.min === "number" &&
-        !isNaN(priceRange.min)
+        currentPriceRange &&
+        typeof currentPriceRange.min === "number" &&
+        !isNaN(currentPriceRange.min)
       ) {
-        ps.set("price_min", String(priceRange.min));
+        ps.set("price_min", String(currentPriceRange.min));
       }
       if (
-        priceRange &&
-        typeof priceRange.max === "number" &&
-        !isNaN(priceRange.max)
+        currentPriceRange &&
+        typeof currentPriceRange.max === "number" &&
+        !isNaN(currentPriceRange.max)
       ) {
-        ps.set("price_max", String(priceRange.max));
+        ps.set("price_max", String(currentPriceRange.max));
       }
 
       if (sort && sort !== "name") ps.set("sort", sort);
@@ -161,25 +167,34 @@ export default function BrowseProduct() {
     },
     [filter, priceRange, sort, order, pageSize]
   );
+  // Sync URL params with state when location changes
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    setFilter({
+      category: urlParams.getAll("category") || [],
+      brand: urlParams.getAll("brand") || [],
+      subcategory: urlParams.getAll("subcategory") || [],
+      available: urlParams.getAll("available") || [],
+      q: urlParams.get("q") || "",
+    });
+    setSort(urlParams.get("sort") || "name");
+    setOrder((urlParams.get("order") as "asc" | "desc") || "asc");
+    setPage(Number(urlParams.get("page") || 1));
+    setPageSize(Number(urlParams.get("limit") || 10));
+  }, [location.search]);
+
   // Fetch static lists once
   useEffect(() => {
-    axios
-      .all([
-        axios.get(`${API_BASE}/categories`, {
-          headers: { "X-API-KEY": API_KEY },
-        }),
-        axios.get(`${API_BASE}/brands`, { headers: { "X-API-KEY": API_KEY } }),
-        axios.get(`${API_BASE}/sub-categories`, {
-          headers: { "X-API-KEY": API_KEY },
-        }),
-      ])
-      .then(
-        axios.spread((catRes, brandRes, subRes) => {
-          setCategories(catRes.data.data || []);
-          setBrands(brandRes.data.data || []);
-          setSubCategories(subRes.data.data || []);
-        })
-      )
+    Promise.all([
+      axiosInstance.get(`/categories`),
+      axiosInstance.get(`/brands`),
+      axiosInstance.get(`/sub-categories`),
+    ])
+      .then((responses) => {
+        setCategories(responses[0].data.data || []);
+        setBrands(responses[1].data.data || []);
+        setSubCategories(responses[2].data.data || []);
+      })
       .catch((e) => console.error("Static list fetch error:", e));
   }, []);
 
@@ -207,8 +222,7 @@ export default function BrowseProduct() {
         bundlingParams.set("page", String(p));
         bundlingParams.set("limit", String(pageSize));
 
-        const res = await axios.get(`${API_BASE}/bundlings`, {
-          headers: { "X-API-KEY": API_KEY },
+        const res = await axiosInstance.get(`/bundlings`, {
           params: Object.fromEntries(bundlingParams),
           cancelToken: cancelTokenRef.current.token,
         });
@@ -262,8 +276,7 @@ export default function BrowseProduct() {
         if (append) setLoadingMore(true);
         else setLoading(true);
 
-        const res = await axios.get(`${API_BASE}/products`, {
-          headers: { "X-API-KEY": API_KEY },
+        const res = await axiosInstance.get(`/products`, {
           params: Object.fromEntries(buildParams(p)),
           cancelToken: cancelTokenRef.current.token,
         });
@@ -310,13 +323,13 @@ export default function BrowseProduct() {
     [buildParams, priceRange]
   );
 
-  // Initial load or when filter/sort/pageSize changes
+  // Initial load and when filter/sort/pageSize changes (only applied filters)
   useEffect(() => {
-    // Sync URL for deep-linkable state
+    // Update URL params
     const sp = buildParams(1);
     navigate({ search: sp.toString() }, { replace: true });
-
-    // Reset other data when switching modes
+    
+    // Fetch data based on current mode
     if (isBundlingMode) {
       setProducts([]);
       setBundlings([]);
@@ -326,7 +339,7 @@ export default function BrowseProduct() {
       setProducts([]);
       fetchProducts(1, false);
     }
-
+    
     // Sync temp filters with main filters
     setTempFilter(filter);
     setTempPriceRange(priceRange);
@@ -356,24 +369,25 @@ export default function BrowseProduct() {
     }
   }
 
-  // apply/reset helpers
+  // Apply temp filters to main filters
   const applyTempFilter = () => {
     setFilter(tempFilter);
     setPriceRange(tempPriceRange);
     setDrawerOpen(false);
   };
 
+  // Reset all filters
   const resetFilters = () => {
     const newFilter = {
-      category: [],
-      brand: [],
-      subcategory: [],
-      available: [],
+      category: [] as string[],
+      brand: [] as string[],
+      subcategory: [] as string[],
+      available: [] as string[],
       q: "",
     };
     setFilter(newFilter);
     setTempFilter(newFilter);
-    setPriceRange(null); // Reset to null (not active)
+    setPriceRange(null);
     setTempPriceRange(null);
     setDrawerOpen(false);
   };
@@ -387,457 +401,245 @@ export default function BrowseProduct() {
     }
   }, [drawerOpen]);
 
+  function classNames(...classes: string[]) {
+    return classes.filter(Boolean).join(" ");
+  }
+
   return (
-    <>
+    <div className="bg-white">
       <NavCard />
 
-      <main className="pt-24 pb-24 transition-all duration-300 bg-base-light-primary dark:bg-base-dark-primary">
-        <section className="container grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Sidebar desktop (collapsible) */}
-          <aside
-            className={`hidden lg:block transition-all duration-300 ${
-              sidebarCollapsed ? "w-16" : "w-auto"
-            }`}
-            aria-hidden={false}
-          >
-            <div
-              className={`bg-base-secondary border border-support-subtle rounded-lg p-3 shadow-sm transition-theme ${
-                sidebarCollapsed ? "overflow-hidden" : ""
-              }`}
+      {/* Mobile filter dialog */}
+      <MobileFilterDialog
+        isOpen={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        tempFilter={tempFilter}
+        setTempFilter={setTempFilter}
+        tempPriceRange={tempPriceRange}
+        setTempPriceRange={setTempPriceRange}
+        priceBounds={priceBounds}
+        categoryOptions={categoryOptions}
+        brandOptions={brandOptions}
+        subCategoryOptions={subCategoryOptions}
+        onApply={applyTempFilter}
+        onReset={resetFilters}
+      />
+
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-baseline justify-between border-b border-gray-200 pt-24 pb-6">
+          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mt-2">
+            {isBundlingMode ? "Daftar Bundling Kami" : "Daftar Produk Kami"}
+          </h1>
+
+          <div className="flex items-center">
+            <Menu as="div" className="relative inline-block text-left">
+              <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+                Sort
+                <ChevronDownIcon
+                  aria-hidden="true"
+                  className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+                />
+              </MenuButton>
+
+              <MenuItems
+                transition
+                className="absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-2xl ring-1 ring-black/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[enter]:ease-out data-[leave]:duration-75 data-[leave]:ease-in"
+              >
+                <div className="py-1">
+                  {sortOptions.map((option) => (
+                    <MenuItem key={option.value}>
+                      {({ focus }) => (
+                        <button
+                          onClick={() => updateSort(option.value)}
+                          className={classNames(
+                            (sort === "recommended"
+                              ? "recommended"
+                              : `${sort}_${order}`) === option.value
+                              ? "font-medium text-gray-900"
+                              : "text-gray-500",
+                            "block px-4 py-2 text-sm w-full text-left",
+                            focus ? "bg-gray-100" : ""
+                          )}
+                        >
+                          {option.label}
+                        </button>
+                      )}
+                    </MenuItem>
+                  ))}
+                </div>
+              </MenuItems>
+            </Menu>
+
+            <button
+              type="button"
+              onClick={() => setDrawerOpen(true)}
+              className="-m-2 ml-4 p-2 text-gray-400 hover:text-gray-500 sm:ml-6 lg:hidden"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h3
-                  className={`text-sm font-semibold text-support-primary ${
-                    sidebarCollapsed ? "sr-only" : ""
-                  }`}
-                >
-                  Filter
-                </h3>
-                <button
-                  onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                  className="p-2 rounded-md text-support-secondary hover:bg-base-tertiary hover:text-pop-primary transition-all duration-200"
-                >
-                  {sidebarCollapsed ? (
-                    <FaChevronRight size={20} />
-                  ) : (
-                    <FaChevronLeft size={20} />
-                  )}
-                </button>
-              </div>
+              <span className="sr-only">Filters</span>
+              <FunnelIcon aria-hidden="true" className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
 
-              <div className={sidebarCollapsed ? "hidden" : "block"}>
-                <label className="text-xs text-support-tertiary mb-1 block">
-                  Kategori
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={categoryOptions}
-                  value={categoryOptions.filter((opt) =>
-                    tempFilter.category.includes(opt.value)
-                  )}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      category: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  placeholder="Semua Kategori"
-                  className="mb-3"
-                />
+        <section aria-labelledby="products-heading" className="pt-6 pb-24">
+          <h2 id="products-heading" className="sr-only">
+            Products
+          </h2>
 
-                <label className="text-xs text-support-tertiary mb-1 block">
-                  Brand
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={brandOptions}
-                  value={brandOptions.filter((opt) =>
-                    tempFilter.brand.includes(opt.value)
-                  )}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      brand: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  placeholder="Semua Brand"
-                  className="mb-3"
-                />
+          <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-4">
+            {/* Desktop Filters */}
+            <DesktopFilterSidebar
+              tempFilter={tempFilter}
+              setTempFilter={setTempFilter}
+              tempPriceRange={tempPriceRange}
+              setTempPriceRange={setTempPriceRange}
+              priceRange={priceRange}
+              priceBounds={priceBounds}
+              categoryOptions={categoryOptions}
+              brandOptions={brandOptions}
+              subCategoryOptions={subCategoryOptions}
+              onApply={applyTempFilter}
+              onReset={resetFilters}
+            />
 
-                <label className="text-xs text-support-tertiary mb-1 block">
-                  SubKategori
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={subCategoryOptions}
-                  value={subCategoryOptions.filter((opt) =>
-                    tempFilter.subcategory.includes(opt.value)
-                  )}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      subcategory: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  placeholder="Semua SubKategori"
-                  className="mb-3"
-                />
-
-                <label className="text-xs text-support-tertiary mb-1 block">
-                  Status
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={[
-                    { label: "Tersedia", value: "1" },
-                    { label: "Tidak Tersedia", value: "0" },
-                  ]}
-                  value={[
-                    { label: "Tersedia", value: "1" },
-                    { label: "Tidak Tersedia", value: "0" },
-                  ].filter((opt) => tempFilter.available.includes(opt.value))}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      available: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  placeholder="Semua Status"
-                  className="mb-3"
-                />
-
-                <label className="text-xs text-support-tertiary mb-2 block">
-                  Harga
-                </label>
-                <PriceRange
-                  min={priceBounds.min}
-                  max={priceBounds.max}
-                  valueMin={tempPriceRange?.min ?? null}
-                  valueMax={tempPriceRange?.max ?? null}
-                  onChange={(min, max) => {
-                    setTempPriceRange(
-                      min == null && max == null
-                        ? null
-                        : {
-                            min: min ?? priceBounds.min,
-                            max: max ?? priceBounds.max,
-                          }
-                    );
+            {/* Product grid */}
+            <div className="lg:col-span-3">
+              {/* Active Filters Display for Desktop */}
+              <div className="hidden lg:block">
+                <FilterHeader
+                  currentFilters={filter}
+                  priceRange={priceRange}
+                  onClearAll={resetFilters}
+                  onClearCategory={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      category: prev.category.filter((c) => c !== value),
+                    }));
                   }}
-                />
-                {/* Badge if price filter is active */}
-                {priceRange &&
-                  (priceRange.min != null || priceRange.max != null) && (
-                    <span className="inline-block mt-2 px-2 py-1 text-xs bg-semantic-warning text-white rounded">
-                      Filter harga aktif
-                    </span>
-                  )}
-
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={applyTempFilter}
-                    className="flex-1 px-3 py-2 rounded bg-pop-primary text-white transition hover:bg-pop-hover"
-                  >
-                    Terapkan
-                  </button>
-                  <button
-                    onClick={resetFilters}
-                    className="px-3 py-2 rounded border border-support-subtle text-support-tertiary transition hover:bg-base-tertiary"
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Mobile drawer/backdrop */}
-          {drawerOpen && (
-            <div className="fixed inset-0 z-40 lg:hidden">
-              <div
-                className="absolute inset-0 bg-black/40"
-                onClick={() => setDrawerOpen(false)}
-              />
-              <div className="absolute left-0 top-0 bottom-0 w-80 bg-white dark:bg-dark/95 p-4 overflow-auto shadow-xl transition-transform">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-base font-medium">Filter</h3>
-                  <button onClick={() => setDrawerOpen(false)} className="p-1">
-                    ✕
-                  </button>
-                </div>
-
-                <label className="text-xs text-muted dark:text-muted-dark mb-1 block">
-                  Kategori
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={categoryOptions}
-                  value={categoryOptions.filter((opt) =>
-                    tempFilter.category.includes(opt.value)
-                  )}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      category: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  className="mb-3"
-                />
-
-                <label className="text-xs text-muted dark:text-muted-dark mb-1 block">
-                  Brand
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={brandOptions}
-                  value={brandOptions.filter((opt) =>
-                    tempFilter.brand.includes(opt.value)
-                  )}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      brand: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  className="mb-3"
-                />
-
-                <label className="text-xs text-muted dark:text-muted-dark mb-1 block">
-                  SubKategori
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={subCategoryOptions}
-                  value={subCategoryOptions.filter((opt) =>
-                    tempFilter.subcategory.includes(opt.value)
-                  )}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      subcategory: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  className="mb-3"
-                />
-
-                <label className="text-xs text-muted dark:text-muted-dark mb-1 block">
-                  Status
-                </label>
-                <ReactSelect
-                  isMulti
-                  options={[
-                    { label: "Tersedia", value: "1" },
-                    { label: "Tidak Tersedia", value: "0" },
-                  ]}
-                  value={[
-                    { label: "Tersedia", value: "1" },
-                    { label: "Tidak Tersedia", value: "0" },
-                  ].filter((opt) => tempFilter.available.includes(opt.value))}
-                  onChange={(sel: any) =>
-                    setTempFilter((p) => ({
-                      ...p,
-                      available: sel.map((s: any) => s.value),
-                    }))
-                  }
-                  styles={rsStyles}
-                  className="mb-3"
-                />
-
-                <label className="text-xs text-muted dark:text-muted-dark mb-2 block">
-                  Harga
-                </label>
-                <PriceRange
-                  min={priceBounds.min}
-                  max={priceBounds.max}
-                  valueMin={tempPriceRange?.min ?? null}
-                  valueMax={tempPriceRange?.max ?? null}
-                  onChange={(min, max) => {
-                    setTempPriceRange(
-                      min == null && max == null
-                        ? null
-                        : {
-                            min: min ?? priceBounds.min,
-                            max: max ?? priceBounds.max,
-                          }
-                    );
+                  onClearSubcategory={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      subcategory: prev.subcategory.filter((s) => s !== value),
+                    }));
                   }}
+                  onClearAvailable={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      available: prev.available.filter((a) => a !== value),
+                    }));
+                  }}
+                  onClearPrice={() => {
+                    setPriceRange(null);
+                  }}
+                  onClearSearch={() => {
+                    setFilter((prev) => ({ ...prev, q: "" }));
+                  }}
+                  categoryOptions={categoryOptions}
+                  brandOptions={brandOptions}
+                  subCategoryOptions={subCategoryOptions}
                 />
-
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={applyTempFilter}
-                    className="flex-1 px-3 py-2 rounded bg-primary text-white transition"
-                  >
-                    Terapkan
-                  </button>
-                  <button
-                    onClick={resetFilters}
-                    className="px-3 py-2 rounded border border-muted text-muted transition"
-                  >
-                    Reset
-                  </button>
-                </div>
               </div>
-            </div>
-          )}
 
-          {/* Main content */}
-          <div
-            className={`col-span-1 ${
-              sidebarCollapsed ? "lg:col-span-4" : "lg:col-span-3"
-            }`}
-          >
-            {" "}
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <div className="flex items-center gap-3">
-                <button
-                  className="lg:hidden px-3 py-2 rounded bg-white dark:bg-dark border border-light dark:border-dark shadow-sm"
-                  onClick={() => setDrawerOpen(true)}
-                >
-                  Filter
-                </button>
-
-                <div className="hidden sm:flex items-center gap-2 text-sm text-muted dark:text-muted-dark">
-                  <label className="mr-2">Tampilkan</label>
+              {/* Page size selector */}
+              <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-gray-700">
+                  <label className="mr-2">Show:</label>
                   <select
                     value={pageSize}
                     onChange={(e) => setPageSize(Number(e.target.value))}
-                    className="rounded border px-3 py-1 bg-transparent dark:bg-transparent"
+                    className="rounded-md border border-gray-300 px-3 py-1 text-sm focus:border-indigo-500 focus:ring-indigo-500"
                   >
                     <option value={10}>10</option>
                     <option value={20}>20</option>
                     <option value={50}>50</option>
                   </select>
+                  <span>items per page</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <select
-                  value={
-                    sort === "recommended" ? "recommended" : `${sort}_${order}`
-                  }
-                  onChange={(e) => updateSort(e.target.value)}
-                  className="rounded border px-3 py-2 bg-transparent"
-                >
-                  {sortOptions.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-            {/* Grid */}
-            <div
-              aria-live="polite"
-              className="transition-all duration-300 scroll-fade-in"
-            >
+              {error && (
+                <div className="mb-6 rounded-md bg-red-50 p-4">
+                  <p className="text-sm text-red-700">{error}</p>
+                </div>
+              )}
+
               {loading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-5 stagger-fade-in">
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                   {Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className="stagger-item" data-index={i}>
-                      <ProductSkeleton />
-                    </div>
+                    <ProductSkeleton key={i} />
                   ))}
                 </div>
               ) : isBundlingMode ? (
                 bundlings.length === 0 ? (
-                  <p className="text-center py-10 text-muted dark:text-muted-dark">
-                    Tidak ada bundling yang ditemukan.
-                  </p>
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <BundlingCardSkeleton key={`bundling-empty-${i}`} />
+                    ))}
+                  </div>
                 ) : (
                   <>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-5 stagger-fade-in">
-                      {bundlings.map((bundling, index) => (
-                        <div
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                      {bundlings.map((bundling) => (
+                        <Link
                           key={bundling.id}
-                          className="stagger-item"
-                          data-index={index}
+                          to={`/bundling/${bundling.slug}`}
+                          className="group"
                         >
-                          <Link
-                            to={`/bundling/${bundling.slug}`}
-                            className="transform hover:-translate-y-1 transition"
-                          >
-                            <BundlingCard bundling={bundling} />
-                          </Link>
-                        </div>
+                          <BundlingCard bundling={bundling} />
+                        </Link>
                       ))}
                     </div>
 
-                    <div
-                      className="flex justify-center mt-6 scroll-fade-in"
-                      data-delay="300"
-                    >
-                      {hasMore ? (
+                    {hasMore && (
+                      <div className="mt-8 flex justify-center">
                         <button
                           onClick={loadMore}
                           disabled={loadingMore}
-                          className="px-4 py-2 rounded bg-primary text-white hover:opacity-95 transition"
+                          className="rounded-md bg-text-light-primary px-6 py-3 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
-                          {loadingMore ? "Memuat..." : "Load More"}
+                          {loadingMore ? "Loading..." : "Load More"}
                         </button>
-                      ) : (
-                        <span className="text-sm text-muted dark:text-muted-dark">
-                          Sudah menampilkan semua bundling.
-                        </span>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </>
                 )
               ) : products.length === 0 ? (
-                <p className="text-center py-10 text-muted dark:text-muted-dark">
-                  Tidak ada produk yang ditemukan.
-                </p>
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <ProductCardSkeleton key={`product-empty-${i}`} />
+                  ))}
+                </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-5 stagger-fade-in">
-                    {products.map((product, index) => (
-                      <div
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    {products.map((product) => (
+                      <Link
                         key={product.id}
-                        className="stagger-item"
-                        data-index={index}
+                        to={`/product/${product.slug}`}
+                        className="group"
                       >
-                        <Link
-                          to={`/product/${product.slug}`}
-                          className="transform hover:-translate-y-1 transition"
-                        >
-                          <ProductCard product={product} />
-                        </Link>
-                      </div>
+                        <ProductCard product={product} />
+                      </Link>
                     ))}
                   </div>
 
-                  <div
-                    className="flex justify-center mt-6 scroll-fade-in"
-                    data-delay="300"
-                  >
-                    {hasMore ? (
+                  {hasMore && (
+                    <div className="mt-8 flex justify-center">
                       <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="px-4 py-2 rounded bg-primary text-white hover:opacity-95 transition"
+                        className="rounded-md bg-text-light-primary px-6 py-3 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
-                        {loadingMore ? "Memuat..." : "Load More"}
+                        {loadingMore ? "Loading..." : "Load More"}
                       </button>
-                    ) : (
-                      <span className="text-sm text-muted dark:text-muted-dark">
-                        Sudah menampilkan semua produk.
-                      </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
           </div>
         </section>
       </main>
-    </>
+    </div>
   );
 }

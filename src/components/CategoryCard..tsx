@@ -1,11 +1,11 @@
 import { Category } from "../types/type";
+import { STORAGE_BASE_URL } from "../api/constants";
 
 interface CategoryCardProps {
   category: Category;
 }
 
 export default function CategoryCard({ category }: CategoryCardProps) {
-  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
 
   // Responsive card sizes
   const cardVariants = [
@@ -28,7 +28,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
       {cardVariants.map((variant, _idx) => (
         <div className={`card ${variant.visible}`} key={variant.visible}>
           <div
-            className={`relative flex shrink-0 ${variant.width} ${variant.height} rounded-2xl ring-1 ring-light dark:ring-dark overflow-hidden text-center shadow-md hover:shadow-xl transition-all duration-300 group focus-within:ring-2 focus-within:ring-primary cursor-pointer focus-visible:outline-none`}
+            className={`relative flex shrink-0 ${variant.width} ${variant.height} rounded-2xl ring-1 ring-light overflow-hidden text-center shadow-md hover:shadow-xl transition-all duration-300 group focus-within:ring-2 focus-within:ring-primary cursor-pointer focus-visible:outline-none`}
             tabIndex={0}
             aria-label={`Lihat kategori ${category.name}`}
             role="button"
@@ -41,7 +41,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
               </h3>
             </div>
             <img
-              src={`${baseURL}/${category.photo}`}
+              src={category.photo.startsWith('http') ? category.photo : `${STORAGE_BASE_URL}/${category.photo}`}
               className="absolute w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               alt={`Kategori ${category.name}`}
               loading="lazy"

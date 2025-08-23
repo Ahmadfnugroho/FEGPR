@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { STORAGE_BASE_URL } from "../api/constants";
+import axiosInstance from "../api/axiosInstance";
 
 export default function NavCard() {
   const [query, setQuery] = useState("");
@@ -19,13 +20,9 @@ export default function NavCard() {
 
     const fetchSuggestions = async () => {
       try {
-        const res = await axios.get(
-          "https://gpr-b5n3q.sevalla.app/api/search-suggestions",
-          {
-            params: { q: query },
-            headers: { "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf" },
-          }
-        );
+        const res = await axiosInstance.get("/search-suggestions", {
+          params: { q: query },
+        });
         setSuggestions(res.data.suggestions);
       } catch (err) {
         console.error(err);
@@ -65,41 +62,11 @@ export default function NavCard() {
     setQuery("");
     setShowSuggestions(false);
   };
-  // Theme: follow OS, but allow manual override
-  const getInitialTheme = () => {
-    if (
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      return "dark";
-    }
-    return "light";
-  };
-  const [darkMode, setDarkMode] = useState(getInitialTheme());
-  useEffect(() => {
-    if (darkMode === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
-  // Listen to OS theme changes
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = (e: MediaQueryListEvent) => {
-      setDarkMode(e.matches ? "dark" : "light");
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, []);
-  const toggleDarkMode = () => {
-    setDarkMode((prev) => (prev === "dark" ? "light" : "dark"));
-  };
 
   return (
     <header
       className="w-full fixed inset-x-0 top-0 z-40 mx-auto max-w-screen-2xl border border-support-subtle 
-    dark:bg-base-dark-primary/70 bg-base-light-primary/70 px-2 md:px-3 py-2 md:py-3 shadow-lg backdrop-blur-lg md:top-6 md:rounded-3xl transition-all duration-300"
+    bg-base-light-primary/70 px-2 md:px-3 py-2 md:py-3 shadow-lg backdrop-blur-lg md:top-6 md:rounded-3xl transition-all duration-300"
     >
       <div className="px-2 md:px-4">
         <nav
@@ -111,7 +78,13 @@ export default function NavCard() {
               to="/"
               className="flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-primary rounded-lg"
             >
-              <span className="text-lg md:text-2xl font-bold text-support-light-secondary dark:text-support-light-border-subtle">
+              <img
+                src={`${STORAGE_BASE_URL}/LOGO-GPR.png`}
+                alt="Global Photo Rental Logo"
+                className="h-12 w-auto"
+              />
+
+              <span className="text-lg md:text-2xl font-bold text-support-light-primary">
                 Global
               </span>
               <span className="text-lg md:text-2xl font-bold text-support-primary hidden sm:block">
@@ -124,19 +97,19 @@ export default function NavCard() {
           </div>
           <div className="hidden md:flex md:items-center md:justify-center md:gap-5">
             <Link
-              className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-secondary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
+              className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-primary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
               to="/browse-product"
             >
               Kategori
             </Link>
             <Link
-              className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-secondary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
+              className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-primary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
               to="/cara-sewa"
             >
               Cara Sewa
             </Link>
             <a
-              className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-secondary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
+              className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-primary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
               href="http://bit.ly/formglobalphotorental"
               target="_blank"
               rel="noopener noreferrer"
@@ -161,7 +134,7 @@ export default function NavCard() {
                   else setShowSuggestions(false);
                 }}
                 onFocus={() => query.length > 0 && setShowSuggestions(true)}
-                className="w-full border border-support-subtle h-10 md:h-12 shadow-sm px-3 md:px-4 py-2 rounded-full text-support-primary placeholder:text-support-tertiary focus:outline-none focus:ring-2 focus:ring-pop-primary/40 focus:border-pop-primary text-sm md:text-base transition-all duration-300 focus:shadow-md bg-background-light-card dark:bg-support-light-secondary"
+                className="w-full border border-support-subtle h-10 md:h-12 shadow-sm px-3 md:px-4 py-2 rounded-full text-support-primary placeholder:text-support-tertiary focus:outline-none focus:ring-2 focus:ring-pop-primary/40 focus:border-pop-primary text-sm md:text-base transition-all duration-300 focus:shadow-md bg-background-light-card"
                 placeholder="Cari..."
                 aria-label="Cari Produk atau Kategori"
               />
@@ -194,7 +167,7 @@ export default function NavCard() {
                   >
                     {item.thumbnail && (
                       <img
-                        src={`https://gpr-b5n3q.sevalla.app/storage/${item.thumbnail}`}
+                        src={`${STORAGE_BASE_URL}/${item.thumbnail}`}
                         alt=""
                         className="w-6 h-6 md:w-8 md:h-8 object-cover rounded flex-shrink-0"
                       />
@@ -208,48 +181,7 @@ export default function NavCard() {
             )}
           </form>
           <div className="flex items-center flex-shrink-0">
-            <button
-              id="theme-toggle"
-              type="button"
-              className="ml-1 md:ml-2 p-1.5 md:p-2 rounded-full bg-base-light-primary dark:bg-base-dark-primary border border-support-subtle text-support-secondary hover:bg-base-dark-tertiary dark:hover:bg-base-light-tertiary hover:text-pop-primary hover:border-pop-primary transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-pop-primary"
-              onClick={toggleDarkMode}
-              aria-label="Toggle dark mode"
-            >
-              {/* Dark Mode Icon */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="black"
-                className={`${
-                  darkMode === "dark" ? "hidden" : ""
-                } w-5 h-5 md:w-6 md:h-6`}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
-                />
-              </svg>
-              {/* Light Mode Icon */}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className={`${
-                  darkMode === "dark" ? "" : "hidden"
-                } w-5 h-5 md:w-6 md:h-6`}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-                />
-              </svg>
-            </button>
+            {/* Dark mode toggle button removed */}
           </div>
         </nav>
       </div>

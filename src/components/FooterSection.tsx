@@ -7,10 +7,10 @@ export default function FooterSection() {
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 md:gap-8">
           {/* Brand Info */}
           <div className="flex-1 min-w-[250px]">
-            <h6 className="uppercase font-bold text-base-dark-primary dark:text-base-light-primary md:text-lg tracking-wide">
+            <h6 className="uppercase font-bold text-white md:text-lg tracking-wide">
               GLOBAL.PHOTORENTAL
             </h6>
-            <div className="w-12 md:w-16 h-1 bg-primary my-2 md:my-3 rounded" />
+            <div className="w-12 md:w-16 h-1 bg-white my-2 md:my-3 rounded" />
             <p className="text-xs md:text-sm leading-relaxed">
               Global Photo Rental adalah layanan jasa rental alat fotografi dan
               videografi berlokasi di Jakarta Pusat. Established since 2019.
@@ -20,12 +20,12 @@ export default function FooterSection() {
           </div>
           {/* Social Media & Contact */}
           <div className="flex-1 min-w-[250px]">
-            <h6 className="uppercase font-bold text-base-dark-primary dark:text-base-light-primary md:text-lg tracking-wide mb-2 md:mb-3">
+            <h6 className="uppercase font-bold text-white md:text-lg tracking-wide mb-2 md:mb-3">
               Sosial Media
             </h6>
             <div className="flex items-center gap-3 md:gap-4 mb-3 md:mb-4">
               <a
-                href="https://wa.me/message/RKVS5KQ7NXZFJ1"
+                href="https://wa.me/6281212349564?text=Halo,%20saya%20mau%20sewa%20kamera"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="WhatsApp"
@@ -49,12 +49,13 @@ export default function FooterSection() {
               >
                 {/* Instagram Icon */}
                 <svg
-                  className="w-6 h-6 md:w-8 md:h-8"
-                  fill="currentColor"
-                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-6 h-6 md:w-10 md:h-10"
+                  viewBox="0 0 50 50"
+                  fill="white"
                 >
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.334 3.608 1.308.974.974 1.246 2.242 1.308 3.608.058 1.266.069 1.646.069 4.85s-.011 3.584-.069 4.85c-.062 1.366-.334 2.633-1.308 3.608-.974.974-2.242 1.246-3.608 1.308-1.266.058-1.646.069-4.85.069s-3.584-.011-4.85-.069c-1.366-.062-2.633-.334-3.608-1.308-.974-.974-1.246-2.242-1.308-3.608C2.175 15.647 2.163 15.267 2.163 12s.012-3.584.07-4.85c.062-1.366.334-2.633 1.308-3.608C4.515 2.567 5.783 2.295 7.149 2.233 8.415 2.175 8.795 2.163 12 2.163zm0-2.163C8.741 0 8.332.012 7.052.07 5.771.128 4.659.36 3.678 1.342 2.697 2.323 2.465 3.435 2.407 4.716 2.349 5.996 2.337 6.405 2.337 12c0 5.595.012 6.004.07 7.284.058 1.281.29 2.393 1.271 3.374.981.981 2.093 1.213 3.374 1.271 1.28.058 1.689.07 7.284.07s6.004-.012 7.284-.07c1.281-.058 2.393-.29 3.374-1.271.981-.981 1.213-2.093 1.271-3.374.058-1.28.07-1.689.07-7.284s-.012-6.004-.07-7.284c-.058-1.281-.29-2.393-1.271-3.374C19.393.36 18.281.128 17 .07 15.72.012 15.311 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zm0 10.162a3.999 3.999 0 1 1 0-7.998 3.999 3.999 0 0 1 0 7.998zm6.406-11.845a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z" />
-                </svg>
+                  <path d="M 16 3 C 8.8324839 3 3 8.8324839 3 16 L 3 34 C 3 41.167516 8.8324839 47 16 47 L 34 47 C 41.167516 47 47 41.167516 47 34 L 47 16 C 47 8.8324839 41.167516 3 34 3 L 16 3 z M 16 5 L 34 5 C 40.086484 5 45 9.9135161 45 16 L 45 34 C 45 40.086484 40.086484 45 34 45 L 16 45 C 9.9135161 45 5 40.086484 5 34 L 5 16 C 5 9.9135161 9.9135161 5 16 5 z M 37 11 A 2 2 0 0 0 35 13 A 2 2 0 0 0 37 15 A 2 2 0 0 0 39 13 A 2 2 0 0 0 37 11 z M 25 14 C 18.936712 14 14 18.936712 14 25 C 14 31.063288 18.936712 36 25 36 C 31.063288 36 36 31.063288 36 25 C 36 18.936712 31.063288 14 25 14 z M 25 16 C 29.982407 16 34 20.017593 34 25 C 34 29.982407 29.982407 34 25 34 C 20.017593 34 16 29.982407 16 25 C 16 20.017593 20.017593 16 25 16 z"></path>
+                </svg>{" "}
               </a>
               <a
                 href="#"
@@ -73,12 +74,12 @@ export default function FooterSection() {
                 </svg>
               </a>
             </div>
-            <h6 className="uppercase font-bold mt-3 md:mt-4 mb-2 text-base-dark-primary dark:text-base-light-primary md:text-lg tracking-wide">
+            <h6 className="uppercase font-bold mt-3 md:mt-4 mb-2 text-white md:text-lg tracking-wide">
               Contact
             </h6>
             <div className="space-y-1 md:space-y-2">
               <a
-                href="https://wa.me/message/RKVS5KQ7NXZFJ1"
+                href="https://wa.me/6281212349564?text=Halo,%20saya%20mau%20sewa%20kamera"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-primary transition-colors flex items-center gap-2 text-xs md:text-sm"

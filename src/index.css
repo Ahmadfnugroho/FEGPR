@@ -22,10 +22,6 @@
     transition: background-color 0.3s, color 0.3s;
     scroll-behavior: smooth;
   }
-  html.dark {
-    background-color: theme("colors.base-dark.primary"); /* #0a173b - navy-blue-950 */
-    color: theme("colors.support-dark.primary"); /* #eaf0f7 - navy-blue-50 */
-  }
   body {
     min-height: 100vh;
     background: inherit;
@@ -46,29 +42,17 @@
   h1, h2, h3, h4, h5, h6 {
     color: theme("colors.support-light.primary"); /* #0a173b */
   }
-  html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark h6 {
-    color: theme("colors.support-dark.primary"); /* #eaf0f7 */
-  }
 
   /* Ensure proper text contrast */
   .text-primary {
     color: theme("colors.support-light.primary") !important; /* #0a173b */
   }
-  html.dark .text-primary {
-    color: theme("colors.support-dark.primary") !important; /* #eaf0f7 */
-  }
 
   .text-secondary {
     color: theme("colors.support-light.secondary") !important; /* #0f1c52 */
   }
-  html.dark .text-secondary {
-    color: theme("colors.support-dark.secondary") !important; /* #f3f4f6 */
-  }
 
   .text-muted {
     color: theme("colors.support-light.tertiary") !important; /* #4c5971 - improved contrast */
-  }
-  html.dark .text-muted {
-    color: theme("colors.support-dark.tertiary") !important; /* #a0a8b8 - improved contrast */
   }
 }

@@ -1,12 +1,14 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import FullScreenLoader from "./components/FullScreenLoader";
+import FloatingWhatsAppButton from "./components/FloatingWhatsAppButton";
 
 const Browse = lazy(() => import("./pages/browse"));
 const BrowseProduct = lazy(() => import("./pages/BrowseProduct"));
 const CategoryDetails = lazy(() => import("./pages/CategoryDetails"));
 const Details = lazy(() => import("./pages/Details"));
 const BundlingDetails = lazy(() => import("./pages/BundlingDetails"));
+const BundlingList = lazy(() => import("./pages/BundlingList"));
 const BookProduct = lazy(() => import("./pages/BookProduct"));
 const SubCategoryDetails = lazy(() => import("./pages/SubCategoryDetails"));
 const BrandDetails = lazy(() => import("./pages/BrandDetails"));
@@ -22,8 +24,10 @@ function App() {
           <Routes>
             <Route path="/" element={<Browse />} />
             <Route path="/browse-product" element={<BrowseProduct />} />
+            <Route path="/products" element={<BrowseProduct />} />
             <Route path="/product/:slug" element={<Details />} />
             <Route path="/bundling/:slug" element={<BundlingDetails />} />
+            <Route path="/bundlings" element={<BundlingList />} />
             <Route path="/product/:slug/book" element={<BookProduct />} />
             <Route path="/category/:slug" element={<CategoryDetails />} />
             <Route
@@ -36,6 +40,7 @@ function App() {
             <Route path="/cara-sewa" element={<CaraSewa />} />
           </Routes>
         </Suspense>
+        <FloatingWhatsAppButton />
       </BrowserRouter>
     </>
   );

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Product } from "../types/type";
-import axios from "axios";
 import { z } from "zod";
 import { bookingSchema } from "../types/ValidationBooking";
-import FullScreenLoader from "../components/FullScreenLoader";
+import { STORAGE_BASE_URL } from "../api/constants";
+import axiosInstance from "../api/axiosInstance";
+import FormSkeleton from "../components/FormSkeleton";
 
 export default function BookProduct() {
   const { slug } = useParams<{ slug: string }>();
@@ -41,12 +42,8 @@ export default function BookProduct() {
   const [uniqueCode, setUniqueCode] = useState<number>(0);
   const [totalamount, setTotalAmount] = useState<number>(0);
   useEffect(() => {
-    axios
-      .get(`https://gpr-b5n3q.sevalla.app/api/product/${slug}`, {
-        headers: {
-          "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
-        },
-      })
+    axiosInstance
+      .get(`/product/${slug}`)
       .then((response) => {
         console.log("Product data fetched successfully:", response.data.data);
         setProduct(response.data.data);
@@ -66,24 +63,18 @@ export default function BookProduct() {
         setLoading(false);
       })
       .catch((error: unknown) => {
-        if (axios.isAxiosError(error)) {
-          console.error("Error fetching product data:", error.message);
-          setError(error.message);
-        } else {
-          console.error("Unknown error:", error);
-          setError("An error occurred while fetching product data.");
-        }
+        console.error("Error fetching product data:", error);
+        setError("An error occurred while fetching product data.");
         setLoading(false);
       });
   }, [slug]);
   if (loading) {
-    return <FullScreenLoader />;
+    return <FormSkeleton />;
   }
 
   if (error) {
     return <p>Error: {error}</p>;
   }
-  const baseURL = "https://gpr-b5n3q.sevalla.app/storage";
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -105,17 +96,9 @@ export default function BookProduct() {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        `https://gpr-b5n3q.sevalla.app/api/transaction`,
-        {
-          ...formData,
-        },
-        {
-          headers: {
-            "X-API-KEY": "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf",
-          },
-        }
-      );
+      const response = await axiosInstance.post(`/transaction`, {
+        ...formData,
+      });
       console.log("Booking created successfully:", response.data);
       navigate("/SuccessBooking", {
         state: {
@@ -124,13 +107,8 @@ export default function BookProduct() {
         },
       });
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        console.error("Error creating booking:", error.message);
-        setError(error.message);
-      } else {
-        console.error("Unknown error:", error);
-        setError("An error occurred while creating the booking.");
-      }
+      console.error("Error creating booking:", error);
+      setError("An error occurred while creating the booking.");
     } finally {
       setLoading(false);
     }
@@ -161,7 +139,7 @@ export default function BookProduct() {
           <div className="flex items-center gap-4">
             <div className="flex shrink-0 w-[140px] h-[100px] rounded-[20px] overflow-hidden">
               <img
-                src={`${baseURL}/${product?.thumbnail}`}
+                src={`${STORAGE_BASE_URL}/${product?.thumbnail}`}
                 className="w-full h-full object-cover"
                 alt="thumbnail"
               />

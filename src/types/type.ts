@@ -29,6 +29,7 @@ export interface Product {
   status: "available" | "unavailable";
   description: string;
   slug: string;
+  premiere: number | boolean;
   productPhotos: ProductPhoto[];
   productSpecifications: productSpecification[];
   category: Category;

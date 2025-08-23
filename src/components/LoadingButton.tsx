@@ -42,7 +42,7 @@ const LoadingButton: React.FC<LoadingButtonProps> = ({
     secondary: 'bg-navy-blue-500 text-navy-blue-50 hover:bg-navy-blue-600 focus:ring-navy-blue-500/50',
     accent: 'bg-navy-blue-800 text-navy-blue-50 hover:bg-navy-blue-950 focus:ring-navy-blue-800/50',
     outline: 'bg-transparent border border-navy-blue-800 text-navy-blue-800 hover:bg-navy-blue-800/10 focus:ring-navy-blue-800/30',
-    ghost: 'bg-transparent hover:bg-navy-blue-50 text-navy-blue-950 hover:text-navy-blue-800 focus:ring-navy-blue-800/20 dark:text-navy-blue-50 dark:hover:bg-navy-blue-900/60 dark:hover:text-navy-blue-50'
+    ghost: 'bg-transparent hover:bg-navy-blue-50 text-navy-blue-950 hover:text-navy-blue-800 focus:ring-navy-blue-800/20'
   };
   
   // Width and rounded classes
