@@ -568,20 +568,6 @@ export default function Details() {
 
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
-              <button
-                type="button"
-                onClick={() => setIsFavorite(!isFavorite)}
-                className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-all duration-200 ${
-                  isFavorite
-                    ? "border-red-300 bg-red-50 text-red-700"
-                    : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-                }`}
-              >
-                <MdFavorite
-                  className={`w-5 h-5 ${isFavorite ? "text-red-500" : ""}`}
-                />
-              </button>
-
               <a
                 href={whatsappLink}
                 target="_blank"
