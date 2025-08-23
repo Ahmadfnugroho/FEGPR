@@ -2,7 +2,7 @@ import React from "react";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg";
-  color?: "primary" | "secondary" | "accent" | "light";
+  color?: "primary" | "secondary" | "accent" | "light" | "dark";
   type?: "spinner" | "dots" | "pulse";
 }
 
@@ -24,6 +24,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     secondary: "text-secondary",
     accent: "text-accent",
     light: "text-light",
+    dark: "text-dark",
   };
 
   // Render spinner type
