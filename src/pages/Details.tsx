@@ -3,16 +3,16 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Thumbs } from "swiper/modules";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { 
-  MdOutlineCamera, 
-  MdArrowBack, 
-  MdError, 
+import {
+  MdOutlineCamera,
+  MdArrowBack,
+  MdError,
   MdStar,
   MdLocationOn,
   MdFavorite,
   MdShoppingCart,
   MdAdd,
-  MdRemove
+  MdRemove,
 } from "react-icons/md";
 import { STORAGE_BASE_URL } from "../api/constants";
 import axiosInstance from "../api/axiosInstance";
@@ -451,7 +451,9 @@ export default function Details() {
   const whatsappLink = useMemo(() => {
     if (!product) return "";
     const message = `Halo, saya tertarik untuk menyewa ${product.name} sebanyak ${quantity} unit. Bisa beri info lebih lanjut?`;
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
+      message
+    )}`;
   }, [product?.name, quantity]);
 
   const isAvailable = product?.status === "available";
@@ -503,53 +505,53 @@ export default function Details() {
       <NavCard />
       <div className="bg-gray-50 md:bg-white min-h-screen">
         <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-32 md:pb-8 pt-20 md:pt-28 has-[#Bottom-nav]:pb-40">
-        {/* Breadcrumb - Hidden on mobile */}
-        <nav className="mb-8 hidden md:block" aria-label="Breadcrumb">
-          <ol className="flex items-center space-x-2 text-sm text-muted">
-            <li>
-              <Link to="/" className="hover:text-accent transition-colors">
-                Beranda
-              </Link>
-            </li>
-            <li className="mx-2">/</li>
-            {product.category ? (
+          {/* Breadcrumb - Hidden on mobile */}
+          <nav className="mb-8 hidden md:block" aria-label="Breadcrumb">
+            <ol className="flex items-center space-x-2 text-sm text-muted">
               <li>
-                <Link
-                  to={`/category/${product.category.slug || ""}`}
-                  className="text-accent font-semibold hover:underline"
-                >
-                  {product.category.name}
+                <Link to="/" className="hover:text-accent transition-colors">
+                  Beranda
                 </Link>
               </li>
-            ) : (
-              <li>
-                <span className="text-gray-500">Tanpa Kategori</span>
+              <li className="mx-2">/</li>
+              {product.category ? (
+                <li>
+                  <Link
+                    to={`/category/${product.category.slug || ""}`}
+                    className="text-accent font-semibold hover:underline"
+                  >
+                    {product.category.name}
+                  </Link>
+                </li>
+              ) : (
+                <li>
+                  <span className="text-gray-500">Tanpa Kategori</span>
+                </li>
+              )}
+              <li className="text-dark font-medium" aria-current="page">
+                {product.name}
               </li>
-            )}
-            <li className="text-dark font-medium" aria-current="page">
-              {product.name}
-            </li>
-          </ol>
-        </nav>
+            </ol>
+          </nav>
 
-        {/* Grid Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-6 md:gap-y-10 items-start">
-          <ProductImageGallery
-            productName={product.name}
-            photos={product.productPhotos || []}
-          />
-          <ProductInfo product={product} />
-          <ProductSpecifications
-            specifications={product.productSpecifications || []}
-          />
-          <RentalIncludes
-            productName={product.name}
-            includes={product.rentalIncludes || []}
-          />
-        </div>
-      </main>
+          {/* Grid Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-6 md:gap-y-10 items-start">
+            <ProductImageGallery
+              productName={product.name}
+              photos={product.productPhotos || []}
+            />
+            <ProductInfo product={product} />
+            <ProductSpecifications
+              specifications={product.productSpecifications || []}
+            />
+            <RentalIncludes
+              productName={product.name}
+              includes={product.rentalIncludes || []}
+            />
+          </div>
+        </main>
       </div>
-      
+
       {/* Mobile Bottom Action Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 md:hidden">
         <div className="max-w-[640px] mx-auto px-4 py-3">
@@ -558,32 +560,12 @@ export default function Details() {
             <div className="flex-1">
               <div className="text-lg font-bold text-gray-900">
                 {formattedPrice}
-                <span className="text-sm font-normal text-gray-600 ml-1">/hari</span>
-              </div>
-              <div className="flex items-center space-x-2 mt-1">
-                <span className="text-sm text-gray-600">Jumlah:</span>
-                <div className="flex items-center space-x-1">
-                  <button
-                    type="button"
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
-                    className="flex items-center justify-center w-6 h-6 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <MdRemove className="w-3 h-3" />
-                  </button>
-                  <span className="w-8 text-center text-sm font-medium">{quantity}</span>
-                  <button
-                    type="button"
-                    onClick={() => handleQuantityChange(1)}
-                    disabled={quantity >= 10}
-                    className="flex items-center justify-center w-6 h-6 border border-gray-300 rounded text-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <MdAdd className="w-3 h-3" />
-                  </button>
-                </div>
+                <span className="text-sm font-normal text-gray-600 ml-1">
+                  /hari
+                </span>
               </div>
             </div>
-            
+
             {/* Action Buttons */}
             <div className="flex items-center space-x-2">
               <button
@@ -595,7 +577,9 @@ export default function Details() {
                     : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
                 }`}
               >
-                <MdFavorite className={`w-5 h-5 ${isFavorite ? 'text-red-500' : ''}`} />
+                <MdFavorite
+                  className={`w-5 h-5 ${isFavorite ? "text-red-500" : ""}`}
+                />
               </button>
 
               <a
@@ -616,7 +600,7 @@ export default function Details() {
           </div>
         </div>
       </div>
-      
+
       <FooterSection />
       <BottomNavigation />
     </>
