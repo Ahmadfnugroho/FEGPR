@@ -97,7 +97,7 @@ export default function BrowseProductWrapper() {
         {/* Link di kanan */}
         <Link
           to="/browse-product"
-          className="absolute right-0 top-1/2 -translate-y-1/2 font-bold text-support-light-primary whitespace-nowrap scroll-fade-in"
+          className="absolute right-0 top-1 -translate-y-1/2 font-bold text-support-light-primary whitespace-nowrap scroll-fade-in"
         >
           Explore All
         </Link>
