@@ -61,7 +61,7 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="card">
       <div
-        className="flex flex-col rounded-xl md:rounded-2xl border border-support-subtle bg-base-secondary shadow-md hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group focus-within:ring-2 focus-within:ring-pop-primary cursor-pointer h-full"
+        className="flex flex-col rounded-xl md:rounded-2xl border border-support-subtle bg-base-secondary shadow-md hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group focus-within:ring-2 focus-within:ring-pop-primary cursor-pointer h-[250px]"
         tabIndex={0}
         aria-label={`Lihat detail produk ${product.name}`}
       >
@@ -114,14 +114,14 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
         {/* Detail Produk */}
         <div className="p-2 md:p-3 lg:p-4 flex-grow flex flex-col transition-all duration-300 group-hover:transform group-hover:translate-y-[-2px]">
           {/* Title */}
-          <h3 className="font-bold text-sm md:text-base lg:text-lg text-support-primary mb-1 md:mb-2 line-clamp-2 flex-shrink-0 transition-all duration-300 group-hover:text-navy-blue-800 text-center">
+          <h3 className="text-xs md:text-base lg:text-lg text-support-primary mb-1 md:mb-2 line-clamp-2 flex-shrink-0 transition-all duration-300 group-hover:text-navy-blue-800 text-center">
             {product.name}
           </h3>
 
           {/* Price */}
           <div className="flex items-center justify-center mb-2 md:mb-3 flex-shrink-0">
             <div className="text-center">
-              <p className="font-bold text-sm md:text-base lg:text-lg text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
+              <p className=" text-xs md:text-base lg:text-lg text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
                 Rp{product.price.toLocaleString("id-ID")}
               </p>
               <p className="text-[10px] md:text-xs text-support-tertiary">
