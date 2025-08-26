@@ -77,7 +77,7 @@ export default function FilterCheckboxGroup({
         </DisclosureButton>
       </h3>
       <DisclosurePanel className="pt-6">
-        <div className="space-y-4 max-h-48 overflow-y-auto">
+        <div className="space-y-4">
           {/* Select All option */}
           {showSelectAll && options.length > 0 && (
             <div className="flex items-center border-b border-gray-100 pb-3 mb-3">
