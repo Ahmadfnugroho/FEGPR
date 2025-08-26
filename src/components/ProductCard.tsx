@@ -61,7 +61,7 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="card">
       <div
-        className="flex flex-col rounded-xl md:rounded-2xl border border-support-subtle bg-base-secondary shadow-md hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group focus-within:ring-2 focus-within:ring-pop-primary cursor-pointer h-[250px]"
+        className="flex flex-col rounded-xl md:rounded-2xl border border-support-subtle bg-base-secondary shadow-md hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group focus-within:ring-2 focus-within:ring-pop-primary cursor-pointer h-[250px] md:h-auto"
         tabIndex={0}
         aria-label={`Lihat detail produk ${product.name}`}
       >
