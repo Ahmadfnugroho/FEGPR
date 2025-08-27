@@ -20,6 +20,7 @@ import type {
   Bundling,
 } from "../types/type";
 import axiosInstance from "../api/axiosInstance";
+import { ensureArray, safeMap, safeForEach, safeIncludes } from "../utils/arraySafety";
 
 // Menggunakan konstanta dari axiosInstance.ts
 
@@ -75,8 +76,8 @@ export default function BrowseProduct() {
     max: number;
   } | null>(null);
 
-  // Check if "bundling" category is selected
-  const isBundlingMode = (filter.category || []).includes("bundling");
+  // Check if "bundling" category is selected using safe includes
+  const isBundlingMode = safeIncludes(filter.category, "bundling");
   const [sort, setSort] = useState(params.get("sort") || "name");
   const [order, setOrder] = useState<"asc" | "desc">(
     (params.get("order") as "asc" | "desc") || "asc"
@@ -95,13 +96,13 @@ export default function BrowseProduct() {
   // Refs
   const cancelTokenRef = useRef<any>(null);
 
-  // Options for react-select with null checks
-  const categoryOptions = (categories && Array.isArray(categories) ? categories : []).map((c) => ({
+  // Options for react-select using array safety utilities
+  const categoryOptions = safeMap<Category, {label: string, value: string}>(categories, (c) => ({
     label: c.name,
     value: c.slug,
   }));
-  const brandOptions = (brands && Array.isArray(brands) ? brands : []).map((b) => ({ label: b.name, value: b.slug }));
-  const subCategoryOptions = (subCategories && Array.isArray(subCategories) ? subCategories : []).map((s) => ({
+  const brandOptions = safeMap<Brand, {label: string, value: string}>(brands, (b) => ({ label: b.name, value: b.slug }));
+  const subCategoryOptions = safeMap<SubCategory, {label: string, value: string}>(subCategories, (s) => ({
     label: s.name,
     value: s.slug,
   }));
@@ -128,7 +129,7 @@ export default function BrowseProduct() {
     }),
   };
 
-  // Build params helper
+  // Build params helper using array safety utilities
   const buildParams = useCallback(
     (p: number = 1, customFilter?: typeof filter, customPriceRange?: typeof priceRange) => {
       const currentFilter = customFilter || filter;
@@ -136,11 +137,11 @@ export default function BrowseProduct() {
       
       const ps = new URLSearchParams();
       if (currentFilter.q) ps.set("q", currentFilter.q);
-      // Add null checks for array operations
-      (currentFilter.category || []).forEach((c) => ps.append("category", c));
-      (currentFilter.brand || []).forEach((b) => ps.append("brand", b));
-      (currentFilter.subcategory || []).forEach((s) => ps.append("subcategory", s));
-      (currentFilter.available || []).forEach((a) => ps.append("available", a));
+      // Use safe array operations
+      safeForEach(currentFilter.category, (c: string) => ps.append("category", c));
+      safeForEach(currentFilter.brand, (b: string) => ps.append("brand", b));
+      safeForEach(currentFilter.subcategory, (s: string) => ps.append("subcategory", s));
+      safeForEach(currentFilter.available, (a: string) => ps.append("available", a));
 
       // Only add if priceRange is set and values are valid
       if (
