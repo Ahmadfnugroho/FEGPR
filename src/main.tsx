@@ -9,10 +9,26 @@ import { initAllAnimations } from "./assets/animationUtils.js";
 
 const queryClient = new QueryClient();
 
-// Initialize animations after DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-  initAllAnimations();
-});
+// Initialize animations with better timing
+const initAnimationsWhenReady = () => {
+  // Check if DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => initAllAnimations(), 150);
+    });
+  } else {
+    // DOM is already loaded
+    setTimeout(() => initAllAnimations(), 150);
+  }
+
+  // Additional check after React has likely rendered
+  setTimeout(() => {
+    initAllAnimations();
+  }, 500);
+};
+
+// Initialize animations
+initAnimationsWhenReady();
 
 // Fallback to ensure content is visible even if animations fail
 setTimeout(() => {
@@ -24,7 +40,7 @@ setTimeout(() => {
         console.log("Fallback visibility applied to:", el);
       }
     });
-}, 2000); // Wait 2 seconds before applying fallback
+}, 3000); // Wait 3 seconds before applying fallback
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

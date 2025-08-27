@@ -42,24 +42,34 @@ export function initScrollAnimations() {
  * @param {NodeList} elements - Elements to check
  */
 function checkElementsInViewport(elements) {
-  elements.forEach(element => {
-    if (isElementInViewport(element) && !element.classList.contains('visible')) {
-      console.log('Element in viewport:', element);
-      // Check if element has a delay attribute
-      const delay = element.dataset.delay || 0;
+  if (!elements || elements.length === 0) return;
+  
+  try {
+    elements.forEach(element => {
+      if (!element || !element.classList) return;
       
-      // Add visible class with delay if specified
-      if (delay > 0) {
-        setTimeout(() => {
+      if (isElementInViewport(element) && !element.classList.contains('visible')) {
+        console.log('Element in viewport:', element);
+        // Check if element has a delay attribute
+        const delay = element.dataset.delay || 0;
+        
+        // Add visible class with delay if specified
+        if (delay > 0) {
+          setTimeout(() => {
+            if (element && element.classList) {
+              element.classList.add('visible');
+              console.log('Added visible class with delay:', element);
+            }
+          }, parseInt(delay));
+        } else {
           element.classList.add('visible');
-          console.log('Added visible class with delay:', element);
-        }, parseInt(delay));
-      } else {
-        element.classList.add('visible');
-        console.log('Added visible class immediately:', element);
+          console.log('Added visible class immediately:', element);
+        }
       }
-    }
-  });
+    });
+  } catch (error) {
+    console.warn('Error in checkElementsInViewport:', error);
+  }
 }
 
 /**

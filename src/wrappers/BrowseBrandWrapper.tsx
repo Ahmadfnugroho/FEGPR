@@ -17,7 +17,13 @@ export default function BrowseBrandWrapper() {
         signal: controller.signal,
       })
       .then((response) => {
-        setBrands(response.data.data);
+        // Add null/undefined checks for response data
+        if (response.data && Array.isArray(response.data.data)) {
+          setBrands(response.data.data);
+        } else {
+          console.warn('Invalid brands data received:', response.data);
+          setBrands([]);
+        }
         setLoading(false);
       })
       .catch((error) => {
@@ -63,11 +69,15 @@ export default function BrowseBrandWrapper() {
         className="flex flex-nowrap justify-center items-center gap-2 md:gap-16 stagger-fade-in overflow-x-auto"
         data-staggerdelay="100"
       >
-        {brands.map((brand, index) => (
+        {brands && Array.isArray(brands) && brands.length > 0 ? brands.map((brand, index) => (
           <div key={brand.id} className="stagger-item" data-index={index}>
             <BrandCard brand={brand} />
           </div>
-        ))}
+        )) : (
+          <div className="text-center text-gray-500 py-4">
+            Tidak ada brand yang tersedia
+          </div>
+        )}
       </div>
     </div>
   );

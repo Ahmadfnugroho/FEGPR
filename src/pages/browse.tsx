@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import BrowseBrandWrapper from "../wrappers/BrowseBrandWrapper";
 import BrowseCategoryWrapper from "../wrappers/BrowseCategoryWrapper";
 import BrowseProductWrapper from "../wrappers/BrowseProductWrapper";
+import ErrorBoundary from "../components/ErrorBoundary";
 import NavCard from "../components/navCard";
 import FooterSection from "../components/FooterSection";
 import WelcomeSection from "../components/WelcomeSection";
@@ -45,7 +46,9 @@ export default function Browse() {
                 Lihat Semua →
               </Link>
             </div>
-            <BrowseCategoryWrapper />
+            <ErrorBoundary>
+              <BrowseCategoryWrapper />
+            </ErrorBoundary>
           </section>
           <section
             id="ProductSection"
@@ -61,7 +64,9 @@ export default function Browse() {
               </p>
             </div>
             <div className="md:scroll-fade-in" data-delay="400">
-              <BrowseProductWrapper />
+              <ErrorBoundary>
+                <BrowseProductWrapper />
+              </ErrorBoundary>
             </div>
           </section>
 
@@ -76,7 +81,9 @@ export default function Browse() {
                 🏢 Brand Kami
               </h2>
             </div>
-            <BrowseBrandWrapper />
+            <ErrorBoundary>
+              <BrowseBrandWrapper />
+            </ErrorBoundary>
           </section>
 
           {/* Benefits Section - Web Only */}
@@ -84,7 +91,9 @@ export default function Browse() {
 
           {/* Product Section - Responsive */}
           <section className="hidden md:block">
-            <BrowseBrandWrapper />
+            <ErrorBoundary>
+              <BrowseBrandWrapper />
+            </ErrorBoundary>
           </section>
         </main>
 

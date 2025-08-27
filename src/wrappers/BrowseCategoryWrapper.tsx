@@ -19,7 +19,13 @@ export default function BrowseCategoryWrapper() {
         signal: controller.signal,
       })
       .then((response) => {
-        setCategories(response.data.data);
+        // Add null/undefined checks for response data
+        if (response.data && Array.isArray(response.data.data)) {
+          setCategories(response.data.data);
+        } else {
+          console.warn('Invalid categories data received:', response.data);
+          setCategories([]);
+        }
         setLoading(false);
       })
       .catch((error) => {
@@ -115,8 +121,9 @@ export default function BrowseCategoryWrapper() {
     products: []
   };
 
-  // Combine bundling category with regular categories
-  const allCategories = [bundlingCategory, ...categories];
+  // Combine bundling category with regular categories - ensure categories is an array
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const allCategories = [bundlingCategory, ...safeCategories];
 
   return (
     <>

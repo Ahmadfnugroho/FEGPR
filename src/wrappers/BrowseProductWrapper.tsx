@@ -21,7 +21,13 @@ export default function BrowseProductWrapper() {
         signal: controller.signal,
       })
       .then((response) => {
-        setProducts(response.data.data);
+        // Add null/undefined checks for response data
+        if (response.data && Array.isArray(response.data.data)) {
+          setProducts(response.data.data);
+        } else {
+          console.warn('Invalid products data received:', response.data);
+          setProducts([]);
+        }
         setLoading(false);
       })
       .catch((err) => {
@@ -107,7 +113,7 @@ export default function BrowseProductWrapper() {
         className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-[20px] stagger-fade-in"
         data-delay="400"
       >
-        {products.map((product, index) => (
+        {products && Array.isArray(products) && products.length > 0 ? products.map((product, index) => (
           <Link
             key={product.id}
             to={`/product/${product.slug}`}
@@ -116,7 +122,11 @@ export default function BrowseProductWrapper() {
           >
             <ProductCard product={product} />
           </Link>
-        ))}
+        )) : (
+          <div className="col-span-full text-center text-gray-500 py-8">
+            Tidak ada produk unggulan yang tersedia
+          </div>
+        )}
       </div>
     </section>
   );
