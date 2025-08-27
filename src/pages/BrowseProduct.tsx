@@ -76,7 +76,7 @@ export default function BrowseProduct() {
   } | null>(null);
 
   // Check if "bundling" category is selected
-  const isBundlingMode = filter.category.includes("bundling");
+  const isBundlingMode = (filter.category || []).includes("bundling");
   const [sort, setSort] = useState(params.get("sort") || "name");
   const [order, setOrder] = useState<"asc" | "desc">(
     (params.get("order") as "asc" | "desc") || "asc"
@@ -95,13 +95,13 @@ export default function BrowseProduct() {
   // Refs
   const cancelTokenRef = useRef<any>(null);
 
-  // Options for react-select
-  const categoryOptions = categories.map((c) => ({
+  // Options for react-select with null checks
+  const categoryOptions = (categories && Array.isArray(categories) ? categories : []).map((c) => ({
     label: c.name,
     value: c.slug,
   }));
-  const brandOptions = brands.map((b) => ({ label: b.name, value: b.slug }));
-  const subCategoryOptions = subCategories.map((s) => ({
+  const brandOptions = (brands && Array.isArray(brands) ? brands : []).map((b) => ({ label: b.name, value: b.slug }));
+  const subCategoryOptions = (subCategories && Array.isArray(subCategories) ? subCategories : []).map((s) => ({
     label: s.name,
     value: s.slug,
   }));
@@ -136,10 +136,11 @@ export default function BrowseProduct() {
       
       const ps = new URLSearchParams();
       if (currentFilter.q) ps.set("q", currentFilter.q);
-      currentFilter.category.forEach((c) => ps.append("category", c));
-      currentFilter.brand.forEach((b) => ps.append("brand", b));
-      currentFilter.subcategory.forEach((s) => ps.append("subcategory", s));
-      currentFilter.available.forEach((a) => ps.append("available", a));
+      // Add null checks for array operations
+      (currentFilter.category || []).forEach((c) => ps.append("category", c));
+      (currentFilter.brand || []).forEach((b) => ps.append("brand", b));
+      (currentFilter.subcategory || []).forEach((s) => ps.append("subcategory", s));
+      (currentFilter.available || []).forEach((a) => ps.append("available", a));
 
       // Only add if priceRange is set and values are valid
       if (

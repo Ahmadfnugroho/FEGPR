@@ -129,6 +129,24 @@ function checkElementsInViewport(elements) {
 4. **Improved animation timing** yang tidak bergantung pada race conditions
 5. **Defensive programming** yang mencegah crash aplikasi
 
+### 6. Additional Fixes for Production Issues
+
+**File yang diubah tambahan:**
+- `src/pages/BrowseProduct.tsx`
+- `src/components/FilterComponents/FilterHeader.tsx`
+
+**Perbaikan tambahan:**
+```typescript
+// Fix array operations in BrowseProduct.tsx
+const categoryOptions = (categories && Array.isArray(categories) ? categories : []).map(...);
+const isBundlingMode = (filter.category || []).includes("bundling");
+(currentFilter.category || []).forEach((c) => ps.append("category", c));
+
+// Fix FilterHeader array operations
+const activeFiltersCount = (currentFilters.category || []).length + ...;
+(currentFilters.category || []).forEach((cat) => {...});
+```
+
 ## Testing yang Disarankan
 
 1. Test dengan koneksi internet lambat
@@ -136,6 +154,15 @@ function checkElementsInViewport(elements) {
 3. Test dengan JavaScript error simulation
 4. Test responsive design di berbagai device
 5. Test animation performance
+6. **Test filter dan sorting functionality**
+7. **Test dengan clear browser cache untuk memastikan versi terbaru**
+
+## Production Deployment Notes
+
+- **IMPORTANT**: Pastikan untuk clear cache CDN/browser setelah deploy
+- Build hash berubah dari `browse-Ddobo7Dc.js` ke `browse-Bx6VqHar.js` 
+- File `BrowseProduct-xMkM1N2j.js` mengandung fix terbaru
+- Semua komponen filter sudah diperbaiki
 
 ## Maintenance Notes
 
@@ -143,3 +170,5 @@ function checkElementsInViewport(elements) {
 - Pertimbangkan menambahkan error reporting service (seperti Sentry)
 - Regular testing terhadap API endpoints
 - Keep defensive programming patterns di komponen baru
+- **Always add null/undefined checks sebelum operasi array**
+- **Test filter functionality setelah setiap update**

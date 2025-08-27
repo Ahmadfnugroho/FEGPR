@@ -36,12 +36,12 @@ export default function FilterHeader({
   brandOptions,
   subCategoryOptions,
 }: FilterHeaderProps) {
-  // Calculate total active filters
+  // Calculate total active filters with null checks
   const activeFiltersCount =
-    currentFilters.category.length +
-    currentFilters.brand.length +
-    currentFilters.subcategory.length +
-    currentFilters.available.length +
+    (currentFilters.category || []).length +
+    (currentFilters.brand || []).length +
+    (currentFilters.subcategory || []).length +
+    (currentFilters.available || []).length +
     (priceRange && priceRange.min !== 0 && priceRange.max !== 0 ? 1 : 0) +
     (currentFilters.q ? 1 : 0);
 
@@ -49,9 +49,9 @@ export default function FilterHeader({
   const getActiveFilterItems = () => {
     const items: { label: string; onRemove: () => void; type: string }[] = [];
 
-    // Add category items
-    currentFilters.category.forEach((cat) => {
-      const option = categoryOptions.find((opt) => opt.value === cat);
+    // Add category items with null checks
+    (currentFilters.category || []).forEach((cat) => {
+      const option = (categoryOptions || []).find((opt) => opt.value === cat);
       if (option) {
         items.push({
           label: option.label,
@@ -61,9 +61,9 @@ export default function FilterHeader({
       }
     });
 
-    // Add subcategory items
-    currentFilters.subcategory.forEach((sub) => {
-      const option = subCategoryOptions.find((opt) => opt.value === sub);
+    // Add subcategory items with null checks
+    (currentFilters.subcategory || []).forEach((sub) => {
+      const option = (subCategoryOptions || []).find((opt) => opt.value === sub);
       if (option) {
         items.push({
           label: option.label,
@@ -73,8 +73,8 @@ export default function FilterHeader({
       }
     });
 
-    // Add availability items
-    currentFilters.available.forEach((avail) => {
+    // Add availability items with null checks
+    (currentFilters.available || []).forEach((avail) => {
       items.push({
         label: avail === "1" ? "Tersedia" : "Tidak Tersedia",
         onRemove: () => onClearAvailable(avail),
