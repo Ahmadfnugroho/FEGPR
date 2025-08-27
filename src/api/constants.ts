@@ -6,7 +6,7 @@
 // Mengubah protokol dari HTTPS ke HTTP dapat digunakan untuk mengatasi SSL Protocol Error
 // saat pengembangan lokal.
 // constants.ts
-const BASE_URL = "https://global1.work.gd";
+const BASE_URL = "https://globalphotorental.com";
 
 export const API_BASE_URL = `${BASE_URL}/api`;
 export const STORAGE_BASE_URL = `${BASE_URL}/storage`;

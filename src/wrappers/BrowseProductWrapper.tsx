@@ -104,7 +104,7 @@ export default function BrowseProductWrapper() {
       </div>
 
       <div
-        className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-[20px] stagger-fade-in"
+        className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-[20px] stagger-fade-in"
         data-delay="400"
       >
         {products.map((product, index) => (
