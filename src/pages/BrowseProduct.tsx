@@ -163,6 +163,10 @@ export default function BrowseProduct() {
       if (order && !["recommended", "latest", "availability"].includes(sort)) {
         if (order !== "asc") ps.set("order", order);
       }
+      
+      // Exclude products that are rental includes of other products
+      ps.set("exclude_rental_includes", "true");
+      
       ps.set("page", String(p));
       ps.set("limit", String(pageSize));
       return ps;
