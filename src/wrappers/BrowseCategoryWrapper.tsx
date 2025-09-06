@@ -1,5 +1,5 @@
-import { Swiper } from "swiper/react";
-import { SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
 import CategoryCard from "../components/CategoryCard.";
 import { useEffect, useState, useCallback } from "react";
 import { Category } from "../types/type";
@@ -7,6 +7,8 @@ import axios from "axios";
 import axiosInstance from "../api/axiosInstance";
 import { Link } from "react-router-dom";
 import CategoryCardSkeleton from "../components/CategoryCardSkeleton";
+import "../styles/CategorySwiper.css";
+
 export default function BrowseCategoryWrapper() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,11 +21,10 @@ export default function BrowseCategoryWrapper() {
         signal: controller.signal,
       })
       .then((response) => {
-        // Add null/undefined checks for response data
         if (response.data && Array.isArray(response.data.data)) {
           setCategories(response.data.data);
         } else {
-          console.warn('Invalid categories data received:', response.data);
+          console.warn("Invalid categories data received:", response.data);
           setCategories([]);
         }
         setLoading(false);
@@ -50,56 +51,85 @@ export default function BrowseCategoryWrapper() {
     return (
       <>
         {/* MOBILE SKELETON */}
-        <section className="md:hidden">
-          <div className="swiper w-full">
-            <div className="swiper-wrapper">
-              <Swiper
-                direction="horizontal"
-                spaceBetween={10}
-                slidesPerView="auto"
-                slidesOffsetAfter={5}
-                slidesOffsetBefore={5}
-              >
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <SwiperSlide
-                    key={`skeleton-mobile-${i}`}
-                    className="!w-fit first-of-type:pl-[calc((50%-1130px-60px)/2)] last-of-type:pr-[calc((50%-1130px-60px)/2)]"
-                  >
-                    <CategoryCardSkeleton />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+        <section className="md:hidden category-swiper-mobile">
+          <div className="relative">
+            <Swiper
+              modules={[Navigation, Pagination]}
+              spaceBetween={10}
+              slidesPerView="auto"
+              navigation={{
+                nextEl: '.swiper-button-next-custom-mobile',
+                prevEl: '.swiper-button-prev-custom-mobile',
+              }}
+              pagination={{ 
+                clickable: true,
+                dynamicBullets: true,
+                dynamicMainBullets: 3
+              }}
+              className="category-swiper"
+            >
+              {Array.from({ length: 5 }).map((_, i) => (
+                <SwiperSlide key={`skeleton-mobile-${i}`} className="!w-fit">
+                  <CategoryCardSkeleton />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+            
+            {/* Custom Navigation Buttons for Mobile */}
+            <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </div>
+            <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
           </div>
         </section>
+
         {/* WEB SKELETON */}
         <section className="hidden md:block flex-col gap-[30px]">
           <div className="w-full max-w-[1130px] mx-auto flex items-center justify-between">
             <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-primary mt-10 mb-10">
               Cek Kategori Favorit Kami
             </h2>
-            <div className="font-bold text-primary">
-              Explore All
-            </div>
+            <div className="font-bold text-primary">Selengkapnya</div>
           </div>
-          <div className="swiper w-full">
-            <div className="swiper-wrapper">
-              <Swiper
-                direction="horizontal"
-                spaceBetween={20}
-                slidesPerView="auto"
-                slidesOffsetAfter={30}
-                slidesOffsetBefore={-200}
-              >
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <SwiperSlide
-                    key={`skeleton-web-${i}`}
-                    className="!w-fit first-of-type:pl-[calc((100%-1130px-60px)/2)] last-of-type:pr-[calc((100%-1130px-60px)/2)]"
-                  >
-                    <CategoryCardSkeleton />
-                  </SwiperSlide>
-                ))}
-              </Swiper>
+          <div className="relative">
+            <Swiper
+              modules={[Navigation, Pagination]}
+              spaceBetween={20}
+              slidesPerView="auto"
+              navigation={{
+                nextEl: '.swiper-button-next-custom',
+                prevEl: '.swiper-button-prev-custom',
+              }}
+              pagination={{ 
+                clickable: true,
+                dynamicBullets: true,
+                dynamicMainBullets: 5
+              }}
+              className="category-swiper"
+            >
+              {Array.from({ length: 6 }).map((_, i) => (
+                <SwiperSlide key={`skeleton-web-${i}`} className="!w-fit">
+                  <CategoryCardSkeleton />
+                </SwiperSlide>
+              ))}
+            </Swiper>
+            
+            {/* Custom Navigation Buttons */}
+            <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </div>
+            <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </div>
           </div>
         </section>
@@ -111,84 +141,123 @@ export default function BrowseCategoryWrapper() {
     return <p>Error: {error}</p>;
   }
 
-  // Create bundling category object
   const bundlingCategory = {
-    id: 9999, // Use a unique ID that won't conflict
+    id: 9999,
     name: "Bundling",
     slug: "bundling",
-    photo: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop&crop=center&auto=format&q=80", // Camera gear bundling image
+    photo:
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop&crop=center&auto=format&q=80",
     products_count: 0,
-    products: []
+    products: [],
   };
 
-  // Combine bundling category with regular categories - ensure categories is an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   const allCategories = [bundlingCategory, ...safeCategories];
 
   return (
     <>
       {/* MOBILE */}
-      <section className="md:hidden scroll-fade-in">
-        <div className="swiper w-full scroll-fade-in" data-delay="200">
-          <div className="swiper-wrapper">
-            <Swiper
-              direction="horizontal"
-              spaceBetween={10}
-              slidesPerView="auto"
-              slidesOffsetAfter={5}
-              slidesOffsetBefore={5}
-            >
-              {allCategories.map((category, _index) => (
-                <SwiperSlide
-                  key={category.id}
-                  className="!w-fit first-of-type:pl-[calc((50%-1130px-60px)/2)] last-of-type:pr-[calc((50%-1130px-60px)/2)]"
+      <section className="md:hidden scroll-fade-in category-swiper-mobile">
+        <div className="relative">
+          <Swiper
+            modules={[Navigation, Pagination]}
+            spaceBetween={10}
+            slidesPerView="auto"
+            navigation={{
+              nextEl: '.swiper-button-next-custom-mobile',
+              prevEl: '.swiper-button-prev-custom-mobile',
+            }}
+            pagination={{ 
+              clickable: true,
+              dynamicBullets: true,
+              dynamicMainBullets: 3
+            }}
+            className="category-swiper"
+          >
+            {allCategories.map((category) => (
+              <SwiperSlide key={category.id} className="!w-fit">
+                <Link
+                  to={
+                    category.slug === "bundling"
+                      ? `/bundlings`
+                      : `/category/${category.slug}`
+                  }
                 >
-                  <Link to={category.slug === "bundling" ? `/bundlings` : `/category/${category.slug}`}>
-                    <CategoryCard category={category}></CategoryCard>
-                  </Link>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                  <CategoryCard category={category} />
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          
+          {/* Custom Navigation Buttons for Mobile */}
+          <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+          <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </div>
         </div>
       </section>
+
       {/* WEB */}
       <section
         id="Cities"
-        className="hidden md:block flex-col gap-[30px] scroll-fade-in"
+        className="hidden md:block mt-24 mx-14 flex-col gap-[30px] scroll-fade-in"
       >
-        <div className="w-full max-w-[1130px] mx-auto flex items-center justify-between scroll-fade-in">
-          <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-primary mt-10 mb-10 scroll-fade-in">
+        <div className="w-full max-w-[1130px] mx-auto flex items-center justify-between">
+          <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-primary mt-10 mb-10">
             Cek Kategori Favorit Kami
           </h2>
-          <Link
-            to="/browse-product"
-            className="font-bold text-primary scroll-slide-right"
-          >
-            Explore All
+          <Link to="/browse-product" className="font-bold text-primary">
+            Selengkapnya
           </Link>
         </div>
-        <div className="swiper w-full">
-          <div className="swiper-wrapper">
-            <Swiper
-              direction="horizontal"
-              spaceBetween={20}
-              slidesPerView="auto"
-              slidesOffsetAfter={30}
-              slidesOffsetBefore={-200}
-            >
-              {allCategories.map((category, index) => (
-                <SwiperSlide
-                  key={category.id}
-                  className="!w-fit first-of-type:pl-[calc((100%-1130px-60px)/2)] last-of-type:pr-[calc((100%-1130px-60px)/2)] stagger-item"
-                  data-index={index}
+
+        <div className="relative">
+          <Swiper
+            modules={[Navigation, Pagination]}
+            spaceBetween={20}
+            slidesPerView="auto"
+            navigation={{
+              nextEl: '.swiper-button-next-custom',
+              prevEl: '.swiper-button-prev-custom',
+            }}
+            pagination={{ 
+              clickable: true,
+              dynamicBullets: true,
+              dynamicMainBullets: 5
+            }}
+            className="category-swiper"
+          >
+            {allCategories.map((category) => (
+              <SwiperSlide key={category.id} className="!w-fit">
+                <Link
+                  to={
+                    category.slug === "bundling"
+                      ? `/bundlings`
+                      : `/category/${category.slug}`
+                  }
                 >
-                  <Link to={category.slug === "bundling" ? `/bundlings` : `/category/${category.slug}`}>
-                    <CategoryCard category={category}></CategoryCard>
-                  </Link>
-                </SwiperSlide>
-              ))}
-            </Swiper>
+                  <CategoryCard category={category} />
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+          
+          {/* Custom Navigation Buttons */}
+          <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </div>
+          <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </div>
         </div>
       </section>

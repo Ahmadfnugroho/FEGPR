@@ -1,0 +1,161 @@
+/* Category Swiper Custom Styles */
+
+/* Hide default Swiper navigation buttons */
+.category-swiper .swiper-button-next,
+.category-swiper .swiper-button-prev {
+  display: none !important;
+}
+
+/* Custom Pagination Styles */
+.category-swiper .swiper-pagination {
+  position: relative !important;
+  margin-top: 20px !important;
+  bottom: auto !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.category-swiper .swiper-pagination-bullet {
+  width: 8px !important;
+  height: 8px !important;
+  background: rgba(113, 120, 143, 0.4) !important; /* navy-blue-500 with opacity */
+  border-radius: 50% !important;
+  margin: 0 4px !important;
+  opacity: 1 !important;
+  transition: all 0.3s ease !important;
+  cursor: pointer !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.category-swiper .swiper-pagination-bullet-active {
+  background: #000929 !important; /* text-light-primary color */
+  border-color: rgba(255, 255, 255, 0.8) !important;
+  transform: scale(1.2) !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+.category-swiper .swiper-pagination-bullet:hover {
+  background: rgba(0, 9, 41, 0.7) !important; /* text-light-primary with opacity */
+  transform: scale(1.1) !important;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Mobile specific pagination */
+.category-swiper-mobile .swiper-pagination {
+  margin-top: 15px !important;
+}
+
+.category-swiper-mobile .swiper-pagination-bullet {
+  width: 6px !important;
+  height: 6px !important;
+  margin: 0 3px !important;
+}
+
+/* Dynamic bullets specific styles */
+.category-swiper .swiper-pagination-bullet-active-main {
+  background: #000929 !important; /* text-light-primary color */
+}
+
+.category-swiper .swiper-pagination-bullet-active-prev,
+.category-swiper .swiper-pagination-bullet-active-next {
+  background: rgba(0, 9, 41, 0.6) !important;
+  transform: scale(1.1) !important;
+}
+
+.category-swiper .swiper-pagination-bullet-active-prev-prev,
+.category-swiper .swiper-pagination-bullet-active-next-next {
+  background: rgba(113, 120, 143, 0.6) !important;
+  transform: scale(0.9) !important;
+}
+
+/* Custom Navigation Button Styles */
+.swiper-button-prev-custom,
+.swiper-button-next-custom {
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.3s ease;
+}
+
+.swiper-button-prev-custom:hover,
+.swiper-button-next-custom:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Disabled state for navigation buttons */
+.swiper-button-prev-custom.swiper-button-disabled,
+.swiper-button-next-custom.swiper-button-disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+.swiper-button-prev-custom.swiper-button-disabled:hover,
+.swiper-button-next-custom.swiper-button-disabled:hover {
+  transform: none !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Responsive adjustments - Show navigation on mobile too */
+@media (max-width: 768px) {
+  .swiper-button-prev-custom,
+  .swiper-button-next-custom {
+    width: 32px !important;
+    height: 32px !important;
+    left: 8px !important;
+  }
+  
+  .swiper-button-next-custom {
+    right: 8px !important;
+    left: auto !important;
+  }
+  
+  .swiper-button-prev-custom svg,
+  .swiper-button-next-custom svg {
+    width: 16px !important;
+    height: 16px !important;
+  }
+}
+
+/* Ensure proper z-index for navigation elements */
+.category-swiper {
+  position: relative;
+  z-index: 1;
+}
+
+.category-swiper .swiper-pagination {
+  z-index: 2;
+}
+
+.swiper-button-prev-custom,
+.swiper-button-next-custom,
+.swiper-button-prev-custom-mobile,
+.swiper-button-next-custom-mobile {
+  z-index: 3;
+}
+
+/* Mobile navigation buttons */
+.swiper-button-prev-custom-mobile,
+.swiper-button-next-custom-mobile {
+  opacity: 1;
+  visibility: visible;
+  transition: all 0.3s ease;
+}
+
+.swiper-button-prev-custom-mobile:hover,
+.swiper-button-next-custom-mobile:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Disabled state for mobile navigation buttons */
+.swiper-button-prev-custom-mobile.swiper-button-disabled,
+.swiper-button-next-custom-mobile.swiper-button-disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+}
+
+.swiper-button-prev-custom-mobile.swiper-button-disabled:hover,
+.swiper-button-next-custom-mobile.swiper-button-disabled:hover {
+  transform: none !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+}

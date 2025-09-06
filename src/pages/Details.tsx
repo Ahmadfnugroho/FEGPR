@@ -3,6 +3,8 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Thumbs } from "swiper/modules";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { ChevronDown, ChevronRight } from "lucide-react";
+
 import {
   MdOutlineCamera,
   MdArrowBack,
@@ -262,7 +264,7 @@ const ProductInfo = ({ product }: { product: Product }) => {
             {...(!isAvailable && { "aria-disabled": "true" })}
           >
             <MdShoppingCart className="w-5 h-5 mr-2" />
-            {isAvailable ? "Sewa Sekarang" : "Not Available"}
+            {isAvailable ? "Sewa Sekarang" : "Tidak Tersedia"}
           </a>
         </div>
       </div>
@@ -279,6 +281,8 @@ const ProductSpecifications = ({
 }: {
   specifications: productSpecification[];
 }) => {
+  const [openItems, setOpenItems] = useState<number[]>([]); // simpan id header yang terbuka
+
   const specLines = useMemo(() => {
     if (!specifications?.length) return [];
     return specifications[0].name
@@ -294,40 +298,63 @@ const ProductSpecifications = ({
 
   if (!specLines.length) return null;
 
+  const toggleItem = (id: number) => {
+    setOpenItems((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
   return (
     <section className="lg:col-span-3 bg-white rounded-xl shadow-sm border overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
         <h2 className="font-semibold text-xl text-gray-900 flex items-center">
           <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
-          Product Specifications
+          Spesifikasi Produk
         </h2>
       </div>
 
-      <div className="p-6">
-        <dl className="grid grid-cols-1 gap-4">
-          {specLines.map((spec) => (
-            <div
-              key={spec.id}
-              className={`${
-                spec.isHeader
-                  ? "bg-blue-50 border border-blue-200 rounded-lg p-4 mb-2"
-                  : "pl-4 border-l-2 border-gray-200 hover:border-blue-300 transition-colors py-2"
-              }`}
-            >
-              <dd
-                className={`${
-                  spec.isHeader
-                    ? "font-semibold text-blue-900 text-base"
-                    : "text-gray-700 text-sm leading-relaxed"
-                }`}
-              >
-                {!spec.isHeader && (
-                  <span className="inline-block w-2 h-2 bg-blue-400 rounded-full mr-3 -translate-y-0.5"></span>
-                )}
-                {spec.text}
-              </dd>
-            </div>
-          ))}
+      <div className="p-1">
+        <dl className="grid grid-cols-1 divide-y">
+          {specLines.map((spec, i) => {
+            if (spec.isHeader) {
+              const isOpen = openItems.includes(spec.id);
+
+              // ambil baris berikutnya (jika ada) sebagai konten
+              const nextLine =
+                i + 1 < specLines.length && !specLines[i + 1].isHeader
+                  ? specLines[i + 1].text
+                  : null;
+
+              return (
+                <div key={spec.id} className="py-0.5">
+                  {/* Header */}
+                  <div
+                    className="flex items-center justify-between bg-blue-50 border border-blue-200 rounded-lg p-2 text-sm cursor-pointer"
+                    onClick={() => toggleItem(spec.id)}
+                  >
+                    <span className="font-semibold text-primary text-xs">
+                      {spec.text}
+                    </span>
+                    {isOpen ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </div>
+
+                  {/* Content (muncul hanya kalau open & ada konten) */}
+                  {isOpen && nextLine && (
+                    <div className="pl-6 mt-2 text-gray-700 text-xs leading-relaxed border-l-2 border-gray-200">
+                      {nextLine}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // kalau !isHeader (content), tidak dirender langsung
+            return null;
+          })}
         </dl>
       </div>
     </section>
@@ -357,16 +384,16 @@ const RentalIncludes = ({
       <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
         <h2 className="font-semibold text-xl text-gray-900 flex items-center">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
-          What's Included
+          Sudah Termasuk:
         </h2>
       </div>
 
-      <div className="p-6">
+      <div className="p-2">
         <div className="grid grid-cols-1 gap-3">
           {includeItems.map((item) => (
             <div
               key={item.id}
-              className="flex items-center space-x-3 p-3 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
+              className="flex items-center space-x-3 p-1 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors"
             >
               <div className="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                 <svg
@@ -411,12 +438,11 @@ const RentalIncludes = ({
               </svg>
             </div>
             <div className="flex-1">
-              <h4 className="text-sm font-medium text-blue-900">
-                Rental Terms
-              </h4>
+              <h4 className="text-sm font-medium text-blue-900">Informasi</h4>
               <p className="text-sm text-blue-700 mt-1">
-                All items are thoroughly cleaned and tested before rental.
-                Please handle with care and return in the same condition.
+                Semua barang sudah dibersihkan dan dicek dengan baik sebelum
+                disewakan. Tolong dijaga dengan hati-hati dan kembalikan dalam
+                kondisi seperti semula.{" "}
               </p>
             </div>
           </div>

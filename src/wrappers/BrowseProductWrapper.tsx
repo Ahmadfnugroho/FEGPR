@@ -25,7 +25,7 @@ export default function BrowseProductWrapper() {
         if (response.data && Array.isArray(response.data.data)) {
           setProducts(response.data.data);
         } else {
-          console.warn('Invalid products data received:', response.data);
+          console.warn("Invalid products data received:", response.data);
           setProducts([]);
         }
         setLoading(false);
@@ -46,14 +46,33 @@ export default function BrowseProductWrapper() {
     return (
       <section
         id="Fresh-Space"
-        className="flex flex-col gap-5 md:gap-[30px] max-w-[1280px] mx-auto mt-0 md:mt-[50px] bg-transparent md:bg-white/80 px-3 md:px-3 py-4 md:py-6 md:shadow md:backdrop-blur-lg md:rounded-3xl"
-      >
-        <div className="relative w-full max-w-[1130px] mx-auto mb-[30px]">
-          <h2 className="text-center font-bold text-[24px] md:text-[32px] leading-[36px] md:leading-[48px] text-support-light-primary">
-            Produk Unggulan Kami
-          </h2>
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 font-bold text-support-light-primary whitespace-nowrap">
-            Explore All
+      className="flex flex-col gap-5 md:gap-[30px] max-w-[1280px] mx-auto mt-0 md:mt-[50px] bg-transparent md:bg-white/80 px-4 md:px-6 py-4 md:py-6 md:shadow md:backdrop-blur-lg md:rounded-3xl"
+    >
+        <div className="w-full max-w-[1130px] mx-auto mb-5 md:mb-[30px]">
+          {/* Mobile Layout - Stack vertically */}
+          <div className="block md:hidden text-center space-y-2">
+            <h2 className="font-bold text-[20px] leading-[30px] text-support-light-primary">
+              🌟 Produk Unggulan Kami
+            </h2>
+            <Link 
+              to="/browse-product" 
+              className="inline-block font-bold text-sm text-primary hover:text-primary-hover transition-colors"
+            >
+              Selengkapnya
+            </Link>
+          </div>
+          
+          {/* Desktop Layout - Side by side */}
+          <div className="hidden md:flex items-center justify-between">
+            <h2 className="font-bold text-[32px] leading-[48px] text-support-light-primary">
+              🌟 Produk Unggulan Kami
+            </h2>
+            <Link 
+              to="/browse-product" 
+              className="font-bold text-primary hover:text-primary-hover transition-colors whitespace-nowrap"
+            >
+              Selengkapnya
+            </Link>
           </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-[20px]">
@@ -85,44 +104,63 @@ export default function BrowseProductWrapper() {
   return (
     <section
       id="Fresh-Space"
-      className="flex flex-col gap-5 md:gap-[30px] max-w-[1280px] mx-auto mt-0 md:mt-[50px] bg-transparent md:bg-white/80 px-3 md:px-3 py-4 md:py-6 md:shadow md:backdrop-blur-lg md:rounded-3xl scroll-fade-in"
+      className="flex flex-col gap-5 md:gap-[30px] max-w-[1280px] mx-auto mt-0 md:mt-[50px] bg-transparent md:bg-white/80 px-4 md:px-6 py-4 md:py-6 md:shadow md:backdrop-blur-lg md:rounded-3xl scroll-fade-in"
     >
-      {/* Hide heading on mobile since it's shown in parent section */}
       <div
-        className="relative w-full max-w-[1130px] mx-auto mb-[30px] scroll-fade-in"
+        className="w-full max-w-[1130px] mx-auto mb-5 md:mb-[30px] scroll-fade-in"
         data-delay="300"
       >
-        {/* Judul di tengah */}
-        <h2
-          className="text-center font-bold text-[24px] md:text-[32px] leading-[36px] md:leading-[48px] text-support-light-primary scroll-fade-in"
-          data-delay="200"
-        >
-          Produk Unggulan Kami
-        </h2>
-
-        {/* Link di kanan */}
-        <Link
-          to="/browse-product"
-          className="absolute right-0 top-1 -translate-y-1/2 font-bold text-support-light-primary whitespace-nowrap scroll-fade-in"
-        >
-          Explore All
-        </Link>
+        {/* Mobile Layout - Stack vertically */}
+        <div className="block md:hidden text-center space-y-2">
+          <h2 
+            className="font-bold text-[20px] leading-[30px] text-support-light-primary scroll-fade-in"
+            data-delay="200"
+          >
+            🌟 Produk Unggulan Kami
+          </h2>
+          <Link 
+            to="/browse-product" 
+            className="inline-block font-bold text-sm text-primary hover:text-primary-hover transition-colors scroll-fade-in"
+            data-delay="250"
+          >
+            Selengkapnya
+          </Link>
+        </div>
+        
+        {/* Desktop Layout - Side by side */}
+        <div className="hidden md:flex items-center justify-between">
+          <h2 
+            className="font-bold text-[32px] leading-[48px] text-support-light-primary scroll-fade-in"
+            data-delay="200"
+          >
+            🌟 Produk Unggulan Kami
+          </h2>
+          <Link 
+            to="/browse-product" 
+            className="font-bold text-primary hover:text-primary-hover transition-colors whitespace-nowrap scroll-fade-in"
+            data-delay="250"
+          >
+            Selengkapnya
+          </Link>
+        </div>
       </div>
 
       <div
         className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-3 md:gap-4 lg:gap-[20px] stagger-fade-in"
         data-delay="400"
       >
-        {products && Array.isArray(products) && products.length > 0 ? products.map((product, index) => (
-          <Link
-            key={product.id}
-            to={`/product/${product.slug}`}
-            className="stagger-item"
-            data-index={index}
-          >
-            <ProductCard product={product} />
-          </Link>
-        )) : (
+        {products && Array.isArray(products) && products.length > 0 ? (
+          products.map((product, index) => (
+            <Link
+              key={product.id}
+              to={`/product/${product.slug}`}
+              className="stagger-item"
+              data-index={index}
+            >
+              <ProductCard product={product} />
+            </Link>
+          ))
+        ) : (
           <div className="col-span-full text-center text-gray-500 py-8">
             Tidak ada produk unggulan yang tersedia
           </div>

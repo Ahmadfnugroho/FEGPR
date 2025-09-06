@@ -52,7 +52,7 @@ export default function Browse() {
           </section>
           <section
             id="ProductSection"
-            className="flex flex-col gap-3 mt-2 px-4 bg-white/90 backdrop-blur-sm mx-2 rounded-2xl p-4 shadow-md border border-gray-100 scroll-fade-in   md:bg-transparent md:shadow-none md:border-none md:backdrop-blur-none md:mx-0 md:px-0 md:rounded-none"
+            className="flex flex-col gap-3 mt-2  bg-white/90 backdrop-blur-sm mx-2 rounded-2xl  shadow-md border border-gray-100 scroll-fade-in   md:bg-transparent md:shadow-none md:border-none md:backdrop-blur-none md:mx-0 md:px-0 md:rounded-none"
             data-delay="300"
           >
             <div className="text-center md:hidden">
@@ -63,7 +63,7 @@ export default function Browse() {
                 Direkomendasikan untuk Anda
               </p>
             </div>
-            <div className="md:scroll-fade-in" data-delay="400">
+            <div className="md:scroll-fade-in md:mx-20" data-delay="400">
               <ErrorBoundary>
                 <BrowseProductWrapper />
               </ErrorBoundary>

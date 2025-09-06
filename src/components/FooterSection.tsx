@@ -13,9 +13,9 @@ export default function FooterSection() {
             <div className="w-12 md:w-16 h-1 bg-white my-2 md:my-3 rounded" />
             <p className="text-xs md:text-sm leading-relaxed">
               Global Photo Rental adalah layanan jasa rental alat fotografi dan
-              videografi berlokasi di Jakarta Pusat. Established since 2019.
+              videografi berlokasi di Jakarta Pusat. Telah berdiri sejak 2019.
               <br />
-              Feel free to contact us
+              Hubungi kami untuk kebutuhan fotografi dan videografi Anda.
             </p>
           </div>
           {/* Social Media & Contact */}
@@ -131,7 +131,7 @@ export default function FooterSection() {
             >
               Jalan Kepu Selatan No. 11A, Kemayoran, Jakarta Pusat <br />
               Buka Setiap Hari <br />
-              Operational Hours : 07:00-22:00 WIB
+              Jam Operasional : 07:00-22:00 WIB
             </a>
           </div>
         </div>
@@ -139,6 +139,7 @@ export default function FooterSection() {
           &copy; {new Date().getFullYear()} GLOBAL.PHOTORENTAL. All rights
           reserved.
         </div>
+        <div className="text-center text-xs text-gray-800 ">madeby afn</div>
       </section>
     </footer>
   );

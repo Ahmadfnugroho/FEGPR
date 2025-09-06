@@ -20,7 +20,12 @@ import type {
   Bundling,
 } from "../types/type";
 import axiosInstance from "../api/axiosInstance";
-import { ensureArray, safeMap, safeForEach, safeIncludes } from "../utils/arraySafety";
+import {
+  ensureArray,
+  safeMap,
+  safeForEach,
+  safeIncludes,
+} from "../utils/arraySafety";
 
 // Menggunakan konstanta dari axiosInstance.ts
 
@@ -97,12 +102,21 @@ export default function BrowseProduct() {
   const cancelTokenRef = useRef<any>(null);
 
   // Options for react-select using array safety utilities
-  const categoryOptions = safeMap<Category, {label: string, value: string}>(categories, (c) => ({
-    label: c.name,
-    value: c.slug,
-  }));
-  const brandOptions = safeMap<Brand, {label: string, value: string}>(brands, (b) => ({ label: b.name, value: b.slug }));
-  const subCategoryOptions = safeMap<SubCategory, {label: string, value: string}>(subCategories, (s) => ({
+  const categoryOptions = safeMap<Category, { label: string; value: string }>(
+    categories,
+    (c) => ({
+      label: c.name,
+      value: c.slug,
+    })
+  );
+  const brandOptions = safeMap<Brand, { label: string; value: string }>(
+    brands,
+    (b) => ({ label: b.name, value: b.slug })
+  );
+  const subCategoryOptions = safeMap<
+    SubCategory,
+    { label: string; value: string }
+  >(subCategories, (s) => ({
     label: s.name,
     value: s.slug,
   }));
@@ -131,17 +145,27 @@ export default function BrowseProduct() {
 
   // Build params helper using array safety utilities
   const buildParams = useCallback(
-    (p: number = 1, customFilter?: typeof filter, customPriceRange?: typeof priceRange) => {
+    (
+      p: number = 1,
+      customFilter?: typeof filter,
+      customPriceRange?: typeof priceRange
+    ) => {
       const currentFilter = customFilter || filter;
       const currentPriceRange = customPriceRange || priceRange;
-      
+
       const ps = new URLSearchParams();
       if (currentFilter.q) ps.set("q", currentFilter.q);
       // Use safe array operations
-      safeForEach(currentFilter.category, (c: string) => ps.append("category", c));
+      safeForEach(currentFilter.category, (c: string) =>
+        ps.append("category", c)
+      );
       safeForEach(currentFilter.brand, (b: string) => ps.append("brand", b));
-      safeForEach(currentFilter.subcategory, (s: string) => ps.append("subcategory", s));
-      safeForEach(currentFilter.available, (a: string) => ps.append("available", a));
+      safeForEach(currentFilter.subcategory, (s: string) =>
+        ps.append("subcategory", s)
+      );
+      safeForEach(currentFilter.available, (a: string) =>
+        ps.append("available", a)
+      );
 
       // Only add if priceRange is set and values are valid
       if (
@@ -163,10 +187,10 @@ export default function BrowseProduct() {
       if (order && !["recommended", "latest", "availability"].includes(sort)) {
         if (order !== "asc") ps.set("order", order);
       }
-      
+
       // Exclude products that are rental includes of other products
       ps.set("exclude_rental_includes", "true");
-      
+
       ps.set("page", String(p));
       ps.set("limit", String(pageSize));
       return ps;
@@ -191,17 +215,41 @@ export default function BrowseProduct() {
 
   // Fetch static lists once
   useEffect(() => {
+    console.log('🔄 Fetching static lists (categories, brands, sub-categories)...');
+    
     Promise.all([
       axiosInstance.get(`/categories`),
       axiosInstance.get(`/brands`),
       axiosInstance.get(`/sub-categories`),
     ])
       .then((responses) => {
-        setCategories(responses[0].data.data || []);
-        setBrands(responses[1].data.data || []);
-        setSubCategories(responses[2].data.data || []);
+        console.log('✅ Static lists responses received:', responses);
+        
+        // Handle categories
+        const categoriesData = responses[0].data.data || responses[0].data || [];
+        setCategories(categoriesData);
+        console.log(`📦 Loaded ${categoriesData.length} categories`);
+        
+        // Handle brands
+        const brandsData = responses[1].data.data || responses[1].data || [];
+        setBrands(brandsData);
+        console.log(`📦 Loaded ${brandsData.length} brands`);
+        
+        // Handle sub-categories
+        const subCategoriesData = responses[2].data.data || responses[2].data || [];
+        setSubCategories(subCategoriesData);
+        console.log(`📦 Loaded ${subCategoriesData.length} sub-categories`);
       })
-      .catch((e) => console.error("Static list fetch error:", e));
+      .catch((e) => {
+        console.error('❌ Static list fetch error:', e);
+        const errorMessage = (e as any).errorMessage || e.message || 'Gagal memuat data kategori, brand, dan sub-kategori';
+        setError(errorMessage);
+        
+        // Set empty arrays as fallback
+        setCategories([]);
+        setBrands([]);
+        setSubCategories([]);
+      });
   }, []);
 
   // Fetch bundlings
@@ -334,7 +382,7 @@ export default function BrowseProduct() {
     // Update URL params
     const sp = buildParams(1);
     navigate({ search: sp.toString() }, { replace: true });
-    
+
     // Fetch data based on current mode
     if (isBundlingMode) {
       setProducts([]);
@@ -345,7 +393,7 @@ export default function BrowseProduct() {
       setProducts([]);
       fetchProducts(1, false);
     }
-    
+
     // Sync temp filters with main filters
     setTempFilter(filter);
     setTempPriceRange(priceRange);
@@ -440,7 +488,7 @@ export default function BrowseProduct() {
           <div className="flex items-center">
             <Menu as="div" className="relative inline-block text-left">
               <MenuButton className="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                Sort
+                Urutkan
                 <ChevronDownIcon
                   aria-hidden="true"
                   className="-mr-1 ml-1 h-5 w-5 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
@@ -549,7 +597,7 @@ export default function BrowseProduct() {
               {/* Page size selector */}
               <div className="mb-6 flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <label className="mr-2">Show:</label>
+                  <label className="mr-2">Tampilkan:</label>
                   <select
                     value={pageSize}
                     onChange={(e) => setPageSize(Number(e.target.value))}
@@ -559,7 +607,7 @@ export default function BrowseProduct() {
                     <option value={20}>20</option>
                     <option value={50}>50</option>
                   </select>
-                  <span>items per page</span>
+                  <span>produk per halaman</span>
                 </div>
               </div>
 

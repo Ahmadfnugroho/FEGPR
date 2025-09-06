@@ -6,6 +6,7 @@
 .scroll-fade-in:not(.visible),
 .stagger-fade-in:not(.visible),
 .stagger-item:not(.visible) {
+  -webkit-animation: none !important;
   animation: none !important;
   opacity: 1 !important;
   transform: none !important;
@@ -16,8 +17,8 @@
   /* Poppins font is now loaded via Google Fonts CDN in index.html */
 
   html {
-    font-family: "Poppins", system-ui, sans-serif;
-    background-color: theme("colors.base-light.primary"); /* #eaf0f7 - navy-blue-50 */
+    font-family: "Montserrat", system-ui, sans-serif;
+    background-color: theme("colors.base-light.secondary");
     color: theme("colors.support-light.primary"); /* #0a173b - navy-blue-950 */
     transition: background-color 0.3s, color 0.3s;
     scroll-behavior: smooth;
@@ -39,7 +40,12 @@
   }
 
   /* Additional base element styles with new palette */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: theme("colors.support-light.primary"); /* #0a173b */
   }
 
@@ -53,6 +59,6 @@
   }
 
   .text-muted {
-    color: theme("colors.support-light.tertiary") !important; /* #4c5971 - improved contrast */
+    color: theme("colors.support-light.tertiary") !important;
   }
 }

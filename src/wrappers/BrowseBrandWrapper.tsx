@@ -12,26 +12,44 @@ export default function BrowseBrandWrapper() {
 
   const fetchBrands = useCallback(() => {
     const controller = new AbortController();
+    
+    console.log('🔄 Fetching premiere brands...');
+    setError(null); // Clear previous errors
+    
     axiosInstance
       .get("/brands-premiere", {
         signal: controller.signal,
       })
       .then((response) => {
+        console.log('✅ Brands premiere response received:', response);
+        
         // Add null/undefined checks for response data
         if (response.data && Array.isArray(response.data.data)) {
           setBrands(response.data.data);
+          console.log(`📦 Loaded ${response.data.data.length} premiere brands`);
+        } else if (response.data && Array.isArray(response.data)) {
+          // Handle case where data is directly in response.data (not wrapped in data property)
+          setBrands(response.data);
+          console.log(`📦 Loaded ${response.data.length} premiere brands (direct data)`);
         } else {
-          console.warn('Invalid brands data received:', response.data);
+          console.warn("⚠️ Invalid brands data structure received:", response.data);
           setBrands([]);
         }
         setLoading(false);
       })
       .catch((error) => {
         if (axios.isCancel && axios.isCancel(error)) {
-          console.log("Request canceled", error.message);
+          console.log("🚫 Request canceled:", error.message);
         } else {
-          setError(error.message);
+          console.error('❌ Error fetching premiere brands:', error);
+          
+          // Use custom error message if available
+          const errorMessage = (error as any).errorMessage || error.message || 'Gagal memuat brand premiere';
+          setError(errorMessage);
           setLoading(false);
+          
+          // Set empty array as fallback
+          setBrands([]);
         }
       });
     return () => controller.abort();
@@ -69,11 +87,13 @@ export default function BrowseBrandWrapper() {
         className="flex flex-nowrap justify-center items-center gap-2 md:gap-16 stagger-fade-in overflow-x-auto"
         data-staggerdelay="100"
       >
-        {brands && Array.isArray(brands) && brands.length > 0 ? brands.map((brand, index) => (
-          <div key={brand.id} className="stagger-item" data-index={index}>
-            <BrandCard brand={brand} />
-          </div>
-        )) : (
+        {brands && Array.isArray(brands) && brands.length > 0 ? (
+          brands.map((brand, index) => (
+            <div key={brand.id} className="stagger-item" data-index={index}>
+              <BrandCard brand={brand} />
+            </div>
+          ))
+        ) : (
           <div className="text-center text-gray-500 py-4">
             Tidak ada brand yang tersedia
           </div>

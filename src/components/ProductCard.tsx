@@ -69,8 +69,8 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
         <div className="thumbnail-container relative w-full aspect-[4/3] overflow-hidden rounded-t-xl md:rounded-t-2xl">
           {product.premiere == 1 && (
             <div className="absolute top-2 right-2 z-10">
-              <span className="inline-block px-1.5 md:px-2 py-1 text-xs font-semibold text-white bg-amber-500 rounded shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:rotate-3">
-                <span className="hidden sm:inline">⭐ Popular</span>
+              <span className="inline-block px-1.5 md:px-2 py-1 text-xs font-semibold text-white bg-text-light-primary rounded shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:rotate-3">
+                <span className="hidden sm:inline">⭐ Terlaris</span>
                 <span className="sm:hidden">⭐</span>
               </span>
             </div>
@@ -122,10 +122,10 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center justify-center mb-2 md:mb-3 flex-shrink-0">
             <div className="text-center">
               <p className=" text-xs md:text-base lg:text-sm text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
-                Rp{product.price.toLocaleString("id-ID")}
-              </p>
-              <p className="text-[10px] md:text-xs text-support-tertiary">
-                /hari
+                Rp{product.price.toLocaleString("id-ID")}{" "}
+                <span className="text-[10px] md:text-xs text-support-tertiary">
+                  /hari
+                </span>
               </p>
             </div>
           </div>
