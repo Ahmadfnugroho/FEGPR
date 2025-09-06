@@ -7,19 +7,21 @@ interface CategoryCardProps {
 
 export default function CategoryCard({ category }: CategoryCardProps) {
 
-  // Responsive card sizes
+  // Responsive card sizes - More compact design
   const cardVariants = [
     {
       visible: "md:hidden",
-      width: "w-36",
-      height: "h-36",
+      width: "w-28", // Smaller mobile size
+      height: "h-28",
       text: "text-xs",
+      padding: "p-3"
     },
     {
       visible: "hidden md:block",
-      width: "w-[230px]",
-      height: "h-[300px]",
+      width: "w-[180px]", // Smaller desktop size
+      height: "h-[220px]",
       text: "text-sm",
+      padding: "p-4"
     },
   ];
 
@@ -33,7 +35,7 @@ export default function CategoryCard({ category }: CategoryCardProps) {
             aria-label={`Lihat kategori ${category.name}`}
             role="button"
           >
-            <div className="relative flex flex-col justify-end w-full h-full p-5 gap-1 bg-[linear-gradient(180deg,_rgba(0,0,0,0)_49.87%,_rgba(0,0,0,0.8)_100%)] z-10">
+            <div className={`relative flex flex-col justify-end w-full h-full ${variant.padding} gap-1 bg-[linear-gradient(180deg,_rgba(0,0,0,0)_49.87%,_rgba(0,0,0,0.8)_100%)] z-10`}>
               <h3
                 className={`font-semibold ${variant.text} text-white drop-shadow-md`}
               >

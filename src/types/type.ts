@@ -69,12 +69,18 @@ interface UserPhone {
   id: number;
   phone_number: number[];
 }
+export interface BundlingPhoto {
+  id: number;
+  photo: string;
+}
+
 export interface Bundling {
   id: number;
   name: string;
   price: number;
   slug: string;
   premiere: boolean;
+  bundlingPhotos: BundlingPhoto[];
   products: BundlingProduct[];
 }
 

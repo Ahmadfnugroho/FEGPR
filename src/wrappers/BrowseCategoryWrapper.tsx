@@ -9,6 +9,11 @@ import { Link } from "react-router-dom";
 import CategoryCardSkeleton from "../components/CategoryCardSkeleton";
 import "../styles/CategorySwiper.css";
 
+// Import Swiper styles
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 export default function BrowseCategoryWrapper() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -47,6 +52,20 @@ export default function BrowseCategoryWrapper() {
     };
   }, [fetchCategories]);
 
+  // Bundling category
+  const bundlingCategory = {
+    id: 9999,
+    name: "Bundling",
+    slug: "bundling",
+    photo:
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop&crop=center&auto=format&q=80",
+    products_count: 0,
+    products: [],
+  };
+
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  const allCategories = [bundlingCategory, ...safeCategories];
+
   if (loading) {
     return (
       <>
@@ -55,7 +74,7 @@ export default function BrowseCategoryWrapper() {
           <div className="relative">
             <Swiper
               modules={[Navigation, Pagination]}
-              spaceBetween={10}
+              spaceBetween={8}
               slidesPerView="auto"
               navigation={{
                 nextEl: '.swiper-button-next-custom-mobile',
@@ -66,9 +85,9 @@ export default function BrowseCategoryWrapper() {
                 dynamicBullets: true,
                 dynamicMainBullets: 3
               }}
-              className="category-swiper"
+              className="category-swiper-compact"
             >
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <SwiperSlide key={`skeleton-mobile-${i}`} className="!w-fit">
                   <CategoryCardSkeleton />
                 </SwiperSlide>
@@ -76,13 +95,13 @@ export default function BrowseCategoryWrapper() {
             </Swiper>
             
             {/* Custom Navigation Buttons for Mobile */}
-            <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </div>
-            <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -100,7 +119,7 @@ export default function BrowseCategoryWrapper() {
           <div className="relative">
             <Swiper
               modules={[Navigation, Pagination]}
-              spaceBetween={20}
+              spaceBetween={12}
               slidesPerView="auto"
               navigation={{
                 nextEl: '.swiper-button-next-custom',
@@ -111,9 +130,9 @@ export default function BrowseCategoryWrapper() {
                 dynamicBullets: true,
                 dynamicMainBullets: 5
               }}
-              className="category-swiper"
+              className="category-swiper-compact"
             >
-              {Array.from({ length: 6 }).map((_, i) => (
+              {Array.from({ length: 8 }).map((_, i) => (
                 <SwiperSlide key={`skeleton-web-${i}`} className="!w-fit">
                   <CategoryCardSkeleton />
                 </SwiperSlide>
@@ -121,13 +140,13 @@ export default function BrowseCategoryWrapper() {
             </Swiper>
             
             {/* Custom Navigation Buttons */}
-            <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </div>
-            <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </div>
@@ -141,27 +160,14 @@ export default function BrowseCategoryWrapper() {
     return <p>Error: {error}</p>;
   }
 
-  const bundlingCategory = {
-    id: 9999,
-    name: "Bundling",
-    slug: "bundling",
-    photo:
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop&crop=center&auto=format&q=80",
-    products_count: 0,
-    products: [],
-  };
-
-  const safeCategories = Array.isArray(categories) ? categories : [];
-  const allCategories = [bundlingCategory, ...safeCategories];
-
   return (
     <>
-      {/* MOBILE */}
+      {/* MOBILE - Compact Swiper with touchscreen support */}
       <section className="md:hidden scroll-fade-in category-swiper-mobile">
-        <div className="relative">
+        <div className="relative px-2">
           <Swiper
             modules={[Navigation, Pagination]}
-            spaceBetween={10}
+            spaceBetween={8}
             slidesPerView="auto"
             navigation={{
               nextEl: '.swiper-button-next-custom-mobile',
@@ -172,7 +178,10 @@ export default function BrowseCategoryWrapper() {
               dynamicBullets: true,
               dynamicMainBullets: 3
             }}
-            className="category-swiper"
+            touchRatio={1.2}
+            simulateTouch={true}
+            grabCursor={true}
+            className="category-swiper-compact"
           >
             {allCategories.map((category) => (
               <SwiperSlide key={category.id} className="!w-fit">
@@ -189,24 +198,24 @@ export default function BrowseCategoryWrapper() {
             ))}
           </Swiper>
           
-          {/* Custom Navigation Buttons for Mobile */}
-          <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Custom Navigation Buttons for Mobile - Smaller and more compact */}
+          <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </div>
-          <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </div>
         </div>
       </section>
 
-      {/* WEB */}
+      {/* WEB - Compact Swiper with touchscreen support */}
       <section
         id="Cities"
-        className="hidden md:block mt-24 mx-14 flex-col gap-[30px] scroll-fade-in"
+        className="hidden md:block mt-24 mx-14 scroll-fade-in"
       >
         <div className="w-full max-w-[1130px] mx-auto flex items-center justify-between">
           <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-primary mt-10 mb-10">
@@ -220,7 +229,7 @@ export default function BrowseCategoryWrapper() {
         <div className="relative">
           <Swiper
             modules={[Navigation, Pagination]}
-            spaceBetween={20}
+            spaceBetween={12}
             slidesPerView="auto"
             navigation={{
               nextEl: '.swiper-button-next-custom',
@@ -231,7 +240,10 @@ export default function BrowseCategoryWrapper() {
               dynamicBullets: true,
               dynamicMainBullets: 5
             }}
-            className="category-swiper"
+            touchRatio={1.2}
+            simulateTouch={true}
+            grabCursor={true}
+            className="category-swiper-compact"
           >
             {allCategories.map((category) => (
               <SwiperSlide key={category.id} className="!w-fit">
@@ -248,14 +260,14 @@ export default function BrowseCategoryWrapper() {
             ))}
           </Swiper>
           
-          {/* Custom Navigation Buttons */}
-          <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {/* Custom Navigation Buttons for Web */}
+          <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </div>
-          <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-4 z-10 w-10 h-10 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-5 h-5 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
+            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
             </svg>
           </div>

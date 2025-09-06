@@ -19,6 +19,7 @@ import type {
   Bundling,
   BundlingProduct,
   ProductPhoto,
+  BundlingPhoto,
   productSpecification,
   RentalInclude,
 } from "../types/type";
@@ -54,9 +55,21 @@ export default function BundlingDetails() {
   });
 
   // Move all computed values and memoized values here to maintain hooks order
-  const allPhotos: (ProductPhoto & { productName: string })[] = useMemo(() => {
+  const allPhotos: ((ProductPhoto | BundlingPhoto) & { productName: string })[] = useMemo(() => {
     if (!bundling) return [];
-    const photos: (ProductPhoto & { productName: string })[] = [];
+    const photos: ((ProductPhoto | BundlingPhoto) & { productName: string })[] = [];
+    
+    // First priority: Add bundling photos
+    if (bundling.bundlingPhotos && bundling.bundlingPhotos.length > 0) {
+      bundling.bundlingPhotos.forEach((photo) => {
+        photos.push({
+          ...photo,
+          productName: bundling.name + " (Bundling)",
+        });
+      });
+    }
+    
+    // Then add product photos as additional images
     bundling.products.forEach((product) => {
       product.productPhotos?.forEach((photo) => {
         photos.push({
@@ -65,6 +78,7 @@ export default function BundlingDetails() {
         });
       });
     });
+    
     return photos;
   }, [bundling]);
 

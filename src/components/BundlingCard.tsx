@@ -8,14 +8,22 @@ interface BundlingCardProps {
 
 const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
 
-  // Get thumbnail from first product with photo
+  // Get thumbnail - prioritize bundling photos first, then product photos as fallback
   const getThumbnail = () => {
+    // First priority: bundling photos
+    if (bundling.bundlingPhotos && bundling.bundlingPhotos.length > 0) {
+      return `${STORAGE_BASE_URL}/${bundling.bundlingPhotos[0].photo}`;
+    }
+    
+    // Fallback: product photos
     for (const product of bundling.products) {
       if (product.productPhotos && product.productPhotos.length > 0) {
         return `${STORAGE_BASE_URL}/${product.productPhotos[0].photo}`;
       }
     }
-    return "/placeholder-image.jpg"; // fallback image
+    
+    // Final fallback: placeholder
+    return "/placeholder-image.jpg";
   };
 
   return (
