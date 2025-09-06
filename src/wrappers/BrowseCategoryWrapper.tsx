@@ -9,11 +9,6 @@ import { Link } from "react-router-dom";
 import CategoryCardSkeleton from "../components/CategoryCardSkeleton";
 import "../styles/CategorySwiper.css";
 
-// Import Swiper styles
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
-
 export default function BrowseCategoryWrapper() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
