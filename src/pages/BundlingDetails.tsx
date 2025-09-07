@@ -524,7 +524,7 @@ export default function BundlingDetails() {
                   <EnhancedBookingForm 
                     item={bundling} 
                     type="bundling" 
-                    className="mt-6"
+                    className="mt-6 mb-8"
                   />
                 </div>
               </div>

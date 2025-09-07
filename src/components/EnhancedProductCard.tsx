@@ -12,8 +12,13 @@ import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { STORAGE_BASE_URL } from '../api/constants';
 import type { Product } from '../types/type';
 
+// Extend Product interface to ensure all image fields are available
+type ProductWithImages = Product & {
+  productPhotos?: Array<{ id: number; photo: string }>;
+};
+
 interface EnhancedProductCardProps {
-  product: Product;
+  product: ProductWithImages;
   onWishlistToggle?: (productId: string) => void;
   isInWishlist?: boolean;
   showQuickActions?: boolean;
@@ -103,7 +108,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(({
               )}
               {!imageError ? (
                 <img
-                  src={product.photo ? `${STORAGE_BASE_URL}/${product.photo}` : '/images/placeholder-product.png'}
+                  src={product.photo ? `${STORAGE_BASE_URL}/${product.photo}` : (product.productPhotos?.[0]?.photo ? `${STORAGE_BASE_URL}/${product.productPhotos[0].photo}` : '/images/placeholder-product.png')}
                   alt={product.name}
                   className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
                   onError={handleImageError}
@@ -222,7 +227,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(({
         
         {!imageError ? (
           <img
-            src={product.photo ? `${STORAGE_BASE_URL}/${product.photo}` : '/images/placeholder-product.png'}
+            src={product.photo ? `${STORAGE_BASE_URL}/${product.photo}` : (product.productPhotos?.[0]?.photo ? `${STORAGE_BASE_URL}/${product.productPhotos[0].photo}` : '/images/placeholder-product.png')}
             alt={product.name}
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
             onError={handleImageError}

@@ -337,7 +337,7 @@ const RentalIncludes = ({
   }, [includes, productName]);
 
   return (
-    <section className="lg:col-span-2 bg-white rounded-xl shadow-sm border overflow-hidden">
+    <section className="bg-white rounded-xl shadow-sm border overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
         <h2 className="font-semibold text-xl text-gray-900 flex items-center">
           <span className="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
@@ -555,10 +555,16 @@ export default function Details() {
           
           {/* Additional Information Below */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-6 md:gap-y-10 items-start mt-12">
-            <RentalIncludes
-              productName={product.name}
-              includes={product.rentalIncludes || []}
-            />
+            {/* Empty space for columns 1-3 */}
+            <div className="lg:col-span-3 hidden lg:block"></div>
+            
+            {/* RentalIncludes in columns 4-5 */}
+            <div className="lg:col-span-2">
+              <RentalIncludes
+                productName={product.name}
+                includes={product.rentalIncludes || []}
+              />
+            </div>
           </div>
         </main>
       </div>

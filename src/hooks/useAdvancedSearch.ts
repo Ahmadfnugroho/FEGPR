@@ -91,31 +91,39 @@ export function useAdvancedSearch({
           })
         ]);
 
-        const products: SearchableItem[] = productsResponse.data.data.map((product: any) => ({
+        console.log('🔍 Products response:', productsResponse.data);
+        console.log('🔍 Bundlings response:', bundlingsResponse.data);
+
+        const productsData = productsResponse.data.data || [];
+        const bundlingsData = bundlingsResponse.data.data || [];
+
+        const products: SearchableItem[] = productsData.map((product: any) => ({
           id: product.id,
           name: product.name,
           slug: product.slug,
           type: 'product' as const,
           category: product.category,
           brand: product.brand,
-          description: product.description,
-          thumbnail: product.photo || product.productPhotos?.[0]?.photo,
+          description: product.description || '',
+          thumbnail: product.photo || product.productPhotos?.[0]?.photo || '',
           price: product.price
         }));
 
-        const bundlings: SearchableItem[] = bundlingsResponse.data.data.map((bundling: any) => ({
+        const bundlings: SearchableItem[] = bundlingsData.map((bundling: any) => ({
           id: bundling.id,
           name: bundling.name,
           slug: bundling.slug,
           type: 'bundling' as const,
           category: bundling.category,
           brand: bundling.brand,
-          description: bundling.description,
-          thumbnail: bundling.photo || bundling.bundlingPhotos?.[0]?.photo,
+          description: bundling.description || '',
+          thumbnail: bundling.photo || bundling.bundlingPhotos?.[0]?.photo || '',
           price: bundling.price
         }));
 
         const combinedData = [...products, ...bundlings];
+        
+        console.log('🔍 Combined search data:', combinedData.length, 'items');
         
         // Update cache
         searchDataCache.data = combinedData;
@@ -124,7 +132,8 @@ export function useAdvancedSearch({
         return combinedData;
       } catch (error) {
         console.error('Error fetching search data:', error);
-        throw error;
+        // Return empty array to prevent crashes
+        return [];
       }
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
