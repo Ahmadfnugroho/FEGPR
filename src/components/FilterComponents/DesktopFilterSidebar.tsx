@@ -73,6 +73,14 @@ export default function DesktopFilterSidebar({
       />
 
       <FilterCheckboxGroup
+        title="Brand"
+        options={brandOptions}
+        selectedValues={tempFilter.brand}
+        onChange={handleFilterChange("brand")}
+        defaultOpen={false}
+      />
+
+      <FilterCheckboxGroup
         title="Status Ketersediaan"
         options={[
           { label: "Tersedia", value: "1" },

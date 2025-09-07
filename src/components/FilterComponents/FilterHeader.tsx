@@ -14,6 +14,7 @@ interface FilterHeaderProps {
   priceRange: { min: number; max: number } | null;
   onClearAll: () => void;
   onClearCategory: (value: string) => void;
+  onClearBrand: (value: string) => void;
   onClearSubcategory: (value: string) => void;
   onClearAvailable: (value: string) => void;
   onClearPrice: () => void;
@@ -28,6 +29,7 @@ export default function FilterHeader({
   priceRange,
   onClearAll,
   onClearCategory,
+  onClearBrand,
   onClearSubcategory,
   onClearAvailable,
   onClearPrice,
@@ -57,6 +59,18 @@ export default function FilterHeader({
           label: option.label,
           onRemove: () => onClearCategory(cat),
           type: "category",
+        });
+      }
+    });
+
+    // Add brand items with null checks
+    (currentFilters.brand || []).forEach((brand) => {
+      const option = (brandOptions || []).find((opt) => opt.value === brand);
+      if (option) {
+        items.push({
+          label: option.label,
+          onRemove: () => onClearBrand(brand),
+          type: "brand",
         });
       }
     });

@@ -4,19 +4,18 @@ import { useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { useAutocomplete } from '../hooks/useAdvancedSearch';
 import { STORAGE_BASE_URL } from '../api/constants';
-import { highlightMatches } from '../utils/searchUtils';
 
-interface AdvancedSearchBarProps {
+interface SearchBarProps {
   className?: string;
   placeholder?: string;
   maxSuggestions?: number;
 }
 
-export default function AdvancedSearchBar({
+export default function SearchBar({
   className = '',
   placeholder = 'Cari produk, bundling...',
-  maxSuggestions = 8
-}: AdvancedSearchBarProps) {
+  maxSuggestions = 6
+}: SearchBarProps) {
   const [query, setQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
@@ -177,11 +176,11 @@ export default function AdvancedSearchBar({
         </button>
       </div>
 
-      {/* Autocomplete Dropdown */}
+      {/* Search Suggestions Dropdown */}
       {showSuggestions && suggestions.length > 0 && (
         <div
           ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-support-subtle rounded-lg shadow-lg z-50 max-h-48 md:max-h-80 overflow-y-auto"
+          className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto"
           role="listbox"
           aria-label="Saran pencarian"
         >
@@ -191,9 +190,9 @@ export default function AdvancedSearchBar({
               type="button"
               onClick={() => selectSuggestion(item)}
               onMouseEnter={() => setSelectedIndex(index)}
-              className={`w-full text-left px-3 md:px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 text-xs md:text-sm transition-all duration-200 first:rounded-t-lg last:rounded-b-lg border-b border-gray-100 dark:border-gray-700 last:border-b-0 ${
+              className={`w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg border-b border-gray-100 last:border-b-0 ${
                 selectedIndex === index 
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700' 
+                  ? 'bg-blue-50 border-blue-200' 
                   : ''
               }`}
               role="option"
@@ -204,60 +203,37 @@ export default function AdvancedSearchBar({
                 <img
                   src={`${STORAGE_BASE_URL}/${item.thumbnail}`}
                   alt=""
-                  className="w-8 h-8 md:w-10 md:h-10 object-cover rounded flex-shrink-0"
+                  className="w-10 h-10 object-cover rounded flex-shrink-0"
                 />
               ) : (
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-gray-200 dark:bg-gray-600 rounded flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
                   {item.type === 'bundling' ? '📦' : '📷'}
                 </div>
               )}
 
               <div className="flex-1 min-w-0">
-                {/* Name with highlighting */}
-                <div 
-                  className="font-medium text-support-primary truncate"
-                  dangerouslySetInnerHTML={{ 
-                    __html: highlightMatches(item.name, query) 
-                  }}
-                />
+                {/* Name */}
+                <div className="font-medium text-support-primary truncate">
+                  {item.name}
+                </div>
                 
-                {/* Type and category info */}
-                <div className="flex items-center gap-2 text-xs text-support-tertiary mt-1">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                {/* Type and Price */}
+                <div className="flex items-center justify-between text-xs text-support-tertiary mt-1">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                     item.type === 'product' 
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300'
-                      : 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-blue-100 text-blue-700'
                   }`}>
                     {item.type === 'product' ? 'Produk' : 'Bundling'}
                   </span>
                   
-                  {item.category && (
-                    <span className="text-support-tertiary">
-                      {item.category.name}
-                    </span>
-                  )}
-                  
-                  {item.brand && (
-                    <span className="text-support-tertiary">
-                      • {item.brand.name}
+                  {item.price && (
+                    <span className="font-semibold text-pop-primary">
+                      {formatPrice(item.price)}
                     </span>
                   )}
                 </div>
-                
-                {/* Price */}
-                {item.price && (
-                  <div className="text-xs font-semibold text-pop-primary mt-1">
-                    {formatPrice(item.price)}
-                  </div>
-                )}
               </div>
-
-              {/* Score indicator (for debugging, can be removed) */}
-              {import.meta.env.DEV && (
-                <div className="text-xs text-gray-400 ml-2">
-                  {Math.round(item.score * 100)}%
-                </div>
-              )}
             </button>
           ))}
           

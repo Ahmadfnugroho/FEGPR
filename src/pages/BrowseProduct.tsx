@@ -191,9 +191,40 @@ export default function BrowseProduct() {
 
       // Exclude products that are rental includes of other products
       ps.set("exclude_rental_includes", "true");
+      
+      // Enable OR logic for cross-category filtering
+      // If user selects multiple different filter types (category + brand + subcategory)
+      // use OR logic instead of AND
+      const hasMultipleFilterTypes = [
+        currentFilter.category?.length > 0,
+        currentFilter.brand?.length > 0,
+        currentFilter.subcategory?.length > 0,
+      ].filter(Boolean).length > 1;
+      
+      if (hasMultipleFilterTypes) {
+        ps.set("filter_logic", "or");
+        console.log('🔄 Using OR logic for cross-category filtering');
+      } else {
+        ps.set("filter_logic", "and");
+        console.log('🔄 Using AND logic for single filter type');
+      }
 
       ps.set("page", String(p));
       ps.set("limit", String(pageSize));
+      
+      // Enhanced logging for debugging
+      console.log('🔍 Filter params being sent:', {
+        categories: currentFilter.category,
+        brands: currentFilter.brand,
+        subcategories: currentFilter.subcategory,
+        available: currentFilter.available,
+        priceRange: currentPriceRange,
+        filterLogic: hasMultipleFilterTypes ? 'OR' : 'AND',
+        query: currentFilter.q,
+        sort: sort,
+        order: order
+      });
+      
       return ps;
     },
     [filter, priceRange, sort, order, pageSize]
@@ -571,6 +602,12 @@ export default function BrowseProduct() {
                       category: prev.category.filter((c) => c !== value),
                     }));
                   }}
+                  onClearBrand={(value) => {
+                    setFilter((prev) => ({
+                      ...prev,
+                      brand: prev.brand.filter((b) => b !== value),
+                    }));
+                  }}
                   onClearSubcategory={(value) => {
                     setFilter((prev) => ({
                       ...prev,
@@ -671,21 +708,6 @@ export default function BrowseProduct() {
                       <EnhancedProductCard 
                         key={product.id}
                         product={product}
-                        onWishlistToggle={(productId) => {
-                          // Handle wishlist toggle - implement your wishlist logic here
-                          console.log('Toggle wishlist for product:', productId);
-                          const currentCount = parseInt(localStorage.getItem('wishlist-count') || '0');
-                          const isInWishlist = localStorage.getItem(`wishlist-${productId}`);
-                          
-                          if (isInWishlist) {
-                            localStorage.removeItem(`wishlist-${productId}`);
-                            localStorage.setItem('wishlist-count', String(Math.max(0, currentCount - 1)));
-                          } else {
-                            localStorage.setItem(`wishlist-${productId}`, 'true');
-                            localStorage.setItem('wishlist-count', String(currentCount + 1));
-                          }
-                        }}
-                        isInWishlist={!!localStorage.getItem(`wishlist-${product.id}`)}
                         variant="grid"
                       />
                     ))}

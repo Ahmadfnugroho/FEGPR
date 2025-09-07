@@ -93,6 +93,12 @@ export default function MobileFilterDialog({
                   category: prev.category.filter((c) => c !== value),
                 }));
               }}
+              onClearBrand={(value) => {
+                setTempFilter((prev) => ({
+                  ...prev,
+                  brand: prev.brand.filter((b) => b !== value),
+                }));
+              }}
               onClearSubcategory={(value) => {
                 setTempFilter((prev) => ({
                   ...prev,
@@ -130,6 +136,14 @@ export default function MobileFilterDialog({
               options={subCategoryOptions}
               selectedValues={tempFilter.subcategory}
               onChange={handleFilterChange("subcategory")}
+              defaultOpen={false}
+            />
+
+            <FilterCheckboxGroup
+              title="Brand"
+              options={brandOptions}
+              selectedValues={tempFilter.brand}
+              onChange={handleFilterChange("brand")}
               defaultOpen={false}
             />
 
