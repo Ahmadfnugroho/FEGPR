@@ -1,0 +1,114 @@
+{
+  "name": "Global Photo Rental - Sewa Kamera & Peralatan Fotografi",
+  "short_name": "Global Photo Rental",
+  "description": "Platform rental kamera dan peralatan fotografi terpercaya di Indonesia. Sewa DSLR, mirrorless, drone, dan accessories berkualitas tinggi.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a173b",
+  "theme_color": "#17236a",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "id",
+  "categories": ["shopping", "photography", "business"],
+  "icons": [
+    {
+      "src": "/LOGO-GPR.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/LOGO-GPR.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/LOGO-GPR.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/LOGO-GPR.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/LOGO-GPR.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/LOGO-GPR.png",
+      "sizes": "48x48",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/browse-products.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Browse camera products"
+    },
+    {
+      "src": "/screenshots/product-details.png", 
+      "sizes": "750x1334",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Product details page"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Browse Cameras",
+      "short_name": "Browse",
+      "description": "Browse available cameras and equipment",
+      "url": "/browse-product",
+      "icons": [
+        {
+          "src": "/icons/camera-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Check Booking",
+      "short_name": "Booking",
+      "description": "Check your booking status",
+      "url": "/check-booking",
+      "icons": [
+        {
+          "src": "/icons/booking-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Cara Sewa",
+      "short_name": "Help",
+      "description": "Learn how to rent equipment",
+      "url": "/cara-sewa",
+      "icons": [
+        {
+          "src": "/icons/help-shortcut.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "web",
+      "url": "https://globalphotorental.com"
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "navigate-new"]
+  }
+}

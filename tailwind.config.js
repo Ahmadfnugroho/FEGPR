@@ -136,6 +136,25 @@ export default {
         loaderSlide: "loaderSlide 1.5s linear infinite",
         fadeOut: "fadeOut 0.7s ease forwards",
         zoomOut: "zoomOut 0.6s ease forwards",
+        // Mobile-specific animations
+        "bounce-soft": "bounce 2s infinite",
+        "pulse-slow": "pulse 3s infinite",
+      },
+      // Mobile-first responsive breakpoints
+      screens: {
+        'xs': '375px',
+        'sm': '640px',
+        'md': '768px',
+        'lg': '1024px',
+        'xl': '1280px',
+        '2xl': '1536px',
+      },
+      // Safe area insets for mobile devices
+      spacing: {
+        'safe-top': 'env(safe-area-inset-top)',
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'safe-left': 'env(safe-area-inset-left)',
+        'safe-right': 'env(safe-area-inset-right)',
       },
     },
   },

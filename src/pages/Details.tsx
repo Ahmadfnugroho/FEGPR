@@ -30,6 +30,8 @@ import type {
 import NavCard from "../components/navCard";
 import FooterSection from "../components/FooterSection";
 import PageSkeleton from "../components/PageSkeleton";
+import EnhancedSEOHead, { useProductSEO } from "../components/EnhancedSEOHead";
+import EnhancedBookingForm from "../components/EnhancedBookingForm";
 
 // Constants
 // Menggunakan API_BASE_URL dari axiosInstance
@@ -165,16 +167,6 @@ const ProductImageGallery = ({
 };
 
 const ProductInfo = ({ product }: { product: Product }) => {
-  const [quantity, setQuantity] = useState(1);
-  const [isFavorite, setIsFavorite] = useState(false);
-
-  const whatsappLink = useMemo(() => {
-    const message = `Halo, saya tertarik untuk menyewa ${product.name} sebanyak ${quantity} unit. Bisa beri info lebih lanjut?`;
-    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-      message
-    )}`;
-  }, [product.name, quantity]);
-
   const categoryItems = useMemo(
     () =>
       [product.category, product.subCategory, product.brand]
@@ -190,14 +182,6 @@ const ProductInfo = ({ product }: { product: Product }) => {
     currency: "IDR",
     minimumFractionDigits: 0,
   }).format(product.price);
-
-  const handleQuantityChange = (delta: number) => {
-    setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
-  };
-
-  // Mock rating data - replace with real data if available
-  const rating = 4.5;
-  const reviewCount = 145;
 
   return (
     <div className="lg:col-span-2 space-y-6">
@@ -231,47 +215,22 @@ const ProductInfo = ({ product }: { product: Product }) => {
         )}
       </header>
 
-      {/* Rating and Reviews */}
-
-      {/* Delivery Location */}
-
-      {/* Price */}
-      <div className="space-y-4">
-        <div className="bg-gray-50 rounded-xl p-6 border">
-          <p className="text-3xl font-bold text-gray-900 mb-1">
-            {formattedPrice}
-            <span className="text-lg font-normal text-gray-600 ml-1">
-              /hari
-            </span>
-          </p>
-        </div>
-
-        {/* Quantity Selector */}
+      {/* Price Display */}
+      <div className="bg-gray-50 rounded-xl p-6 border">
+        <p className="text-3xl font-bold text-gray-900 mb-1">
+          {formattedPrice}
+          <span className="text-lg font-normal text-gray-600 ml-1">
+            /hari
+          </span>
+        </p>
       </div>
 
-      {/* Action Buttons */}
-      <div className="space-y-3">
-        <div className="flex space-x-3">
-          <a
-            href={whatsappLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex-1 flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
-              isAvailable
-                ? "bg-text-light-primary hover:bg-blue-700 text-white shadow-md hover:shadow-lg"
-                : "bg-gray-400 text-gray-600 cursor-not-allowed"
-            }`}
-            {...(!isAvailable && { "aria-disabled": "true" })}
-          >
-            <MdShoppingCart className="w-5 h-5 mr-2" />
-            {isAvailable ? "Sewa Sekarang" : "Tidak Tersedia"}
-          </a>
-        </div>
-      </div>
-
-      {/* Additional Options */}
-
-      {/* Pickup/Delivery Options */}
+      {/* Enhanced Booking Form */}
+      <EnhancedBookingForm 
+        item={product}
+        type="product"
+        className="mt-6"
+      />
     </div>
   );
 };
@@ -496,6 +455,22 @@ export default function Details() {
     setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
   }, []);
 
+  // Generate SEO props for this product
+  const seoProps = useMemo(() => {
+    if (!product) return null;
+    return {
+      title: `Sewa ${product.name}`,
+      description: `Sewa ${product.name} berkualitas tinggi dari ${product.brand?.name || 'brand terpercaya'}. Harga mulai ${formattedPrice}/hari. ${product.status === 'available' ? 'Tersedia untuk rental!' : 'Hubungi kami untuk ketersediaan.'} Proses mudah dan cepat.`,
+      keywords: `rental ${product.name}, sewa ${product.category?.name || 'kamera'}, ${product.brand?.name || ''}, rental kamera ${product.category?.name || ''} Indonesia, sewa peralatan fotografi`,
+      image: product.thumbnail ? `${STORAGE_BASE_URL}/${product.thumbnail}` : undefined,
+      price: product.price,
+      type: 'product' as const,
+      category: product.category?.name,
+      brand: product.brand?.name,
+      availability: product.status === 'available' ? 'InStock' as const : 'OutOfStock' as const
+    };
+  }, [product, formattedPrice]);
+
   if (isLoading) return <PageSkeleton />;
 
   if (isError || !product) {
@@ -528,6 +503,9 @@ export default function Details() {
 
   return (
     <>
+      {/* SEO Head */}
+      {seoProps && <EnhancedSEOHead {...seoProps} />}
+      
       <NavCard />
       <div className="bg-gray-50 md:bg-white min-h-screen">
         <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-32 md:pb-8 pt-20 md:pt-28 has-[#Bottom-nav]:pb-40">
@@ -567,6 +545,10 @@ export default function Details() {
               photos={product.productPhotos || []}
             />
             <ProductInfo product={product} />
+          </div>
+          
+          {/* Additional Information Below */}
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-6 md:gap-y-10 items-start mt-12">
             <ProductSpecifications
               specifications={product.productSpecifications || []}
             />

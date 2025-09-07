@@ -8,6 +8,7 @@ import ProductSkeleton from "../components/ProductSkeleton";
 import BundlingCardSkeleton from "../components/BundlingCardSkeleton";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import ProductCard from "../components/ProductCard";
+import EnhancedProductCard from "../components/EnhancedProductCard";
 import BundlingCard from "../components/BundlingCard";
 import MobileFilterDialog from "../components/FilterComponents/MobileFilterDialog";
 import DesktopFilterSidebar from "../components/FilterComponents/DesktopFilterSidebar";
@@ -665,15 +666,28 @@ export default function BrowseProduct() {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                     {products.map((product) => (
-                      <Link
+                      <EnhancedProductCard 
                         key={product.id}
-                        to={`/product/${product.slug}`}
-                        className="group"
-                      >
-                        <ProductCard product={product} />
-                      </Link>
+                        product={product}
+                        onWishlistToggle={(productId) => {
+                          // Handle wishlist toggle - implement your wishlist logic here
+                          console.log('Toggle wishlist for product:', productId);
+                          const currentCount = parseInt(localStorage.getItem('wishlist-count') || '0');
+                          const isInWishlist = localStorage.getItem(`wishlist-${productId}`);
+                          
+                          if (isInWishlist) {
+                            localStorage.removeItem(`wishlist-${productId}`);
+                            localStorage.setItem('wishlist-count', String(Math.max(0, currentCount - 1)));
+                          } else {
+                            localStorage.setItem(`wishlist-${productId}`, 'true');
+                            localStorage.setItem('wishlist-count', String(currentCount + 1));
+                          }
+                        }}
+                        isInWishlist={!!localStorage.getItem(`wishlist-${product.id}`)}
+                        variant="grid"
+                      />
                     ))}
                   </div>
 
