@@ -32,7 +32,7 @@ interface ErrorFallbackProps {
 }
 
 class ErrorBoundary extends Component<Props, State> {
-  private retryTimeoutId: NodeJS.Timeout | null = null;
+  private retryTimeoutId: number | null = null;
 
   constructor(props: Props) {
     super(props);
@@ -110,7 +110,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     const delay = Math.pow(2, retryCount) * 1000;
 
-    this.retryTimeoutId = setTimeout(() => {
+    this.retryTimeoutId = window.setTimeout(() => {
       this.setState({
         hasError: false,
         error: null,

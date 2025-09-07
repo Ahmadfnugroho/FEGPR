@@ -341,7 +341,7 @@ export default function SearchResults() {
                       )}
 
                       {/* Match Score (dev only) */}
-                      {process.env.NODE_ENV === 'development' && (
+                      {import.meta.env.DEV && (
                         <div className="mt-2 text-xs text-gray-400">
                           Score: {Math.round(item.score * 100)}% | 
                           Matched: {item.matchedFields.join(', ')}

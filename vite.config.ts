@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import { resolve } from "path";
+import { fileURLToPath, URL } from 'node:url';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -54,12 +54,12 @@ export default defineConfig({
   // Path resolution
   resolve: {
     alias: {
-      '@': resolve(__dirname, 'src'),
-      '@components': resolve(__dirname, 'src/components'),
-      '@pages': resolve(__dirname, 'src/pages'),
-      '@types': resolve(__dirname, 'src/types'),
-      '@api': resolve(__dirname, 'src/api'),
-      '@assets': resolve(__dirname, 'src/assets')
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@components': fileURLToPath(new URL('./src/components', import.meta.url)),
+      '@pages': fileURLToPath(new URL('./src/pages', import.meta.url)),
+      '@types': fileURLToPath(new URL('./src/types', import.meta.url)),
+      '@api': fileURLToPath(new URL('./src/api', import.meta.url)),
+      '@assets': fileURLToPath(new URL('./src/assets', import.meta.url))
     }
   },
   
@@ -79,11 +79,11 @@ export default defineConfig({
   // ESBuild options for better performance
   esbuild: {
     // Remove unused imports
-    treeShaking: true,
-    
-    // Production optimizations
-    ...(process.env.NODE_ENV === 'production' && {
-      drop: ['console', 'debugger']
-    })
+    treeShaking: true
+  },
+  
+  // Environment-based configuration
+  define: {
+    'process.env': {}
   }
 });

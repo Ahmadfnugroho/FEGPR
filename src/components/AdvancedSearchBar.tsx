@@ -253,7 +253,7 @@ export default function AdvancedSearchBar({
               </div>
 
               {/* Score indicator (for debugging, can be removed) */}
-              {process.env.NODE_ENV === 'development' && (
+              {import.meta.env.DEV && (
                 <div className="text-xs text-gray-400 ml-2">
                   {Math.round(item.score * 100)}%
                 </div>
