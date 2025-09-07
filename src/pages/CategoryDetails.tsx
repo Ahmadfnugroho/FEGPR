@@ -36,10 +36,10 @@ export default function CategoryDetails() {
       });
   }, [slug]);
 
-  // Use products from category data directly with client-side pagination
+  // Fetch products from API endpoint with server-side pagination
   const fetchProducts = useCallback(
     async (p = 1, append = false) => {
-      if (!category?.products) return;
+      if (!category?.slug) return;
 
       try {
         if (append) {
@@ -48,31 +48,38 @@ export default function CategoryDetails() {
           setLoading(true);
         }
 
-        // Client-side pagination using category.products
-        const startIndex = (p - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedProducts = category.products.slice(startIndex, endIndex);
-        const totalItems = category.products.length;
-        const calculatedTotalPages = Math.ceil(totalItems / pageSize);
+        // Fetch products from API with category filter
+        const response = await axiosInstance.get('/products', {
+          params: {
+            category: category.slug,
+            page: p,
+            limit: pageSize,
+            exclude_rental_includes: true
+          }
+        });
 
-        setTotalPages(calculatedTotalPages);
-        setHasMore(p < calculatedTotalPages);
+        const data = response.data.data || [];
+        const meta = response.data.meta || {};
+
+        setTotalPages(meta.last_page || 1);
+        setHasMore(p < (meta.last_page || 1));
 
         if (append) {
-          setProducts((prev) => [...prev, ...paginatedProducts]);
+          setProducts((prev) => [...prev, ...data]);
         } else {
-          setProducts(paginatedProducts);
+          setProducts(data);
         }
         setPage(p);
         setError(null);
       } catch (err: any) {
+        console.error('Error fetching products for category:', err);
         setError(err.message || "Gagal memuat produk");
       } finally {
         setLoading(false);
         setLoadingMore(false);
       }
     },
-    [category, pageSize]
+    [category?.slug, pageSize]
   );
 
   // Load products when category is loaded
@@ -190,8 +197,8 @@ export default function CategoryDetails() {
             </h2>
             <p className="text-gray-600 text-sm">
               {products.length}{" "}
-              {hasMore ? "of " + (category?.products_count || "many") : ""}{" "}
-              produk
+              {hasMore ? `of ${category?.products_count || 'many'}` : ''}{" "}
+              produk{products.length !== 1 ? '' : ''}
             </p>
           </div>
 
