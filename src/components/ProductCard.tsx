@@ -1,6 +1,6 @@
 // src/components/ProductCard.tsx
 import { Product } from "../types/type";
-import { memo, useState } from "react";
+import { memo, useState, useCallback } from "react";
 import "swiper/swiper-bundle.css";
 import { STORAGE_BASE_URL } from "../api/constants";
 
@@ -53,10 +53,10 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
 
-  const openModal = (img: string) => {
+  const openModal = useCallback((img: string) => {
     setModalImage(img);
     setIsModalOpen(true);
-  };
+  }, []);
 
   return (
     <div className="card">

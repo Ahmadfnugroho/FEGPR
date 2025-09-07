@@ -294,7 +294,7 @@ export default function AdvancedSearchBar({
               navigate(`/search?q=${encodeURIComponent(query)}`);
               setShowSuggestions(false);
             }}
-            className="mt-2 text-pop-primary hover:text-pop-secondary text-sm font-medium transition-colors"
+            className="mt-2 text-pop-primary hover:text-pop-secondary text-sm font-medium transition-colors bg-white px-3 py-1 rounded"
           >
             Cari di semua produk
           </button>

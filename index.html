@@ -17,6 +17,7 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#1e3a8a" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Global Photo Rental" />
@@ -35,8 +36,16 @@
     <meta property="twitter:title" content="Global Photo Rental - Sewa Kamera & Peralatan Fotografi" />
     <meta property="twitter:description" content="Sewa kamera dan peralatan fotografi berkualitas tinggi di Indonesia" />
     <meta property="twitter:image" content="/og-image.jpg" />
+    <!-- Preconnect to critical origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://admin.globalphotorental.com" crossorigin />
+    
+    <!-- Preload critical CSS -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" />
+    
+    <!-- DNS prefetch for external resources -->
+    <link rel="dns-prefetch" href="//api.whatsapp.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap"
       rel="stylesheet"

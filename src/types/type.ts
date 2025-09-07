@@ -26,6 +26,7 @@ export interface Product {
   quantity: number;
   price: number;
   thumbnail: string;
+  photo?: string; // Main product photo from backend API
   status: "available" | "unavailable";
   description: string;
   slug: string;

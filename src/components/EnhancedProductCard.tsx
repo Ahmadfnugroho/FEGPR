@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, memo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   HeartIcon, 
@@ -20,7 +20,7 @@ interface EnhancedProductCardProps {
   variant?: 'grid' | 'list';
 }
 
-const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
+const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(({
   product,
   onWishlistToggle,
   isInWishlist = false,
@@ -71,22 +71,22 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
   const statusConfig = getStatusConfig(product.status);
   const StatusIcon = statusConfig.icon;
 
-  const handleImageError = () => {
+  const handleImageError = useCallback(() => {
     setImageError(true);
     setImageLoading(false);
-  };
+  }, []);
 
-  const handleImageLoad = () => {
+  const handleImageLoad = useCallback(() => {
     setImageLoading(false);
-  };
+  }, []);
 
-  const handleWishlistClick = (e: React.MouseEvent) => {
+  const handleWishlistClick = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (onWishlistToggle) {
       onWishlistToggle(product.id.toString());
     }
-  };
+  }, [onWishlistToggle, product.id]);
 
   if (variant === 'list') {
     return (
@@ -103,7 +103,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
               )}
               {!imageError ? (
                 <img
-                  src={`${STORAGE_BASE_URL}/${product.thumbnail}`}
+                  src={product.photo ? `${STORAGE_BASE_URL}/${product.photo}` : '/images/placeholder-product.png'}
                   alt={product.name}
                   className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
                   onError={handleImageError}
@@ -222,7 +222,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
         
         {!imageError ? (
           <img
-            src={`${STORAGE_BASE_URL}/${product.thumbnail}`}
+            src={product.photo ? `${STORAGE_BASE_URL}/${product.photo}` : '/images/placeholder-product.png'}
             alt={product.name}
             className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
             onError={handleImageError}
@@ -299,6 +299,8 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = ({
       </div>
     </Link>
   );
-};
+});
+
+EnhancedProductCard.displayName = 'EnhancedProductCard';
 
 export default EnhancedProductCard;

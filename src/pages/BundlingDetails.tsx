@@ -26,6 +26,7 @@ import type {
 import FooterSection from "../components/FooterSection";
 import BottomNavigation from "../components/BottomNavigation";
 import AnimatedPulseBorder from "../components/AnimatedPulseBorder";
+import EnhancedBookingForm from "../components/EnhancedBookingForm";
 
 const fetchBundling = async (slug: string | undefined) => {
   if (!slug) throw new Error("No slug provided");
@@ -519,21 +520,12 @@ export default function BundlingDetails() {
                     )}
                   </div>
 
-                  {/* Bawah */}
-                  <a
-                    href={whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-center justify-center px-6 py-3 rounded-full font-medium text-sm transition-all duration-200 ${
-                      isAvailable
-                        ? "bg-text-light-primary hover:bg-blue-700 text-white shadow-md"
-                        : "bg-gray-400 text-gray-600 cursor-not-allowed"
-                    }`}
-                    {...(!isAvailable && { "aria-disabled": "true" })}
-                  >
-                    <MdShoppingCart className="w-4 h-4 mr-2" />
-                    {isAvailable ? "Sewa Sekarang" : "Tidak Tersedia"}
-                  </a>
+                  {/* Booking Form */}
+                  <EnhancedBookingForm 
+                    item={bundling} 
+                    type="bundling" 
+                    className="mt-6"
+                  />
                 </div>
               </div>
             </div>
@@ -541,41 +533,6 @@ export default function BundlingDetails() {
         </div>
       </AnimatedPulseBorder>
 
-      {/* Mobile Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 md:hidden">
-        <div className="max-w-[640px] mx-auto px-4 py-3">
-          <div className="flex items-center justify-between space-x-3">
-            {/* Price and Quantity */}
-            <div className="flex-1">
-              <div className="text-lg font-bold text-gray-900">
-                {formattedPrice}
-                <span className="text-sm font-normal text-gray-600 ml-1">
-                  /hari
-                </span>
-              </div>
-              <div className="flex items-center space-x-2 mt-1"></div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex items-center space-x-2">
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center justify-center px-6 py-3 rounded-full font-medium text-sm transition-all duration-200 ${
-                  isAvailable
-                    ? "bg-text-light-primary hover:bg-blue-700 text-white shadow-md"
-                    : "bg-gray-400 text-gray-600 cursor-not-allowed"
-                }`}
-                {...(!isAvailable && { "aria-disabled": "true" })}
-              >
-                <MdShoppingCart className="w-4 h-4 mr-2" />
-                {isAvailable ? "Sewa Bundling" : "Tidak Tersedia"}
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <FooterSection />
       <BottomNavigation />

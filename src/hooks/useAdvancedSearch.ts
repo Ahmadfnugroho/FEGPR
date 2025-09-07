@@ -99,7 +99,7 @@ export function useAdvancedSearch({
           category: product.category,
           brand: product.brand,
           description: product.description,
-          thumbnail: product.productPhotos?.[0]?.photo,
+          thumbnail: product.photo || product.productPhotos?.[0]?.photo,
           price: product.price
         }));
 
@@ -111,7 +111,7 @@ export function useAdvancedSearch({
           category: bundling.category,
           brand: bundling.brand,
           description: bundling.description,
-          thumbnail: bundling.bundlingPhotos?.[0]?.photo,
+          thumbnail: bundling.photo || bundling.bundlingPhotos?.[0]?.photo,
           price: bundling.price
         }));
 

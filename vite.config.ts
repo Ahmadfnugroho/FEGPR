@@ -79,7 +79,11 @@ export default defineConfig({
   // ESBuild options for better performance
   esbuild: {
     // Remove unused imports
-    treeShaking: true
+    treeShaking: true,
+    // Remove comments in production
+    legalComments: 'none',
+    // Drop console and debugger in production
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : []
   },
   
   // Environment-based configuration

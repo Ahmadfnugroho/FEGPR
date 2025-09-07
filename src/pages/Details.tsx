@@ -70,21 +70,19 @@ const ProductImageGallery = ({
 
   if (!photos?.length) {
     return (
-      <div className="lg:col-span-3">
-        <div className="w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-xl bg-gray-100 flex items-center justify-center shadow-sm border">
-          <div className="text-center">
-            <MdError className="w-16 h-16 text-gray-400 mx-auto mb-3" />
-            <span className="text-gray-500 text-lg">
-              Tidak ada gambar tersedia
-            </span>
-          </div>
+      <div className="w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-xl bg-gray-100 flex items-center justify-center shadow-sm border">
+        <div className="text-center">
+          <MdError className="w-16 h-16 text-gray-400 mx-auto mb-3" />
+          <span className="text-gray-500 text-lg">
+            Tidak ada gambar tersedia
+          </span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="lg:col-span-3 space-y-4">
+    <div className="space-y-4">
       {/* Main Image Display */}
       <div className="w-full h-[400px] md:h-[500px] lg:h-80 bg-white rounded-xl shadow-sm border overflow-hidden">
         <Swiper
@@ -111,7 +109,7 @@ const ProductImageGallery = ({
                   src={`${STORAGE_BASE_URL}/${photo.photo}`}
                   alt={`Foto ${productName} ${index + 1}`}
                   className="max-w-full max-h-full object-contain transition-transform duration-300 hover:scale-105"
-                  loading={index === 0 ? "eager" : "lazy"}
+                  loading={index <= 2 ? "eager" : "lazy"}
                   onError={handleImageError}
                 />
               </div>
@@ -264,7 +262,7 @@ const ProductSpecifications = ({
   };
 
   return (
-    <section className="lg:col-span-3 bg-white rounded-xl shadow-sm border overflow-hidden">
+    <section className="bg-white rounded-xl shadow-sm border overflow-hidden">
       <div className="px-6 py-5 border-b border-gray-200 bg-gray-50">
         <h2 className="font-semibold text-xl text-gray-900 flex items-center">
           <span className="w-2 h-2 bg-blue-500 rounded-full mr-3"></span>
@@ -540,18 +538,23 @@ export default function Details() {
 
           {/* Grid Content */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-6 md:gap-y-10 items-start">
-            <ProductImageGallery
-              productName={product.name}
-              photos={product.productPhotos || []}
-            />
+            {/* Left side - Images and Specifications */}
+            <div className="lg:col-span-3 space-y-8">
+              <ProductImageGallery
+                productName={product.name}
+                photos={product.productPhotos || []}
+              />
+              <ProductSpecifications
+                specifications={product.productSpecifications || []}
+              />
+            </div>
+            
+            {/* Right side - Product Info and Booking */}
             <ProductInfo product={product} />
           </div>
           
           {/* Additional Information Below */}
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-x-8 gap-y-6 md:gap-y-10 items-start mt-12">
-            <ProductSpecifications
-              specifications={product.productSpecifications || []}
-            />
             <RentalIncludes
               productName={product.name}
               includes={product.rentalIncludes || []}
