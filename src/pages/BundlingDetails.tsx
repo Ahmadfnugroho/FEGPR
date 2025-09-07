@@ -56,10 +56,13 @@ export default function BundlingDetails() {
   });
 
   // Move all computed values and memoized values here to maintain hooks order
-  const allPhotos: ((ProductPhoto | BundlingPhoto) & { productName: string })[] = useMemo(() => {
+  const allPhotos: ((ProductPhoto | BundlingPhoto) & {
+    productName: string;
+  })[] = useMemo(() => {
     if (!bundling) return [];
-    const photos: ((ProductPhoto | BundlingPhoto) & { productName: string })[] = [];
-    
+    const photos: ((ProductPhoto | BundlingPhoto) & { productName: string })[] =
+      [];
+
     // First priority: Add bundling photos
     if (bundling.bundlingPhotos && bundling.bundlingPhotos.length > 0) {
       bundling.bundlingPhotos.forEach((photo) => {
@@ -69,7 +72,7 @@ export default function BundlingDetails() {
         });
       });
     }
-    
+
     // Then add product photos as additional images
     bundling.products.forEach((product) => {
       product.productPhotos?.forEach((photo) => {
@@ -79,7 +82,7 @@ export default function BundlingDetails() {
         });
       });
     });
-    
+
     return photos;
   }, [bundling]);
 
@@ -521,10 +524,10 @@ export default function BundlingDetails() {
                   </div>
 
                   {/* Booking Form */}
-                  <EnhancedBookingForm 
-                    item={bundling} 
-                    type="bundling" 
-                    className="mt-6 mb-8"
+                  <EnhancedBookingForm
+                    item={bundling}
+                    type="bundling"
+                    className="mt-1 mb-1"
                   />
                 </div>
               </div>
@@ -532,7 +535,6 @@ export default function BundlingDetails() {
           </main>
         </div>
       </AnimatedPulseBorder>
-
 
       <FooterSection />
       <BottomNavigation />

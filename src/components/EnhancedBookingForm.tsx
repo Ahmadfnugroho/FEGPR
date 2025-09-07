@@ -1,15 +1,15 @@
 // src/components/EnhancedBookingForm.tsx
-import { useState, useEffect } from 'react';
-import { useCart } from '../contexts/CartContext';
-import { useAvailability } from '../hooks/useAvailability';
-import DateRangePicker from './DateRangePicker';
-import { 
-  ShoppingCartIcon, 
-  CheckCircleIcon, 
+import { useState, useEffect } from "react";
+import { useCart } from "../contexts/CartContext";
+import { useAvailability } from "../hooks/useAvailability";
+import DateRangePicker from "./DateRangePicker";
+import {
+  ShoppingCartIcon,
+  CheckCircleIcon,
   ExclamationTriangleIcon,
   MinusIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 
 interface Product {
   id: number;
@@ -51,30 +51,33 @@ interface Bundling {
 
 interface EnhancedBookingFormProps {
   item: Product | Bundling;
-  type: 'product' | 'bundling';
+  type: "product" | "bundling";
   className?: string;
 }
 
 export default function EnhancedBookingForm({
   item,
   type,
-  className = ''
+  className = "",
 }: EnhancedBookingFormProps) {
-  const [dateRange, setDateRange] = useState<{startDate: Date | null, endDate: Date | null}>({
+  const [dateRange, setDateRange] = useState<{
+    startDate: Date | null;
+    endDate: Date | null;
+  }>({
     startDate: null,
-    endDate: null
+    endDate: null,
   });
   const [quantity, setQuantity] = useState(1);
   const [duration, setDuration] = useState(0);
   const [isBookingValid, setIsBookingValid] = useState(false);
-  const [validationError, setValidationError] = useState<string>('');
+  const [validationError, setValidationError] = useState<string>("");
 
   const { addItem, totalItems } = useCart();
-  const { 
-    checkAvailability, 
-    getUnavailableDates, 
-    isChecking, 
-    isLoadingTransactions 
+  const {
+    checkAvailability,
+    getUnavailableDates,
+    isChecking,
+    isLoadingTransactions,
   } = useAvailability();
 
   // Get unavailable dates for this item
@@ -83,21 +86,21 @@ export default function EnhancedBookingForm({
   // Validate booking form
   useEffect(() => {
     const validateBooking = async () => {
-      setValidationError('');
+      setValidationError("");
       setIsBookingValid(false);
 
       if (!dateRange.startDate || !dateRange.endDate) {
-        setValidationError('Silakan pilih tanggal rental');
+        setValidationError("Silakan pilih tanggal rental");
         return;
       }
 
       if (quantity < 1) {
-        setValidationError('Jumlah harus minimal 1');
+        setValidationError("Jumlah harus minimal 1");
         return;
       }
 
       if (duration < 1) {
-        setValidationError('Durasi rental harus minimal 1 hari');
+        setValidationError("Durasi rental harus minimal 1 hari");
         return;
       }
 
@@ -108,12 +111,12 @@ export default function EnhancedBookingForm({
           id: item.id,
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
-          quantity
+          quantity,
         });
 
         if (!availabilityResult.available) {
           if (availabilityResult.availableQuantity === 0) {
-            setValidationError('Item tidak tersedia pada tanggal yang dipilih');
+            setValidationError("Item tidak tersedia pada tanggal yang dipilih");
           } else {
             setValidationError(
               `Hanya ${availabilityResult.availableQuantity} unit tersedia pada tanggal tersebut`
@@ -124,7 +127,7 @@ export default function EnhancedBookingForm({
 
         setIsBookingValid(true);
       } catch (error) {
-        setValidationError('Gagal memeriksa ketersediaan. Silakan coba lagi.');
+        setValidationError("Gagal memeriksa ketersediaan. Silakan coba lagi.");
       }
     };
 
@@ -146,28 +149,29 @@ export default function EnhancedBookingForm({
 
     const cartItem = {
       type,
-      [type === 'product' ? 'productId' : 'bundlingId']: item.id,
+      [type === "product" ? "productId" : "bundlingId"]: item.id,
       name: item.name,
       slug: item.slug,
       price: item.price,
-      thumbnail: type === 'product' 
-        ? (item as Product).productPhotos?.[0]?.photo
-        : (item as Bundling).bundlingPhotos?.[0]?.photo,
+      thumbnail:
+        type === "product"
+          ? (item as Product).productPhotos?.[0]?.photo
+          : (item as Bundling).bundlingPhotos?.[0]?.photo,
       quantity,
       startDate: dateRange.startDate.toISOString(),
       endDate: dateRange.endDate.toISOString(),
       duration,
       category: item.category,
-      brand: item.brand
+      brand: item.brand,
     };
 
     addItem(cartItem);
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -177,12 +181,12 @@ export default function EnhancedBookingForm({
 
   return (
     <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
-      <h3 className="text-xl font-bold text-gray-900 mb-6">
-        Booking {type === 'product' ? 'Produk' : 'Bundling'}
+      <h3 className="text-xl font-bold text-gray-900">
+        Booking {type === "product" ? "Produk" : "Bundling"}
       </h3>
 
       {/* Item Info */}
-      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+      <div className="p-4 bg-gray-50 rounded-lg">
         <h4 className="font-semibold text-gray-900 mb-2">{item.name}</h4>
         <div className="flex items-center justify-between text-sm text-gray-600">
           <div>
@@ -197,7 +201,7 @@ export default function EnhancedBookingForm({
       </div>
 
       {/* Date Range Picker */}
-      <div className="mb-6">
+      <div className="mb-1">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Tanggal Rental
         </label>
@@ -207,18 +211,22 @@ export default function EnhancedBookingForm({
           onDurationChange={setDuration}
           unavailableDates={unavailableDates}
           disabled={isLoadingTransactions}
-          error={validationError && dateRange.startDate && dateRange.endDate ? undefined : validationError}
+          error={
+            validationError && dateRange.startDate && dateRange.endDate
+              ? undefined
+              : validationError
+          }
         />
-        
+
         {duration > 0 && (
-          <div className="mt-2 text-sm text-gray-600">
+          <div className="mt-1 text-sm text-gray-600">
             Durasi: <span className="font-semibold">{duration} hari</span>
           </div>
         )}
       </div>
 
       {/* Quantity Selector */}
-      <div className="mb-6">
+      <div className="mb-1">
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Jumlah
         </label>
@@ -231,16 +239,18 @@ export default function EnhancedBookingForm({
           >
             <MinusIcon className="h-4 w-4" />
           </button>
-          
+
           <input
             type="number"
             min="1"
             max="10"
             value={quantity}
-            onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+            onChange={(e) =>
+              handleQuantityChange(parseInt(e.target.value) || 1)
+            }
             className="w-20 text-center border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
-          
+
           <button
             type="button"
             onClick={() => handleQuantityChange(quantity + 1)}
@@ -249,14 +259,14 @@ export default function EnhancedBookingForm({
           >
             <PlusIcon className="h-4 w-4" />
           </button>
-          
+
           <span className="text-sm text-gray-600">unit</span>
         </div>
       </div>
 
       {/* Price Calculation */}
       {duration > 0 && (
-        <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+        <div className="mb-1 p-4 bg-blue-50 rounded-lg">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Harga per hari:</span>
@@ -281,7 +291,7 @@ export default function EnhancedBookingForm({
 
       {/* Availability Status */}
       {isChecking && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="mb-1 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
           <div className="flex items-center text-yellow-700">
             <div className="animate-spin h-4 w-4 border-2 border-yellow-700 border-t-transparent rounded-full mr-2"></div>
             Memeriksa ketersediaan...
@@ -290,7 +300,7 @@ export default function EnhancedBookingForm({
       )}
 
       {isBookingValid && !isChecking && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+        <div className="mb-1 p-3 bg-green-50 border border-green-200 rounded-lg">
           <div className="flex items-center text-green-700">
             <CheckCircleIcon className="h-5 w-5 mr-2" />
             Tersedia untuk tanggal yang dipilih
@@ -298,14 +308,17 @@ export default function EnhancedBookingForm({
         </div>
       )}
 
-      {validationError && !isChecking && dateRange.startDate && dateRange.endDate && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <div className="flex items-center text-red-700">
-            <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-            {validationError}
+      {validationError &&
+        !isChecking &&
+        dateRange.startDate &&
+        dateRange.endDate && (
+          <div className="mb-1 p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center text-red-700">
+              <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+              {validationError}
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Add to Cart Button */}
       <button
@@ -313,12 +326,12 @@ export default function EnhancedBookingForm({
         disabled={!isBookingValid || isChecking || isLoadingTransactions}
         className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
           isBookingValid && !isChecking
-            ? 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg'
-            : 'bg-gray-400 cursor-not-allowed'
+            ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"
+            : "bg-gray-400 cursor-not-allowed"
         }`}
       >
         <ShoppingCartIcon className="h-5 w-5 mr-2" />
-        {isChecking ? 'Memeriksa...' : 'Tambah ke Keranjang'}
+        {isChecking ? "Memeriksa..." : "Tambah ke Keranjang"}
         {totalItems > 0 && (
           <span className="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
             {totalItems}
@@ -327,7 +340,7 @@ export default function EnhancedBookingForm({
       </button>
 
       {/* Additional Info */}
-      <div className="mt-4 text-xs text-gray-500 space-y-1">
+      <div className="mt-1 text-xs text-gray-500 space-y-1">
         <p>• Harga sudah termasuk durasi rental yang dipilih</p>
         <p>• Booking akan dikonfirmasi melalui WhatsApp</p>
         <p>• Pembayaran dilakukan setelah konfirmasi</p>
