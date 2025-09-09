@@ -6,6 +6,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import SkipLink from "./components/SkipLink";
 import FloatingCartButton from "./components/FloatingCartButton";
 import { CartProvider } from "./contexts/CartContext";
+import { BookingDatesProvider } from "./contexts/BookingDatesContext";
 
 const Browse = lazy(() => import("./pages/browse"));
 const BrowseProduct = lazy(() => import("./pages/BrowseProduct"));
@@ -25,11 +26,12 @@ const Cart = lazy(() => import("./pages/Cart"));
 function App() {
 
   return (
-    <CartProvider>
-      <ErrorBoundary>
-        <SkipLink targetId="main-content">Skip to main content</SkipLink>
+    <BookingDatesProvider enablePersistence={true}>
+      <CartProvider>
+        <ErrorBoundary>
+          <SkipLink targetId="main-content">Skip to main content</SkipLink>
 
-        <BrowserRouter>
+          <BrowserRouter>
           <Suspense fallback={<FullScreenLoader />}>
             <Routes>
               <Route path="/" element={<Browse />} />
@@ -54,10 +56,11 @@ function App() {
           </Suspense>
           <FloatingWhatsAppButton />
           <FloatingCartButton />
-        </BrowserRouter>
+          </BrowserRouter>
 
-      </ErrorBoundary>
-    </CartProvider>
+        </ErrorBoundary>
+      </CartProvider>
+    </BookingDatesProvider>
   );
 }
 

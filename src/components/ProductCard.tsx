@@ -1,9 +1,14 @@
 // src/components/ProductCard.tsx
 import { Product } from "../types/type";
-import { memo, useState, useCallback } from "react";
+import { memo, useState, useCallback, useEffect } from "react";
 import "swiper/swiper-bundle.css";
 import { STORAGE_BASE_URL } from "../api/constants";
 import { formatPrice } from "../utils/rental-duration-helper";
+import { 
+  getValidProductPhotoUrls, 
+  hasValidProductPhotos,
+  validateProduct 
+} from "../utils/productValidation";
 
 // Swiper
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -46,13 +51,50 @@ interface ProductCardProps {
 }
 
 const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
-  const photos =
-    product.productPhotos?.length > 0
-      ? product.productPhotos.map((p) => `${STORAGE_BASE_URL}/${p.photo}`)
-      : ["/images/placeholder-product.png"];
-
+  // Validate product and photos on mount
+  const [validatedPhotos, setValidatedPhotos] = useState<string[]>([]);
+  const [hasPhotos, setHasPhotos] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImage, setModalImage] = useState("");
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
+
+  // Validate and process photos when product changes
+  useEffect(() => {
+    if (!product) {
+      console.warn('🚨 [ProductCard] Product is null or undefined');
+      setValidatedPhotos(["/images/placeholder-product.png"]);
+      setHasPhotos(false);
+      setValidationErrors(['Product is null or undefined']);
+      return;
+    }
+
+    // Validate product structure
+    const validation = validateProduct(product);
+    if (!validation.isValid) {
+      console.warn('🚨 [ProductCard] Product validation failed:', {
+        product: product.name,
+        errors: validation.errors
+      });
+      setValidationErrors(validation.errors);
+    }
+
+    // Get valid photo URLs
+    const validPhotoUrls = getValidProductPhotoUrls(product);
+    
+    if (validPhotoUrls.length === 0) {
+      console.log('📷 [ProductCard] No valid photos found, using placeholder:', product.name);
+      setValidatedPhotos(["/images/placeholder-product.png"]);
+      setHasPhotos(false);
+    } else {
+      console.log('📷 [ProductCard] Valid photos found:', {
+        product: product.name,
+        photoCount: validPhotoUrls.length,
+        photos: validPhotoUrls
+      });
+      setValidatedPhotos(validPhotoUrls);
+      setHasPhotos(true);
+    }
+  }, [product]);
 
   const openModal = useCallback((img: string) => {
     setModalImage(img);
@@ -84,13 +126,13 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
               prevEl: `.swiper-button-prev-${product.id}`,
             }}
             pagination={{ clickable: true }}
-            loop={photos.length > 2}
+            loop={validatedPhotos.length > 2}
             slidesPerView={1}
             spaceBetween={0}
             className="h-full w-full swiper-with-animation"
           >
-            {photos.map((photo, index) => (
-              <SwiperSlide key={index}>
+            {validatedPhotos.map((photo, index) => (
+              <SwiperSlide key={`${product.id}-photo-${index}`}>
                 <div
                   className="w-full h-full relative"
                   onClick={() => openModal(photo)}
@@ -100,7 +142,24 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
                     alt={`${product.name} - ${index + 1}`}
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300 cursor-zoom-in hover:brightness-110"
                     loading="lazy"
+                    onError={(e) => {
+                      console.error('📷 [ProductCard] Image load error:', {
+                        product: product.name,
+                        photo,
+                        index
+                      });
+                      // Fallback to placeholder
+                      if (e.currentTarget.src !== "/images/placeholder-product.png") {
+                        e.currentTarget.src = "/images/placeholder-product.png";
+                      }
+                    }}
                   />
+                  {/* Photo validation error indicator */}
+                  {!hasPhotos && index === 0 && (
+                    <div className="absolute bottom-2 left-2 bg-red-100 text-red-800 text-xs px-2 py-1 rounded opacity-75">
+                      No Photos
+                    </div>
+                  )}
                 </div>
               </SwiperSlide>
             ))}

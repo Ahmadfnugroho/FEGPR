@@ -37,6 +37,9 @@ export interface Product {
   brand: Brand;
   rentalIncludes: RentalInclude[]; // Ganti dari includes menjadi rentalIncludes
   subCategory: SubCategory;
+  // Availability fields - these are the authoritative fields for availability
+  available_quantity?: number; // Available quantity for specific date range
+  is_available?: boolean; // Whether product is generally available
 }
 
 export interface ProductPhoto {
@@ -93,6 +96,8 @@ export interface BundlingProduct {
   status: "available" | "unavailable";
   price: number;
   quantity: number;
+  available_quantity?: number; // Available quantity for this specific date range
+  is_available?: boolean; // Whether product is generally available
   category?: {
     id: number;
     name: string;

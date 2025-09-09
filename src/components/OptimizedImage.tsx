@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { PhotoIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { validateProductPhotoUrl } from '../utils/productValidation';
 
 interface OptimizedImageProps {
   src: string;
@@ -25,6 +26,8 @@ interface ImageState {
   isInView: boolean;
   currentSrc: string;
   retryCount: number;
+  validationStatus: 'pending' | 'valid' | 'invalid';
+  isEmpty: boolean;
 }
 
 const OptimizedImage: React.FC<OptimizedImageProps> = ({
@@ -49,7 +52,9 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     hasError: false,
     isInView: false,
     currentSrc: '',
-    retryCount: 0
+    retryCount: 0,
+    validationStatus: 'pending',
+    isEmpty: false
   });
 
   const imgRef = useRef<HTMLImageElement>(null);
@@ -127,9 +132,22 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     };
   }, [priority]);
 
-  // Generate optimized image sources when in view
+  // Validate and generate optimized image sources when in view
   useEffect(() => {
     if (!state.isInView) return;
+
+    // Check if src is empty or invalid
+    if (!src || src.trim() === '') {
+      console.warn('📷 [OptimizedImage] Empty or invalid src provided');
+      setState(prev => ({ 
+        ...prev, 
+        isEmpty: true,
+        validationStatus: 'invalid',
+        hasError: true,
+        isLoading: false
+      }));
+      return;
+    }
 
     const optimizedSrc = generateOptimizedSrc(src, {
       width,
@@ -138,7 +156,27 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       format
     });
 
-    setState(prev => ({ ...prev, currentSrc: optimizedSrc }));
+    // Validate the URL before setting it
+    validateProductPhotoUrl(src).then(isValid => {
+      setState(prev => ({ 
+        ...prev, 
+        currentSrc: optimizedSrc,
+        validationStatus: isValid ? 'valid' : 'invalid',
+        isEmpty: false
+      }));
+      
+      if (!isValid) {
+        console.warn('📷 [OptimizedImage] Photo validation failed:', { src, optimizedSrc });
+      }
+    }).catch(error => {
+      console.error('📷 [OptimizedImage] Photo validation error:', error);
+      setState(prev => ({ 
+        ...prev, 
+        validationStatus: 'invalid',
+        hasError: true,
+        isLoading: false
+      }));
+    });
   }, [state.isInView, src, width, height, quality, format, generateOptimizedSrc]);
 
   // Handle image load success
@@ -149,29 +187,41 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Handle image load error with retry mechanism
   const handleError = useCallback(() => {
+    console.error('📷 [OptimizedImage] Image load failed:', {
+      src: state.currentSrc,
+      alt,
+      retryCount: state.retryCount,
+      validationStatus: state.validationStatus
+    });
+    
     setState(prev => {
       const newRetryCount = prev.retryCount + 1;
       
       // Try fallback src if available and this is first retry
       if (fallbackSrc && newRetryCount === 1) {
+        console.log('📷 [OptimizedImage] Trying fallback src:', fallbackSrc);
         return {
           ...prev,
           currentSrc: fallbackSrc,
-          retryCount: newRetryCount
+          retryCount: newRetryCount,
+          validationStatus: 'pending'
         };
       }
       
       // Give up after 3 retries
       if (newRetryCount >= 3) {
+        console.warn('📷 [OptimizedImage] Max retries reached, giving up');
         return {
           ...prev,
           hasError: true,
-          isLoading: false
+          isLoading: false,
+          validationStatus: 'invalid'
         };
       }
       
       // Retry with original source
       setTimeout(() => {
+        console.log('📷 [OptimizedImage] Retrying with lower quality');
         setState(current => ({
           ...current,
           currentSrc: generateOptimizedSrc(src, { width, height, quality: 60 }) // Lower quality on retry
@@ -182,7 +232,7 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
     });
     
     onError?.();
-  }, [fallbackSrc, src, width, height, quality, generateOptimizedSrc, onError]);
+  }, [fallbackSrc, src, width, height, quality, generateOptimizedSrc, onError, state.currentSrc, state.retryCount, state.validationStatus, alt]);
 
   // Retry function for manual retry
   const handleRetry = useCallback(() => {
@@ -242,23 +292,27 @@ const OptimizedImage: React.FC<OptimizedImageProps> = ({
       )}
 
       {/* Error State */}
-      {state.hasError && (
+      {(state.hasError || state.isEmpty || state.validationStatus === 'invalid') && (
         <div className="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center p-4">
           <ExclamationTriangleIcon className="w-8 h-8 text-gray-400 mb-2" />
           <p className="text-xs text-gray-500 text-center mb-2">
-            Gagal memuat gambar
+            {state.isEmpty ? 'Tidak ada gambar' : 
+             state.validationStatus === 'invalid' ? 'Gambar tidak valid' :
+             'Gagal memuat gambar'}
           </p>
-          <button
-            onClick={handleRetry}
-            className="text-xs bg-navy-blue-600 text-white px-3 py-1 rounded hover:bg-navy-blue-700 transition-colors"
-          >
-            Coba Lagi
-          </button>
+          {!state.isEmpty && state.retryCount < 3 && (
+            <button
+              onClick={handleRetry}
+              className="text-xs bg-navy-blue-600 text-white px-3 py-1 rounded hover:bg-navy-blue-700 transition-colors"
+            >
+              Coba Lagi ({3 - state.retryCount} tersisa)
+            </button>
+          )}
         </div>
       )}
 
       {/* Optimized Image */}
-      {state.isInView && state.currentSrc && !state.hasError && (
+      {state.isInView && state.currentSrc && !state.hasError && !state.isEmpty && state.validationStatus !== 'invalid' && (
         <picture>
           {/* WebP source for modern browsers */}
           {format === 'webp' && (

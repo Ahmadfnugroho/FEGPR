@@ -2,6 +2,19 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '../api/axiosInstance';
+import { 
+  checkProductAvailability,
+  checkBundlingAvailability,
+  getProductWithAvailability,
+  getBundlingWithAvailability
+} from '../api/availabilityApi';
+import {
+  isProductAvailable,
+  isBundlingAvailable,
+  getProductAvailableQuantity,
+  getBundlingAvailableQuantity
+} from '../utils/availabilityUtils';
+import { Product, Bundling } from '../types/type';
 
 export interface AvailabilityCheck {
   type: 'product' | 'bundling';
@@ -260,5 +273,116 @@ export function useAvailability({ enabled = true }: UseAvailabilityProps = {}) {
     
     // State
     isChecking,
+  };
+}
+
+/**
+ * Hook for syncing availability with API when dates change
+ * Ensures availability data is always fresh and up-to-date
+ */
+export function useAvailabilitySync({
+  slug,
+  type,
+  startDate,
+  endDate,
+  autoSync = true
+}: {
+  slug: string;
+  type: 'product' | 'bundling';
+  startDate?: string | Date;
+  endDate?: string | Date;
+  autoSync?: boolean;
+}) {
+  const [item, setItem] = useState<Product | Bundling | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastSynced, setLastSynced] = useState<Date | null>(null);
+
+  // Sync availability data with API
+  const syncAvailability = useCallback(async (
+    syncStartDate?: string | Date,
+    syncEndDate?: string | Date
+  ) => {
+    if (!slug) return;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      console.log(`🔄 Syncing ${type} "${slug}" availability...`);
+
+      let itemData;
+      if (type === 'product') {
+        itemData = await getProductWithAvailability(
+          slug,
+          syncStartDate || startDate,
+          syncEndDate || endDate
+        );
+      } else {
+        itemData = await getBundlingWithAvailability(
+          slug,
+          syncStartDate || startDate,
+          syncEndDate || endDate
+        );
+      }
+
+      setItem(itemData);
+      setLastSynced(new Date());
+
+      console.log(`✅ ${type} "${slug}" availability synced:`, {
+        available: type === 'product' 
+          ? isProductAvailable(itemData as Product)
+          : isBundlingAvailable(itemData as Bundling),
+        quantity: type === 'product'
+          ? getProductAvailableQuantity(itemData as Product)
+          : getBundlingAvailableQuantity(itemData as Bundling),
+        period: syncStartDate && syncEndDate 
+          ? `${syncStartDate} - ${syncEndDate}`
+          : 'current period'
+      });
+
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to sync availability';
+      setError(errorMessage);
+      console.error(`❌ Failed to sync ${type} "${slug}" availability:`, err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [slug, type, startDate, endDate]);
+
+  // Auto-sync when dates change
+  useEffect(() => {
+    if (!autoSync || !slug) return;
+
+    const timeoutId = setTimeout(() => {
+      syncAvailability(startDate, endDate);
+    }, 300); // Debounce API calls
+
+    return () => clearTimeout(timeoutId);
+  }, [startDate, endDate, slug, autoSync, syncAvailability]);
+
+  // Calculate current availability from synced data
+  const availability = item ? {
+    isAvailable: type === 'product' 
+      ? isProductAvailable(item as Product)
+      : isBundlingAvailable(item as Bundling),
+    availableQuantity: type === 'product'
+      ? getProductAvailableQuantity(item as Product) 
+      : getBundlingAvailableQuantity(item as Bundling),
+    item
+  } : {
+    isAvailable: false,
+    availableQuantity: 0,
+    item: null
+  };
+
+  return {
+    ...availability,
+    isLoading,
+    error,
+    lastSynced,
+    syncAvailability,
+    // Force refresh
+    refresh: () => syncAvailability(startDate, endDate)
   };
 }

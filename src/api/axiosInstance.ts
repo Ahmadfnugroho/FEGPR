@@ -1,5 +1,7 @@
 import axios from "axios";
 import { API_BASE_URL, API_KEY } from "./constants";
+import debugLogger from "../utils/debugLogger";
+import { isAbortError } from "../types/axiosTypes";
 
 // Instance axios terpusat untuk API utama
 const axiosInstance = axios.create({
@@ -13,15 +15,27 @@ const axiosInstance = axios.create({
 // Request interceptor untuk logging
 axiosInstance.interceptors.request.use(
   (config) => {
-    console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`);
-    console.log('Headers:', config.headers);
-    if (config.params) {
-      console.log('Params:', config.params);
-    }
+    // Store request start time for duration calculation
+    (config as any).__startTime = Date.now();
+    
+    // Enhanced debug logging
+    const requestId = debugLogger.logRequest(
+      config.method || 'unknown',
+      `${config.baseURL}${config.url}`,
+      {
+        headers: config.headers,
+        params: config.params,
+        data: config.data
+      }
+    );
+    
+    // Store request ID for response logging
+    (config as any).__requestId = requestId;
+    
     return config;
   },
   (error) => {
-    console.error('❌ Request Error:', error);
+    debugLogger.logError('unknown', 'unknown', error);
     return Promise.reject(error);
   }
 );
@@ -29,19 +43,62 @@ axiosInstance.interceptors.request.use(
 // Response interceptor untuk logging dan error handling
 axiosInstance.interceptors.response.use(
   (response) => {
-    console.log(`✅ API Response: ${response.status} ${response.config.method?.toUpperCase()} ${response.config.url}`);
-    console.log('Response data:', response.data);
+    // Calculate request duration
+    const duration = (response.config as any).__startTime 
+      ? Date.now() - (response.config as any).__startTime 
+      : undefined;
+    
+    // Enhanced debug logging
+    debugLogger.logResponse(
+      (response.config as any).__requestId || '',
+      response.status,
+      response.data,
+      duration
+    );
+    
     return response;
   },
-  (error) => {
-    if (error.response) {
-      console.error(`❌ API Error: ${error.response.status} ${error.response.statusText}`);
-      console.error('Error URL:', error.config?.url);
-      console.error('Error Method:', error.config?.method);
-      console.error('Response data:', error.response.data);
-      console.error('Response headers:', error.response.headers);
+  (error: any) => {
+    // Calculate request duration if available
+    const duration = (error.config as any)?.__startTime 
+      ? Date.now() - (error.config as any).__startTime 
+      : undefined;
+    
+    // Get safe URL and method for logging
+    const getErrorUrl = () => {
+      const config = error.config;
+      if (!config) return 'unknown';
+      const baseURL = config.baseURL || '';
+      const url = config.url || '';
+      if (url.startsWith('http')) return url;
+      return `${baseURL}${url}`.replace(/\/+/g, '/').replace(/:\//g, '://');
+    };
+    
+    const getErrorMethod = () => error.config?.method?.toUpperCase() || 'UNKNOWN';
+    
+    const errorUrl = getErrorUrl();
+    const errorMethod = getErrorMethod();
+    
+    // Handle cancellation errors (both legacy axios.isCancel and modern AbortController)
+    if (axios.isCancel(error) || isAbortError(error)) {
+      // Use existing debugLogger.logCancellation for consistency
+      debugLogger.logCancellation(
+        errorMethod,
+        errorUrl,
+        error.message || 'Request canceled'
+      );
       
-      // Add user-friendly error messages based on status codes
+      // Clean "Request canceled" log for cancelled requests
+      console.log('🚫 Request canceled:', { method: errorMethod, url: errorUrl });
+      return Promise.reject(error);
+    }
+
+    // Handle all other errors with enhanced logging
+    debugLogger.logError(errorMethod, errorUrl, error, duration);
+    
+    // Add user-friendly error messages based on error type
+    if (error.response) {
+      // Response errors (4xx, 5xx)
       switch (error.response.status) {
         case 401:
           error.errorMessage = 'Tidak memiliki akses. Silakan periksa API key Anda.';
@@ -67,10 +124,14 @@ axiosInstance.interceptors.response.use(
           error.errorMessage = error.response.data?.message || `Error ${error.response.status}: ${error.response.statusText}`;
       }
     } else if (error.request) {
-      console.error('❌ Network Error - No response received:', error.request);
-      error.errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      // Network errors
+      if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+        error.errorMessage = 'Permintaan timeout. Silakan coba lagi.';
+      } else {
+        error.errorMessage = 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.';
+      }
     } else {
-      console.error('❌ Request Setup Error:', error.message);
+      // Setup errors
       error.errorMessage = `Error dalam setup request: ${error.message}`;
     }
     

@@ -1,7 +1,8 @@
 // src/components/DateRangePicker.tsx
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { CalendarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { getRentalDays, formatRentalDuration } from '../utils/rental-duration-helper';
+import { createLocalDate, formatDateLocal, debugDate, isSameDate } from '../utils/dateUtils';
 
 interface DateRange {
   startDate: Date | null;
@@ -20,7 +21,7 @@ interface DateRangePickerProps {
   error?: string;
 }
 
-export default function DateRangePicker({
+const DateRangePicker = memo(function DateRangePicker({
   value,
   onChange,
   onDurationChange,
@@ -33,9 +34,40 @@ export default function DateRangePicker({
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedStartDate, setSelectedStartDate] = useState<Date | null>(value.startDate);
-  const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(value.endDate);
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
+  
+  // Use ref to track if we're in the middle of an internal update
+  const isInternalUpdate = useRef(false);
+  
+  // Component mount/unmount debugging
+  useEffect(() => {
+    console.log('📅 DateRangePicker mounted/updated with value:', {
+      value: {
+        startDate: value.startDate?.toISOString(),
+        endDate: value.endDate?.toISOString()
+      },
+      disabled,
+      error,
+      source: 'DateRangePicker_mount'
+    });
+    
+    return () => {
+      console.log('🗑️ DateRangePicker effect cleanup');
+    };
+  }, [value, disabled, error]);
+  
+  // FULLY CONTROLLED: Use value prop directly, no internal state for dates
+  const selectedStartDate = value.startDate;
+  const selectedEndDate = value.endDate;
+  
+  // Log whenever the controlled values change
+  useEffect(() => {
+    console.log('🔄 DateRangePicker controlled values changed:', {
+      selectedStartDate: selectedStartDate?.toISOString(),
+      selectedEndDate: selectedEndDate?.toISOString(),
+      source: 'controlled_values_change'
+    });
+  }, [selectedStartDate, selectedEndDate]);
 
   // Calculate duration when dates change using helper function
   useEffect(() => {
@@ -48,8 +80,7 @@ export default function DateRangePicker({
   }, [selectedStartDate, selectedEndDate, onDurationChange]);
 
   const formatDate = (date: Date | null) => {
-    if (!date) return '';
-    return date.toLocaleDateString('id-ID', {
+    return formatDateLocal(date, {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
@@ -58,8 +89,7 @@ export default function DateRangePicker({
   };
 
   const formatDateShort = (date: Date | null) => {
-    if (!date) return '';
-    return date.toLocaleDateString('id-ID', {
+    return formatDateLocal(date, {
       day: 'numeric',
       month: 'short',
       year: 'numeric'
@@ -99,45 +129,70 @@ export default function DateRangePicker({
   };
 
   const isDateSelected = (date: Date) => {
-    if (selectedStartDate && date.toDateString() === selectedStartDate.toDateString()) return true;
-    if (selectedEndDate && date.toDateString() === selectedEndDate.toDateString()) return true;
+    if (selectedStartDate && isSameDate(date, selectedStartDate)) return true;
+    if (selectedEndDate && isSameDate(date, selectedEndDate)) return true;
     return false;
   };
 
   const handleDateClick = (date: Date) => {
-    if (isDateDisabled(date)) return;
+    if (isDateDisabled(date)) {
+      console.log('⚠️ DateRangePicker: Date is disabled, ignoring click');
+      debugDate('Disabled date', date);
+      return;
+    }
 
+    console.log('🎯 DateRangePicker handleDateClick (timezone-safe):');
+    debugDate('Clicked date', date);
+    if (selectedStartDate) debugDate('Current start', selectedStartDate);
+    if (selectedEndDate) debugDate('Current end', selectedEndDate);
+
+    isInternalUpdate.current = true;
+    
     if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
       // Start new selection
-      setSelectedStartDate(date);
-      setSelectedEndDate(null);
-      onChange({ startDate: date, endDate: null });
+      const newRange = { startDate: date, endDate: null };
+      console.log('🆕 Starting new date selection:');
+      debugDate('New start date', newRange.startDate);
+      onChange(newRange);
     } else {
       // Check if trying to select the same date
-      if (date.toDateString() === selectedStartDate.toDateString()) {
-        // Don't allow same date selection - show error or just return
+      if (isSameDate(date, selectedStartDate)) {
+        console.log('⚠️ Same date selected, ignoring');
+        isInternalUpdate.current = false;
         return;
       }
       
       // Complete the range
+      let newRange;
       if (date < selectedStartDate) {
         // Swap if end date is before start date
-        setSelectedStartDate(date);
-        setSelectedEndDate(selectedStartDate);
-        onChange({ startDate: date, endDate: selectedStartDate });
+        newRange = { startDate: date, endDate: selectedStartDate };
+        console.log('🔄 Swapping dates (end before start):');
       } else {
-        setSelectedEndDate(date);
-        onChange({ startDate: selectedStartDate, endDate: date });
+        newRange = { startDate: selectedStartDate, endDate: date };
+        console.log('✅ Completing date range:');
       }
+      
+      debugDate('Final start date', newRange.startDate);
+      debugDate('Final end date', newRange.endDate);
+      
+      onChange(newRange);
       setIsOpen(false);
     }
+    
+    // Small delay to reset the flag
+    setTimeout(() => {
+      isInternalUpdate.current = false;
+    }, 100);
   };
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
+    
+    // Use timezone-safe date creation
+    const firstDay = createLocalDate(year, month, 1);
+    const lastDay = createLocalDate(year, month + 1, 0); // This gets last day of current month
     const daysInMonth = lastDay.getDate();
     const startingDayOfWeek = firstDay.getDay();
 
@@ -148,9 +203,9 @@ export default function DateRangePicker({
       days.push(null);
     }
     
-    // Add days of the month
+    // Add days of the month using timezone-safe creation
     for (let day = 1; day <= daysInMonth; day++) {
-      days.push(new Date(year, month, day));
+      days.push(createLocalDate(year, month, day));
     }
     
     return days;
@@ -167,9 +222,20 @@ export default function DateRangePicker({
   };
 
   const clearSelection = () => {
-    setSelectedStartDate(null);
-    setSelectedEndDate(null);
+    console.log('🗑️ DateRangePicker clearSelection called:', {
+      currentSelection: {
+        startDate: selectedStartDate?.toISOString(),
+        endDate: selectedEndDate?.toISOString()
+      },
+      source: 'clearSelection'
+    });
+    
+    isInternalUpdate.current = true;
     onChange({ startDate: null, endDate: null });
+    
+    setTimeout(() => {
+      isInternalUpdate.current = false;
+    }, 100);
   };
 
   const days = getDaysInMonth(currentMonth);
@@ -352,4 +418,6 @@ export default function DateRangePicker({
       )}
     </div>
   );
-}
+});
+
+export default DateRangePicker;

@@ -1,7 +1,8 @@
 // src/components/EnhancedBookingForm.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useCart } from "../contexts/CartContext";
 import { useSlugAvailability } from "../hooks/useSlugAvailability";
+import { useBookingDatesContext } from "../contexts/BookingDatesContext";
 import DateRangePicker from "./DateRangePicker";
 import {
   getRentalDays,
@@ -16,7 +17,18 @@ import {
   ExclamationTriangleIcon,
   MinusIcon,
   PlusIcon,
+  MagnifyingGlassIcon,
+  ArrowPathIcon,
+  ClockIcon,
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
+import axiosInstance from "../api/axiosInstance";
+import { 
+  isProductAvailable, 
+  isBundlingAvailable, 
+  getProductAvailabilityText, 
+  getBundlingAvailabilityText 
+} from "../utils/availabilityUtils";
 
 interface Product {
   id: number;
@@ -56,103 +68,385 @@ interface Bundling {
   }>;
 }
 
+interface AvailabilityResult {
+  isAvailable: boolean;
+  availableQuantity: number;
+  message: string;
+  details?: {
+    conflictingDates?: string[];
+    nextAvailableDate?: string;
+    suggestedQuantity?: number;
+  };
+  lastChecked: string;
+}
+
 interface EnhancedBookingFormProps {
   item: Product | Bundling;
   type: "product" | "bundling";
   className?: string;
+  isLoadingAvailability?: boolean;
+  isAvailable?: boolean;
+  availableQuantity?: number;
 }
 
 export default function EnhancedBookingForm({
   item,
   type,
   className = "",
+  isLoadingAvailability = false,
+  isAvailable = true,
+  availableQuantity = 0,
 }: EnhancedBookingFormProps) {
-  const [dateRange, setDateRange] = useState<{
-    startDate: Date | null;
-    endDate: Date | null;
-  }>({
-    startDate: null,
-    endDate: null,
-  });
+  // Use global date context instead of local state
+  const {
+    dateRange,
+    setDateRange,
+    startDate,
+    endDate,
+    isDateRangeValid,
+    areDatesSelected,
+    formattedDateRange,
+    updateCount
+  } = useBookingDatesContext();
+  
   const [quantity, setQuantity] = useState(1);
   const [duration, setDuration] = useState(0);
   const [isBookingValid, setIsBookingValid] = useState(false);
   const [validationError, setValidationError] = useState<string>("");
+  
+  // Availability checking states
+  const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
+  const [availabilityResult, setAvailabilityResult] = useState<AvailabilityResult | null>(null);
+  const [availabilityError, setAvailabilityError] = useState<string>("");
+  const [lastAvailabilityCheck, setLastAvailabilityCheck] = useState<Date | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const { addItem, totalItems } = useCart();
   const {
     checkItemAvailability,
     isChecking,
   } = useSlugAvailability();
+  
+  // Maximum retry attempts for API calls
+  const MAX_RETRY_ATTEMPTS = 3;
+  const RETRY_DELAY_MS = 1000;
+  
+  // Check availability with comprehensive error handling and retry logic
+  const checkAvailabilityWithAPI = async (shouldRetry: boolean = true): Promise<void> => {
+    // Validate inputs first
+    if (!dateRange.startDate || !dateRange.endDate) {
+      setAvailabilityError("Silakan pilih tanggal rental terlebih dahulu");
+      return;
+    }
+    
+    if (quantity < 1 || quantity > 10) {
+      setAvailabilityError("Jumlah harus antara 1-10 unit");
+      return;
+    }
+    
+    // Validate date range
+    const validation = validateRentalDates(dateRange.startDate, dateRange.endDate);
+    if (!validation.isValid) {
+      setAvailabilityError(validation.errors[0] || "Rentang tanggal tidak valid");
+      return;
+    }
+    
+    try {
+      setIsCheckingAvailability(true);
+      setAvailabilityError("");
+      setAvailabilityResult(null);
+      
+      console.log(`🔍 Checking availability for ${type} "${item.slug}":`, {
+        dateRange: {
+          start: dateRange.startDate.toISOString().split('T')[0],
+          end: dateRange.endDate.toISOString().split('T')[0]
+        },
+        quantity,
+        duration: validation.duration,
+        retryAttempt: retryCount + 1
+      });
+      
+      // Construct API endpoint
+      const endpoint = `/${type}/${item.slug}`;
+      const params = {
+        start_date: dateRange.startDate.toISOString().split('T')[0],
+        end_date: dateRange.endDate.toISOString().split('T')[0],
+        check_availability: true,
+        quantity: quantity.toString()
+      };
+      
+      // Make API call with timeout
+      const response = await Promise.race([
+        axiosInstance.get(endpoint, { 
+          params,
+          timeout: 10000 // 10 second timeout
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Request timeout')), 10000)
+        )
+      ]) as any;
+      
+      if (!response?.data) {
+        throw new Error('Invalid response from server');
+      }
+      
+      const itemData = response.data.data;
+      let availabilityInfo;
+      let availableQuantity;
+      
+      // Calculate availability based on type
+      if (type === 'product') {
+        availabilityInfo = getProductAvailabilityText(itemData);
+        availableQuantity = itemData.available_quantity || 0;
+      } else {
+        availabilityInfo = getBundlingAvailabilityText(itemData);
+        // For bundling, calculate minimum available quantity from all products
+        if (itemData.products && itemData.products.length > 0) {
+          availableQuantity = Math.min(
+            ...itemData.products.map((p: any) => p.available_quantity || 0)
+          );
+        } else {
+          availableQuantity = 0;
+        }
+      }
+      
+      const isAvailable = availabilityInfo.isAvailable && availableQuantity >= quantity;
+      
+      // Prepare result
+      const result: AvailabilityResult = {
+        isAvailable,
+        availableQuantity,
+        message: isAvailable 
+          ? `✅ Tersedia! ${availableQuantity} ${type === 'product' ? 'unit' : 'paket'} tersedia untuk periode yang dipilih.`
+          : availableQuantity === 0
+            ? `❌ Tidak tersedia untuk periode ${dateRange.startDate.toLocaleDateString('id-ID')} - ${dateRange.endDate.toLocaleDateString('id-ID')}`
+            : `⚠️ Ketersediaan terbatas! Hanya ${availableQuantity} ${type === 'product' ? 'unit' : 'paket'} tersedia, tetapi Anda meminta ${quantity}.`,
+        details: {
+          suggestedQuantity: !isAvailable && availableQuantity > 0 ? availableQuantity : undefined
+        },
+        lastChecked: new Date().toISOString()
+      };
+      
+      setAvailabilityResult(result);
+      setLastAvailabilityCheck(new Date());
+      setRetryCount(0);
+      
+      // Update booking validity
+      setIsBookingValid(isAvailable);
+      if (!isAvailable) {
+        setValidationError(result.message);
+      } else {
+        setValidationError("");
+      }
+      
+      console.log(`✅ Availability check completed:`, result);
+      
+    } catch (error: any) {
+      console.error(`❌ Availability check failed:`, error);
+      
+      let errorMessage = "Gagal memeriksa ketersediaan. ";
+      
+      if (error.code === 'ECONNABORTED' || error.message === 'Request timeout') {
+        errorMessage += "Koneksi timeout. ";
+      } else if (error.response?.status === 404) {
+        errorMessage += "Item tidak ditemukan. ";
+      } else if (error.response?.status === 500) {
+        errorMessage += "Terjadi kesalahan server. ";
+      } else if (error.response?.status >= 400) {
+        errorMessage += "Terjadi kesalahan dalam permintaan. ";
+      } else if (!navigator.onLine) {
+        errorMessage += "Tidak ada koneksi internet. ";
+      } else {
+        errorMessage += "Terjadi kesalahan tidak terduga. ";
+      }
+      
+      // Retry logic with exponential backoff
+      if (shouldRetry && retryCount < MAX_RETRY_ATTEMPTS) {
+        const delay = RETRY_DELAY_MS * Math.pow(2, retryCount);
+        errorMessage += `Mencoba lagi dalam ${delay/1000} detik...`;
+        setAvailabilityError(errorMessage);
+        setRetryCount(prev => prev + 1);
+        
+        setTimeout(() => {
+          checkAvailabilityWithAPI(false);
+        }, delay);
+        
+        return;
+      }
+      
+      errorMessage += "Silakan coba lagi nanti.";
+      setAvailabilityError(errorMessage);
+      setRetryCount(0);
+      setIsBookingValid(false);
+      
+    } finally {
+      setIsCheckingAvailability(false);
+    }
+  };
 
   // For now, we'll use empty unavailable dates array
   // In a real implementation, you might want to fetch this from another API
   const unavailableDates: Date[] = [];
-
-  // Validate booking form
+  
+  // Helper function to check if availability check is needed
+  const isAvailabilityCheckNeeded = (): boolean => {
+    if (!dateRange.startDate || !dateRange.endDate) return false;
+    if (!lastAvailabilityCheck) return true;
+    
+    // Check if it's been more than 5 minutes since last check
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+    return lastAvailabilityCheck < fiveMinutesAgo;
+  };
+  
+  // Helper function to format time since last check
+  const getTimeSinceLastCheck = (): string => {
+    if (!lastAvailabilityCheck) return "Belum pernah diperiksa";
+    
+    const now = new Date();
+    const diffMs = now.getTime() - lastAvailabilityCheck.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+    
+    if (diffMinutes > 0) {
+      return `${diffMinutes} menit yang lalu`;
+    } else {
+      return `${diffSeconds} detik yang lalu`;
+    }
+  };
+  
+  // Clear availability results when form inputs change
+  const clearAvailabilityResults = useCallback((): void => {
+    setAvailabilityResult(null);
+    setAvailabilityError("");
+    setIsBookingValid(false);
+  }, []);
+  
+  // Memoize date strings to prevent unnecessary calls
+  const dateStrings = useMemo(() => {
+    const startDateStr = dateRange.startDate 
+      ? dateRange.startDate.toISOString().split('T')[0] 
+      : null;
+    const endDateStr = dateRange.endDate 
+      ? dateRange.endDate.toISOString().split('T')[0] 
+      : null;
+    return { startDateStr, endDateStr };
+  }, [dateRange.startDate, dateRange.endDate]);
+  
+  // Use ref to track if we've already notified about current dates
+  const lastNotifiedDates = useRef<{ start: string | null; end: string | null }>({ start: null, end: null });
+  
+  // Debug logging for EnhancedBookingForm state
   useEffect(() => {
-    const validateBooking = async () => {
+    console.log('📅 EnhancedBookingForm: State update:', {
+      contextDates: {
+        startDate: startDate,
+        endDate: endDate
+      },
+      dateRange: {
+        startDate: dateRange.startDate?.toISOString(),
+        endDate: dateRange.endDate?.toISOString()
+      },
+      dateStrings,
+      quantity,
+      duration,
+      isBookingValid,
+      validationError,
+      itemSlug: item.slug,
+      type,
+      areDatesSelected,
+      updateCount,
+      source: 'EnhancedBookingForm_state_debug'
+    });
+  }, [startDate, endDate, dateRange, dateStrings, quantity, duration, isBookingValid, validationError, item.slug, type, areDatesSelected, updateCount]);
+  
+  // Note: No longer notifying parent components since we use global context
+  // The context automatically manages state across all components
+  useEffect(() => {
+    const { startDateStr, endDateStr } = dateStrings;
+    
+    console.log('🔄 EnhancedBookingForm: Date strings updated via context:', {
+      currentDates: { startDateStr, endDateStr },
+      contextDates: { startDate, endDate },
+      source: 'context_date_sync'
+    });
+  }, [dateStrings, startDate, endDate]);
+  
+  // Use ref to track if we should clear results
+  const shouldClearResults = useRef(true);
+  
+  // Clear availability results when key inputs change
+  useEffect(() => {
+    if (shouldClearResults.current) {
+      clearAvailabilityResults();
+      shouldClearResults.current = false;
+      // Reset flag after a short delay
+      setTimeout(() => {
+        shouldClearResults.current = true;
+      }, 100);
+    }
+  }, [dateRange.startDate, dateRange.endDate, quantity, clearAvailabilityResults]);
+
+  // Basic form validation using parent availability data
+  useEffect(() => {
+    const validateForm = () => {
+      // Reset validation
       setValidationError("");
       setIsBookingValid(false);
-
+      
       if (!dateRange.startDate || !dateRange.endDate) {
-        setValidationError("Silakan pilih tanggal rental");
+        setValidationError("Pilih tanggal rental terlebih dahulu");
         return;
       }
 
+      // Validate dates with business rules
+      const validation = validateRentalDates(dateRange.startDate, dateRange.endDate);
+      setDuration(validation.duration);
+      
+      if (!validation.isValid) {
+        setValidationError(validation.errors[0] || "Tanggal tidak valid");
+        return;
+      }
+      
       if (quantity < 1) {
         setValidationError("Jumlah harus minimal 1");
         return;
       }
-
-      // Validate dates with business rules (10-10 not allowed, 10-11 = 1 day)
-      const validation = validateRentalDates(dateRange.startDate, dateRange.endDate);
-      if (!validation.isValid) {
-        setValidationError(validation.errors[0] || "Tanggal tidak valid");
-        setDuration(validation.duration);
+      
+      // Check availability from parent data
+      if (!isAvailable) {
+        setValidationError("");
+        setIsBookingValid(false);
         return;
       }
-      setDuration(validation.duration);
-
-      // Check availability
-      try {
-        const availabilityResult = await checkItemAvailability({
-          type,
-          slug: item.slug,
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-          quantity,
-        });
-
-        if (!availabilityResult.available) {
-          setValidationError(
-            availabilityResult.message || 
-            (availabilityResult.availableQuantity === 0 
-              ? "Item tidak tersedia pada tanggal yang dipilih" 
-              : `Hanya ${availabilityResult.availableQuantity} unit tersedia pada tanggal tersebut`)
-          );
-          return;
-        }
-
-        setIsBookingValid(true);
-      } catch (error) {
-        setValidationError("Gagal memeriksa ketersediaan. Silakan coba lagi.");
+      
+      if (availableQuantity > 0 && quantity > availableQuantity) {
+        setValidationError(`Jumlah melebihi ketersediaan. Maksimal ${availableQuantity} ${type === 'product' ? 'unit' : 'paket'}`);
+        return;
       }
+      
+      // All validations passed
+      setValidationError("");
+      setIsBookingValid(true);
     };
 
-    // Debounce validation
-    const timer = setTimeout(validateBooking, 500);
-    return () => clearTimeout(timer);
-  }, [dateRange, quantity, checkItemAvailability, type, item.slug]);
+    validateForm();
+  }, [dateRange.startDate, dateRange.endDate, quantity, isAvailable, availableQuantity, type]);
 
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1 && newQuantity <= 10) {
       setQuantity(newQuantity);
+      // Results will be cleared automatically by useEffect
     }
   };
 
   const handleAddToCart = () => {
-    if (!isBookingValid || !dateRange.startDate || !dateRange.endDate) {
+    if (!isBookingValid || !dateRange.startDate || !dateRange.endDate || !isAvailable) {
+      console.warn('Cannot add to cart:', {
+        isBookingValid,
+        hasStartDate: !!dateRange.startDate,
+        hasEndDate: !!dateRange.endDate,
+        isAvailable
+      });
       return;
     }
 
@@ -175,6 +469,7 @@ export default function EnhancedBookingForm({
     };
 
     addItem(cartItem);
+    console.log('Added to cart:', cartItem);
   };
 
   // Use formatPrice from helper function instead
@@ -209,7 +504,21 @@ export default function EnhancedBookingForm({
         </label>
         <DateRangePicker
           value={dateRange}
-          onChange={setDateRange}
+          onChange={(newDateRange) => {
+            console.log('📅 EnhancedBookingForm: DateRangePicker onChange called:', {
+              oldDateRange: {
+                startDate: dateRange.startDate?.toISOString(),
+                endDate: dateRange.endDate?.toISOString()
+              },
+              newDateRange: {
+                startDate: newDateRange.startDate?.toISOString(),
+                endDate: newDateRange.endDate?.toISOString()
+              },
+              source: 'DateRangePicker_onChange_via_context'
+            });
+            // Write directly to global context
+            setDateRange(newDateRange);
+          }}
           onDurationChange={setDuration}
           unavailableDates={unavailableDates}
           disabled={false}
@@ -286,55 +595,67 @@ export default function EnhancedBookingForm({
         </div>
       )}
 
-      {/* Availability Status */}
-      {isChecking && (
-        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <div className="flex items-center text-yellow-700">
-            <div className="animate-spin h-4 w-4 border-2 border-yellow-700 border-t-transparent rounded-full mr-2"></div>
-            Memeriksa ketersediaan...
+      {/* Validation Error */}
+      {validationError && (
+        <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className="flex items-center text-orange-700">
+            <ExclamationTriangleIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+            <div className="text-sm">{validationError}</div>
           </div>
         </div>
       )}
-
-      {isBookingValid && !isChecking && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-          <div className="flex items-center text-green-700">
-            <CheckCircleIcon className="h-5 w-5 mr-2" />
-            Tersedia untuk tanggal yang dipilih
-          </div>
-        </div>
-      )}
-
-      {validationError &&
-        !isChecking &&
-        dateRange.startDate &&
-        dateRange.endDate && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center text-red-700">
-              <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
-              {validationError}
-            </div>
-          </div>
-        )}
 
       {/* Add to Cart Button */}
-      <button
-        onClick={handleAddToCart}
-        disabled={!isBookingValid || isChecking}
-        className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
-          isBookingValid && !isChecking
-            ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"
-            : "bg-gray-400 cursor-not-allowed"
-        }`}
-      >
-        <ShoppingCartIcon className="h-5 w-5 mr-2" />
-        {isChecking ? "Memeriksa..." : "Tambah ke Keranjang"}
-        {totalItems > 0 && (
-          <span className="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
-            {totalItems}
-          </span>
-        )}
-      </button>
+      <div className="space-y-3">
+        <button
+          onClick={handleAddToCart}
+          disabled={
+            !isBookingValid ||
+            !dateRange.startDate ||
+            !dateRange.endDate
+          }
+          className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
+            isBookingValid && dateRange.startDate && dateRange.endDate
+              ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:scale-[1.02]"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+          title={
+            !dateRange.startDate || !dateRange.endDate
+              ? "Pilih tanggal rental terlebih dahulu"
+              : !isBookingValid
+                ? "Item tidak tersedia untuk tanggal yang dipilih"
+                : ""
+          }
+        >
+          <ShoppingCartIcon className="h-5 w-5 mr-2" />
+          {isBookingValid && dateRange.startDate && dateRange.endDate
+            ? "Tambah ke Keranjang"
+            : "Tidak Tersedia"
+          }
+          {totalItems > 0 && isBookingValid && (
+            <span className="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
+              {totalItems}
+            </span>
+          )}
+        </button>
+        
+        {/* Help Text */}
+        <div className="text-center">
+          {!isBookingValid && dateRange.startDate && dateRange.endDate ? (
+            <p className="text-xs text-red-600">
+              🚫 Tidak tersedia untuk periode yang dipilih
+            </p>
+          ) : !dateRange.startDate || !dateRange.endDate ? (
+            <p className="text-xs text-gray-500">
+              📅 Pilih tanggal rental untuk melanjutkan
+            </p>
+          ) : (
+            <p className="text-xs text-green-600">
+              ✨ Siap untuk ditambahkan ke keranjang
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Additional Info */}
       <div className="mt-4 mb-6 text-xs text-gray-500 space-y-1">

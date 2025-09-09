@@ -1,6 +1,6 @@
 // src/api/availabilityApi.ts
 import axiosInstance from './axiosInstance';
-import { formatDateForAPI } from '../utils/rental-duration-helper';
+import { localDateToUTC } from '../utils/dateUtils';
 
 export interface AvailabilityParams {
   slug: string;
@@ -21,8 +21,12 @@ export interface AvailabilityResponse {
 export const checkProductAvailability = async (params: AvailabilityParams): Promise<AvailabilityResponse> => {
   const { slug, startDate, endDate } = params;
   
-  const formattedStartDate = formatDateForAPI(startDate);
-  const formattedEndDate = formatDateForAPI(endDate);
+  // Convert local date strings to UTC for API
+  const startDateStr = typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0];
+  const endDateStr = typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0];
+  
+  const formattedStartDate = localDateToUTC(startDateStr)?.split('T')[0] || startDateStr;
+  const formattedEndDate = localDateToUTC(endDateStr)?.split('T')[0] || endDateStr;
   
   try {
     const response = await axiosInstance.get(`/product/${slug}`, {
@@ -51,8 +55,12 @@ export const checkProductAvailability = async (params: AvailabilityParams): Prom
 export const checkBundlingAvailability = async (params: AvailabilityParams): Promise<AvailabilityResponse> => {
   const { slug, startDate, endDate } = params;
   
-  const formattedStartDate = formatDateForAPI(startDate);
-  const formattedEndDate = formatDateForAPI(endDate);
+  // Convert local date strings to UTC for API
+  const startDateStr = typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0];
+  const endDateStr = typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0];
+  
+  const formattedStartDate = localDateToUTC(startDateStr)?.split('T')[0] || startDateStr;
+  const formattedEndDate = localDateToUTC(endDateStr)?.split('T')[0] || endDateStr;
   
   try {
     const response = await axiosInstance.get(`/bundling/${slug}`, {
@@ -100,8 +108,12 @@ export const getProductWithAvailability = async (
   const params: any = {};
   
   if (startDate && endDate) {
-    params.start_date = formatDateForAPI(startDate);
-    params.end_date = formatDateForAPI(endDate);
+    // Convert local date strings to UTC for API
+    const startDateStr = typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0];
+    const endDateStr = typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0];
+    
+    params.start_date = localDateToUTC(startDateStr)?.split('T')[0] || startDateStr;
+    params.end_date = localDateToUTC(endDateStr)?.split('T')[0] || endDateStr;
   }
   
   try {
@@ -124,8 +136,12 @@ export const getBundlingWithAvailability = async (
   const params: any = {};
   
   if (startDate && endDate) {
-    params.start_date = formatDateForAPI(startDate);
-    params.end_date = formatDateForAPI(endDate);
+    // Convert local date strings to UTC for API
+    const startDateStr = typeof startDate === 'string' ? startDate : startDate.toISOString().split('T')[0];
+    const endDateStr = typeof endDate === 'string' ? endDate : endDate.toISOString().split('T')[0];
+    
+    params.start_date = localDateToUTC(startDateStr)?.split('T')[0] || startDateStr;
+    params.end_date = localDateToUTC(endDateStr)?.split('T')[0] || endDateStr;
   }
   
   try {

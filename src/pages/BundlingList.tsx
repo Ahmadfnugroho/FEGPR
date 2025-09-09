@@ -8,6 +8,13 @@ import NavCard from "../components/navCard";
 import BundlingCardSkeleton from "../components/BundlingCardSkeleton";
 import ProductSkeleton from "../components/ProductSkeleton";
 import { MainLayout } from "../components/Layout";
+import {
+  isBundlingAvailable,
+  getBundlingAvailabilityText,
+  sortBundlingByAvailability,
+  filterBundlingByAvailability,
+  debugAvailability
+} from "../utils/availabilityUtils";
 
 export default function BundlingList() {
   const location = useLocation();
@@ -22,6 +29,8 @@ export default function BundlingList() {
   const [hasMore, setHasMore] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState<string>(params.get("q") || "");
+  const [sortBy, setSortBy] = useState<'name' | 'price' | 'availability'>('name');
+  const [availableOnly, setAvailableOnly] = useState(false);
   const pageSize = 10;
 
   // Fetch bundlings with pagination
@@ -90,7 +99,6 @@ export default function BundlingList() {
   if (loading) {
     return (
       <MainLayout>
-        <NavCard></NavCard>
         <header className="flex flex-col w-full">
           <section
             id="Hero-Banner"
@@ -164,8 +172,6 @@ export default function BundlingList() {
 
   return (
     <MainLayout>
-      <NavCard></NavCard>
-
       <header className="flex flex-col w-full">
         <section
           id="Hero-Banner"
@@ -253,19 +259,54 @@ export default function BundlingList() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-[30px] stagger-fade-in">
-              {bundlings.map((bundling, index) => (
-                <div
-                  key={bundling.id}
-                  className="stagger-item"
-                  data-index={index}
+            {/* Controls */}
+            <div className="flex items-center justify-between mb-4">
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input
+                  type="checkbox"
+                  checked={availableOnly}
+                  onChange={(e) => setAvailableOnly(e.target.checked)}
+                  className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                Tampilkan yang tersedia saja
+              </label>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-gray-600">Urutkan:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="rounded-md border border-gray-300 px-3 py-1 text-sm focus:border-blue-500 focus:ring-blue-500"
                 >
-                  <Link to={`/bundling/${bundling.slug}`}>
-                    <BundlingCard bundling={bundling}></BundlingCard>
-                  </Link>
-                </div>
-              ))}
+                  <option value="name">Nama</option>
+                  <option value="price">Harga</option>
+                  <option value="availability">Ketersediaan</option>
+                </select>
+              </div>
             </div>
+
+            {(() => {
+              // Apply filters and sorting
+              let visible = availableOnly ? filterBundlingByAvailability(bundlings, true) : bundlings;
+              if (sortBy === 'availability') {
+                visible = sortBundlingByAvailability(visible);
+              }
+
+              return (
+                <div className="grid grid-cols-3 gap-[30px] stagger-fade-in">
+                  {visible.map((bundling, index) => (
+                    <div
+                      key={bundling.id}
+                      className="stagger-item"
+                      data-index={index}
+                    >
+                      <Link to={`/bundling/${bundling.slug}`}>
+                        <BundlingCard bundling={bundling}></BundlingCard>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* Load More Section */}
             {loadingMore && (

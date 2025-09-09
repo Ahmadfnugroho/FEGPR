@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Thumbs } from "swiper/modules";
 import { useParams, Link } from "react-router-dom";
@@ -32,18 +32,34 @@ import { MainLayout } from "../components/Layout";
 import PageSkeleton from "../components/PageSkeleton";
 import EnhancedSEOHead, { useProductSEO } from "../components/EnhancedSEOHead";
 import EnhancedBookingForm from "../components/EnhancedBookingForm";
+import { 
+  isProductAvailable, 
+  getProductAvailableQuantity, 
+  getProductAvailabilityText 
+} from "../utils/availabilityUtils";
+import { useBookingDatesContext } from "../contexts/BookingDatesContext";
+import { useDebouncedBookingDates } from "../hooks/useDebounce";
 
 // Constants
 // Menggunakan API_BASE_URL dari axiosInstance
 const WHATSAPP_NUMBER = "6281212349564";
 
 // --- API HELPER ---
-const fetchProduct = async (slug: string | undefined): Promise<Product> => {
+const fetchProduct = async (slug: string | undefined, startDate?: string, endDate?: string): Promise<Product> => {
   if (!slug) throw new Error("Slug produk tidak ditemukan");
+
+  const params: any = {};
+  if (startDate && endDate) {
+    params.start_date = startDate;
+    params.end_date = endDate;
+  }
 
   const { data } = await axiosInstance.get<{ data: Product }>(
     `/product/${slug}`,
-    { timeout: 10000 }
+    { 
+      params,
+      timeout: 10000 
+    }
   );
 
   if (!data?.data) throw new Error("Produk tidak ditemukan");
@@ -164,7 +180,13 @@ const ProductImageGallery = ({
   );
 };
 
-const ProductInfo = ({ product }: { product: Product }) => {
+const ProductInfo = ({ 
+  product, 
+  isLoadingAvailability = false 
+}: { 
+  product: Product; 
+  isLoadingAvailability?: boolean;
+}) => {
   const categoryItems = useMemo(
     () =>
       [product.category, product.subCategory, product.brand]
@@ -174,7 +196,11 @@ const ProductInfo = ({ product }: { product: Product }) => {
     [product.category, product.subCategory, product.brand]
   );
 
-  const isAvailable = product.status === "available";
+  // Use proper availability calculation based on available_quantity + is_available
+  const availabilityInfo = getProductAvailabilityText(product);
+  const isAvailable = availabilityInfo.isAvailable;
+  const availableQuantity = availabilityInfo.quantity;
+  
   const formattedPrice = new Intl.NumberFormat("id-ID", {
     style: "currency",
     currency: "IDR",
@@ -198,7 +224,7 @@ const ProductInfo = ({ product }: { product: Product }) => {
               isAvailable ? "bg-green-500" : "bg-red-500"
             }`}
           ></span>
-          {isAvailable ? "Tersedia" : "Tidak Tersedia"}
+          {isAvailable ? `Tersedia (${availableQuantity} unit)` : "Tidak Tersedia"}
         </span>
       </div>
 
@@ -224,10 +250,12 @@ const ProductInfo = ({ product }: { product: Product }) => {
       </div>
 
       {/* Enhanced Booking Form */}
-      <EnhancedBookingForm 
+      <EnhancedBookingForm
         item={product}
         type="product"
-        className="mt-6"
+        isLoadingAvailability={isLoadingAvailability}
+        isAvailable={isAvailable}
+        availableQuantity={availableQuantity}
       />
     </div>
   );
@@ -416,6 +444,69 @@ export default function Details() {
   // All hooks must be called before any early returns
   const [quantity, setQuantity] = useState(1);
   const [isFavorite, setIsFavorite] = useState(false);
+  
+  // Global persistent date management using context
+  const {
+    startDate,
+    endDate,
+    dateRange: bookingDateRange,
+    setDates: setBookingDates,
+    isDateRangeValid,
+    areDatesSelected,
+    formattedDateRange,
+    updateCount,
+    lastUpdateTime
+  } = useBookingDatesContext();
+  
+  // Debug logging for date state in Details component
+  useEffect(() => {
+    console.log('🏠 Details.tsx: Date state from context:', {
+      startDate,
+      endDate,
+      dateRange: {
+        startDate: bookingDateRange.startDate?.toISOString(),
+        endDate: bookingDateRange.endDate?.toISOString()
+      },
+      isDateRangeValid,
+      areDatesSelected,
+      formattedDateRange,
+      updateCount,
+      lastUpdateTime,
+      component: 'Details.tsx',
+      source: 'context_state_debug'
+    });
+  }, [startDate, endDate, bookingDateRange, isDateRangeValid, areDatesSelected, formattedDateRange, updateCount, lastUpdateTime]);
+  
+  // Loading state for availability updates
+  const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
+
+  // Debounce date changes to prevent excessive API calls
+  // Only fetch when both dates are selected and stable for 1 second
+  const { debouncedStartDate, debouncedEndDate } = useDebouncedBookingDates(
+    startDate,
+    endDate,
+    1000 // 1 second delay
+  );
+  
+  // Only use debounced dates for API calls when both dates are present
+  const shouldFetchWithDates = !!(debouncedStartDate && debouncedEndDate && areDatesSelected);
+  const apiStartDate = shouldFetchWithDates ? debouncedStartDate : undefined;
+  const apiEndDate = shouldFetchWithDates ? debouncedEndDate : undefined;
+  
+  // Debug logging for React Query parameters
+  useEffect(() => {
+    console.log('🔍 Details.tsx: React Query parameters:', {
+      queryKey: ["product", slug, apiStartDate, apiEndDate],
+      slug,
+      originalDates: { startDate, endDate },
+      debouncedDates: { debouncedStartDate, debouncedEndDate },
+      apiDates: { apiStartDate, apiEndDate },
+      shouldFetchWithDates,
+      areDatesSelected,
+      enabled: !!slug,
+      source: 'react_query_debug'
+    });
+  }, [slug, startDate, endDate, debouncedStartDate, debouncedEndDate, apiStartDate, apiEndDate, shouldFetchWithDates, areDatesSelected]);
 
   const {
     data: product,
@@ -424,11 +515,74 @@ export default function Details() {
     error,
     refetch,
   } = useQuery<Product>({
-    queryKey: ["product", slug],
-    queryFn: () => fetchProduct(slug),
+    queryKey: ["product", slug, apiStartDate, apiEndDate],
+    queryFn: () => {
+      console.log('🌐 Details.tsx: Executing fetchProduct with params:', {
+        slug,
+        startDate: apiStartDate,
+        endDate: apiEndDate,
+        source: 'fetchProduct_call'
+      });
+      return fetchProduct(slug, apiStartDate, apiEndDate);
+    },
     staleTime: 10 * 60 * 1000, // fresh 10 menit
     gcTime: 30 * 60 * 1000, // cache hilang setelah 30 menit idle
+    enabled: !!slug, // Only run when slug exists - dates are optional
   });
+  
+  // Monitor React Query state changes
+  useEffect(() => {
+    if (product) {
+      console.log('✅ Details.tsx: React Query success:', {
+        productName: product.name,
+        apiParams: { startDate: apiStartDate, endDate: apiEndDate },
+        originalDates: { startDate, endDate },
+        contextState: {
+          contextStartDate: startDate,
+          contextEndDate: endDate,
+          updateCount,
+          areDatesSelected
+        },
+        source: 'react_query_success'
+      });
+      
+      // Verify context state hasn't been corrupted
+      if (areDatesSelected) {
+        console.log('✅ Details.tsx: Date state preserved after React Query success');
+      }
+    }
+    
+    if (isError && error) {
+      console.error('❌ Details.tsx: React Query error:', {
+        error: error.message,
+        apiParams: { startDate: apiStartDate, endDate: apiEndDate },
+        originalDates: { startDate, endDate },
+        contextState: {
+          contextStartDate: startDate,
+          contextEndDate: endDate,
+          updateCount,
+          areDatesSelected
+        },
+        source: 'react_query_error'
+      });
+    }
+    
+    // Log settled state
+    if (!isLoading) {
+      console.log('🏁 Details.tsx: React Query settled:', {
+        hasData: !!product,
+        hasError: isError,
+        apiParams: { startDate: apiStartDate, endDate: apiEndDate },
+        contextPreserved: {
+          startDate,
+          endDate,
+          areDatesSelected,
+          updateCount
+        },
+        source: 'react_query_settled'
+      });
+    }
+  }, [product, isError, error, isLoading, startDate, endDate, apiStartDate, apiEndDate, areDatesSelected, updateCount]);
 
   // Memoized values that depend on product (with safe fallbacks)
   const whatsappLink = useMemo(() => {
@@ -439,7 +593,15 @@ export default function Details() {
     )}`;
   }, [product?.name, quantity]);
 
-  const isAvailable = product?.status === "available";
+  // Use proper availability calculation
+  const availabilityInfo = useMemo(() => {
+    if (!product) return { isAvailable: false, quantity: 0, text: 'Tidak tersedia' };
+    return getProductAvailabilityText(product);
+  }, [product]);
+  
+  const isAvailable = availabilityInfo.isAvailable;
+  const availableQuantity = availabilityInfo.quantity;
+  
   const formattedPrice = useMemo(() => {
     if (!product) return "";
     return new Intl.NumberFormat("id-ID", {
@@ -448,6 +610,24 @@ export default function Details() {
       minimumFractionDigits: 0,
     }).format(product.price);
   }, [product?.price]);
+  
+  // Handler for date changes from booking form - using global context
+  const handleDateChange = useCallback((newStartDate: string | null, newEndDate: string | null) => {
+    console.log('🗓️ Details.tsx: handleDateChange called:', { 
+      newStartDate, 
+      newEndDate,
+      previousDates: { startDate, endDate },
+      contextUpdateCount: updateCount,
+      component: 'Details.tsx',
+      source: 'handleDateChange_call',
+      stack: new Error().stack?.split('\n').slice(1, 5)
+    });
+    
+    // Update dates using global context - no page refresh
+    setBookingDates(newStartDate, newEndDate);
+    
+    console.log('✅ Details.tsx: setBookingDates called, waiting for context update');
+  }, [setBookingDates, startDate, endDate, updateCount]);
 
   const handleQuantityChange = useCallback((delta: number) => {
     setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
@@ -465,7 +645,7 @@ export default function Details() {
       type: 'product' as const,
       category: product.category?.name,
       brand: product.brand?.name,
-      availability: product.status === 'available' ? 'InStock' as const : 'OutOfStock' as const
+      availability: isAvailable ? 'InStock' as const : 'OutOfStock' as const
     };
   }, [product, formattedPrice]);
 
@@ -552,7 +732,10 @@ export default function Details() {
             </div>
             
             {/* Right side - Product Info and Booking */}
-            <ProductInfo product={product} />
+      <ProductInfo 
+        product={product} 
+        isLoadingAvailability={isLoadingAvailability} 
+      />
           </div>
           
           {/* Additional Information Below */}

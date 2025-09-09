@@ -23,10 +23,10 @@ export default function NavCard() {
         // Fetch suggestions dari multiple sources
         const [productRes, bundlingRes] = await Promise.allSettled([
           axiosInstance.get("/search-suggestions", {
-            params: { q: query, limit: 8 }, // Increase limit for products
+            params: { q: query, limit: 10 }, // Increase limit for products
           }),
           axiosInstance.get("/bundlings", {
-            params: { q: query, limit: 6 }, // Add bundling suggestions
+            params: { q: query, limit: 8 }, // Increase bundling suggestions
           })
         ]);
 
@@ -49,8 +49,8 @@ export default function NavCard() {
           allSuggestions = [...allSuggestions, ...bundlingSuggestions];
         }
 
-        // Limit total suggestions to 12
-        setSuggestions(allSuggestions.slice(0, 12));
+        // Limit total suggestions to 15 (increased from 12)
+        setSuggestions(allSuggestions.slice(0, 15));
       } catch (err) {
         console.error('Search suggestions error:', err);
         setSuggestions([]);

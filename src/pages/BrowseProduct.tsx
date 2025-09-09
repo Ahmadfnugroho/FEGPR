@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/20/solid";
-import NavCard from "../components/navCard";
+import { MainLayout } from "../components/Layout";
 import ProductSkeleton from "../components/ProductSkeleton";
 import BundlingCardSkeleton from "../components/BundlingCardSkeleton";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
@@ -28,6 +28,14 @@ import {
   safeForEach,
   safeIncludes,
 } from "../utils/arraySafety";
+import {
+  isProductAvailable,
+  isBundlingAvailable,
+  sortProductsByAvailability,
+  sortBundlingByAvailability,
+  filterProductsByAvailability,
+  filterBundlingByAvailability
+} from "../utils/availabilityUtils";
 
 // Menggunakan konstanta dari axiosInstance.ts
 
@@ -103,8 +111,8 @@ export default function BrowseProduct() {
     max: 10000000,
   });
 
-  // Refs
-  const cancelTokenRef = useRef<any>(null);
+  // Refs for request cancellation
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Options for react-select using array safety utilities
   const categoryOptions = safeMap<Category, { label: string; value: string }>(
@@ -293,10 +301,14 @@ export default function BrowseProduct() {
   // Fetch bundlings
   const fetchBundlings = useCallback(
     async (p = 1, append = false) => {
-      if (cancelTokenRef.current) {
-        cancelTokenRef.current.cancel("Cancelled by new request");
+      // Cancel previous request if it exists
+      if (abortControllerRef.current) {
+        console.log('🚫 [BrowseProduct] Aborting previous bundlings request');
+        abortControllerRef.current.abort('New bundlings request initiated');
       }
-      cancelTokenRef.current = axios.CancelToken.source();
+      
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
 
       try {
         if (append) setLoadingMore(true);
@@ -316,7 +328,7 @@ export default function BrowseProduct() {
 
         const res = await axiosInstance.get(`/bundlings`, {
           params: Object.fromEntries(bundlingParams),
-          cancelToken: cancelTokenRef.current.token,
+          signal: abortControllerRef.current.signal,
         });
 
         const data = res.data.data || [];
@@ -346,8 +358,15 @@ export default function BrowseProduct() {
         setPage(p);
         setError(null);
       } catch (err: any) {
-        if (!axios.isCancel(err))
-          setError(err.message || "Gagal memuat bundling");
+        // Handle AbortError (request was cancelled)
+        if (err.name === 'AbortError') {
+          console.log('🚫 [BrowseProduct] Bundlings request was cancelled:', err.message);
+          return; // Don't set error for cancelled requests
+        }
+        
+        // Handle other errors
+        console.error('❌ [BrowseProduct] Bundlings fetch error:', err);
+        setError(err.errorMessage || err.message || "Gagal memuat bundling");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -359,10 +378,14 @@ export default function BrowseProduct() {
   // Fetch products (initial or filter change)
   const fetchProducts = useCallback(
     async (p = 1, append = false) => {
-      if (cancelTokenRef.current) {
-        cancelTokenRef.current.cancel("Cancelled by new request");
+      // Cancel previous request if it exists
+      if (abortControllerRef.current) {
+        console.log('🚫 [BrowseProduct] Aborting previous products request');
+        abortControllerRef.current.abort('New products request initiated');
       }
-      cancelTokenRef.current = axios.CancelToken.source();
+      
+      // Create new AbortController for this request
+      abortControllerRef.current = new AbortController();
 
       try {
         if (append) setLoadingMore(true);
@@ -370,7 +393,7 @@ export default function BrowseProduct() {
 
         const res = await axiosInstance.get(`/products`, {
           params: Object.fromEntries(buildParams(p)),
-          cancelToken: cancelTokenRef.current.token,
+          signal: abortControllerRef.current.signal,
         });
 
         const data = res.data.data || [];
@@ -405,8 +428,15 @@ export default function BrowseProduct() {
         setPage(p);
         setError(null);
       } catch (err: any) {
-        if (!axios.isCancel(err))
-          setError(err.message || "Gagal memuat produk");
+        // Handle AbortError (request was cancelled)
+        if (err.name === 'AbortError') {
+          console.log('🚫 [BrowseProduct] Products request was cancelled:', err.message);
+          return; // Don't set error for cancelled requests
+        }
+        
+        // Handle other errors
+        console.error('❌ [BrowseProduct] Products fetch error:', err);
+        setError(err.errorMessage || err.message || "Gagal memuat produk");
       } finally {
         setLoading(false);
         setLoadingMore(false);
@@ -461,6 +491,17 @@ export default function BrowseProduct() {
     }
   }
 
+  // Apply client-side availability sorting if needed
+  const applyAvailabilitySort = (items: Product[] | Bundling[]) => {
+    if (sort !== "availability") return items;
+    
+    if (isBundlingMode) {
+      return sortBundlingByAvailability(items as Bundling[]);
+    } else {
+      return sortProductsByAvailability(items as Product[]);
+    }
+  };
+
   // Apply temp filters to main filters
   const applyTempFilter = () => {
     setFilter(tempFilter);
@@ -497,9 +538,13 @@ export default function BrowseProduct() {
     return classes.filter(Boolean).join(" ");
   }
 
+  // Apply availability sorting to current items
+  const sortedProducts = applyAvailabilitySort(products) as Product[];
+  const sortedBundlings = applyAvailabilitySort(bundlings) as Bundling[];
+
   return (
-    <div className="bg-white">
-      <NavCard />
+    <MainLayout>
+      <div className="bg-white min-h-screen">
 
       {/* Mobile filter dialog */}
       <MobileFilterDialog
@@ -693,7 +738,7 @@ export default function BrowseProduct() {
                 ) : (
                   <>
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                      {bundlings.map((bundling) => (
+                      {sortedBundlings.map((bundling) => (
                         <Link
                           key={bundling.id}
                           to={`/bundling/${bundling.slug}`}
@@ -726,7 +771,7 @@ export default function BrowseProduct() {
               ) : (
                 <>
                   <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-                    {products.map((product, index) => (
+                    {sortedProducts.map((product, index) => (
                       <EnhancedProductCard 
                         key={product.id}
                         product={product}
@@ -752,6 +797,7 @@ export default function BrowseProduct() {
           </div>
         </section>
       </main>
-    </div>
+      </div>
+    </MainLayout>
   );
 }
