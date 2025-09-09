@@ -10,8 +10,8 @@ interface DateRange {
 }
 
 interface DateRangePickerProps {
-  value: DateRange;
-  onChange: (dateRange: DateRange) => void;
+  value?: DateRange;
+  onChange?: (dateRange: DateRange) => void;
   onDurationChange?: (duration: number) => void;
   minDate?: Date;
   maxDate?: Date;
@@ -19,6 +19,9 @@ interface DateRangePickerProps {
   className?: string;
   disabled?: boolean;
   error?: string;
+  // New props for controlled local state
+  defaultValue?: DateRange;
+  onLocalChange?: (dateRange: DateRange) => void;
 }
 
 const DateRangePicker = memo(function DateRangePicker({
@@ -30,44 +33,49 @@ const DateRangePicker = memo(function DateRangePicker({
   unavailableDates = [],
   className = '',
   disabled = false,
-  error
+  error,
+  defaultValue = { startDate: null, endDate: null },
+  onLocalChange
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
   
+  // Local state for date selection - does NOT update global context immediately
+  const [localDateRange, setLocalDateRange] = useState<DateRange>(defaultValue);
+  
   // Use ref to track if we're in the middle of an internal update
   const isInternalUpdate = useRef(false);
   
-  // Component mount/unmount debugging
+  // Initialize from value prop if provided (for backwards compatibility)
   useEffect(() => {
-    console.log('📅 DateRangePicker mounted/updated with value:', {
-      value: {
-        startDate: value.startDate?.toISOString(),
-        endDate: value.endDate?.toISOString()
-      },
-      disabled,
-      error,
-      source: 'DateRangePicker_mount'
-    });
-    
-    return () => {
-      console.log('🗑️ DateRangePicker effect cleanup');
-    };
-  }, [value, disabled, error]);
+    if (value && (value.startDate !== localDateRange.startDate || value.endDate !== localDateRange.endDate)) {
+      console.log('🔄 DateRangePicker syncing from value prop:', {
+        value: {
+          startDate: value.startDate?.toISOString(),
+          endDate: value.endDate?.toISOString()
+        },
+        source: 'value_prop_sync'
+      });
+      setLocalDateRange(value);
+    }
+  }, [value]);
   
-  // FULLY CONTROLLED: Use value prop directly, no internal state for dates
-  const selectedStartDate = value.startDate;
-  const selectedEndDate = value.endDate;
+  // Use local state for display
+  const selectedStartDate = localDateRange.startDate;
+  const selectedEndDate = localDateRange.endDate;
   
-  // Log whenever the controlled values change
+  // Log whenever local dates change
   useEffect(() => {
-    console.log('🔄 DateRangePicker controlled values changed:', {
+    console.log('📅 DateRangePicker local dates changed:', {
       selectedStartDate: selectedStartDate?.toISOString(),
       selectedEndDate: selectedEndDate?.toISOString(),
-      source: 'controlled_values_change'
+      source: 'local_state_change'
     });
-  }, [selectedStartDate, selectedEndDate]);
+    
+    // Notify parent of local changes (for validation, duration calculation, etc.)
+    onLocalChange?.(localDateRange);
+  }, [selectedStartDate, selectedEndDate, localDateRange, onLocalChange]);
 
   // Calculate duration when dates change using helper function
   useEffect(() => {
@@ -141,7 +149,7 @@ const DateRangePicker = memo(function DateRangePicker({
       return;
     }
 
-    console.log('🎯 DateRangePicker handleDateClick (timezone-safe):');
+    console.log('🎯 DateRangePicker handleDateClick (local state):');
     debugDate('Clicked date', date);
     if (selectedStartDate) debugDate('Current start', selectedStartDate);
     if (selectedEndDate) debugDate('Current end', selectedEndDate);
@@ -149,11 +157,11 @@ const DateRangePicker = memo(function DateRangePicker({
     isInternalUpdate.current = true;
     
     if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
-      // Start new selection
+      // Start new selection - UPDATE LOCAL STATE ONLY
       const newRange = { startDate: date, endDate: null };
-      console.log('🆕 Starting new date selection:');
+      console.log('🆕 Starting new date selection (local):');
       debugDate('New start date', newRange.startDate);
-      onChange(newRange);
+      setLocalDateRange(newRange);
     } else {
       // Check if trying to select the same date
       if (isSameDate(date, selectedStartDate)) {
@@ -162,7 +170,7 @@ const DateRangePicker = memo(function DateRangePicker({
         return;
       }
       
-      // Complete the range
+      // Complete the range - UPDATE LOCAL STATE ONLY
       let newRange;
       if (date < selectedStartDate) {
         // Swap if end date is before start date
@@ -176,7 +184,7 @@ const DateRangePicker = memo(function DateRangePicker({
       debugDate('Final start date', newRange.startDate);
       debugDate('Final end date', newRange.endDate);
       
-      onChange(newRange);
+      setLocalDateRange(newRange);
       setIsOpen(false);
     }
     
@@ -222,7 +230,7 @@ const DateRangePicker = memo(function DateRangePicker({
   };
 
   const clearSelection = () => {
-    console.log('🗑️ DateRangePicker clearSelection called:', {
+    console.log('🗑️ DateRangePicker clearSelection called (local state):', {
       currentSelection: {
         startDate: selectedStartDate?.toISOString(),
         endDate: selectedEndDate?.toISOString()
@@ -231,12 +239,15 @@ const DateRangePicker = memo(function DateRangePicker({
     });
     
     isInternalUpdate.current = true;
-    onChange({ startDate: null, endDate: null });
+    setLocalDateRange({ startDate: null, endDate: null });
     
     setTimeout(() => {
       isInternalUpdate.current = false;
     }, 100);
   };
+  
+  // Method to get current local dates (for parent to access)
+  const getCurrentDates = useCallback(() => localDateRange, [localDateRange]);
 
   const days = getDaysInMonth(currentMonth);
   const weekDays = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
