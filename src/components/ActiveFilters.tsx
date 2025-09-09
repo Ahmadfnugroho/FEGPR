@@ -43,7 +43,7 @@ export default function ActiveFilters({
   };
 
   // Helper function to check if price range is valid (not default 0-0)
-  const isValidPriceRange = (priceRange: { min: number; max: number } | null) => {
+  const isValidPriceRange = (priceRange: { min: number; max: number } | null | undefined) => {
     return priceRange && (priceRange.min > 0 || priceRange.max > 0) && 
            !(priceRange.min === 0 && priceRange.max === 0);
   };
