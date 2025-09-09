@@ -11,7 +11,7 @@ export default function NavCard() {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Ambil saran
+  // Ambil saran (products + bundlings)
   useEffect(() => {
     if (query.length < 2) {
       setSuggestions([]);
@@ -20,12 +20,40 @@ export default function NavCard() {
 
     const fetchSuggestions = async () => {
       try {
-        const res = await axiosInstance.get("/search-suggestions", {
-          params: { q: query },
-        });
-        setSuggestions(res.data.suggestions);
+        // Fetch suggestions dari multiple sources
+        const [productRes, bundlingRes] = await Promise.allSettled([
+          axiosInstance.get("/search-suggestions", {
+            params: { q: query, limit: 8 }, // Increase limit for products
+          }),
+          axiosInstance.get("/bundlings", {
+            params: { q: query, limit: 6 }, // Add bundling suggestions
+          })
+        ]);
+
+        let allSuggestions: any[] = [];
+
+        // Add product suggestions
+        if (productRes.status === 'fulfilled' && productRes.value.data.suggestions) {
+          allSuggestions = [...productRes.value.data.suggestions];
+        }
+
+        // Add bundling suggestions
+        if (bundlingRes.status === 'fulfilled' && bundlingRes.value.data.data) {
+          const bundlingSuggestions = bundlingRes.value.data.data.map((bundling: any) => ({
+            display: `📦 ${bundling.name}`,
+            url: `/bundling/${bundling.slug}`,
+            thumbnail: bundling.bundlingPhotos?.[0]?.photo || 
+                      (bundling.products?.[0]?.productPhotos?.[0]?.photo),
+            type: 'bundling'
+          }));
+          allSuggestions = [...allSuggestions, ...bundlingSuggestions];
+        }
+
+        // Limit total suggestions to 12
+        setSuggestions(allSuggestions.slice(0, 12));
       } catch (err) {
-        console.error(err);
+        console.error('Search suggestions error:', err);
+        setSuggestions([]);
       }
     };
 
@@ -156,14 +184,17 @@ export default function NavCard() {
             {showSuggestions && suggestions.length > 0 && (
               <div
                 ref={dropdownRef}
-                className="absolute top-full left-0 right-0 mt-1 bg-base-secondary border border-support-subtle rounded-lg shadow-lg z-50 max-h-48 md:max-h-60 overflow-y-auto"
+                className="absolute top-full left-0 right-0 mt-1 bg-base-secondary border border-support-subtle rounded-lg shadow-lg z-50 max-h-64 md:max-h-80 overflow-y-auto"
               >
                 {suggestions.map((item, index) => (
                   <button
                     key={index}
                     type="button"
                     onClick={() => selectSuggestion(item.url)}
-                    className="w-full text-left px-3 md:px-4 py-2 hover:bg-base-tertiary flex items-center gap-2 md:gap-3 text-xs md:text-sm transition-all duration-300 hover:pl-4 md:hover:pl-5 first:rounded-t-lg last:rounded-b-lg"
+                    className={`
+                      w-full text-left px-3 md:px-4 py-2 hover:bg-base-tertiary flex items-center gap-2 md:gap-3 text-xs md:text-sm transition-all duration-300 hover:pl-4 md:hover:pl-5 first:rounded-t-lg last:rounded-b-lg
+                      ${item.type === 'bundling' ? 'border-l-2 border-l-blue-400' : ''}
+                    `}
                   >
                     {item.thumbnail && (
                       <img
@@ -172,9 +203,18 @@ export default function NavCard() {
                         className="w-6 h-6 md:w-8 md:h-8 object-cover rounded flex-shrink-0"
                       />
                     )}
-                    <span className="text-support-primary truncate">
+                    <span className={`truncate ${
+                      item.type === 'bundling' 
+                        ? 'text-blue-700 font-medium' 
+                        : 'text-support-primary'
+                    }`}>
                       {item.display}
                     </span>
+                    {item.type === 'bundling' && (
+                      <span className="text-xs text-blue-500 ml-auto px-1 py-0.5 bg-blue-50 rounded">
+                        Bundling
+                      </span>
+                    )}
                   </button>
                 ))}
               </div>

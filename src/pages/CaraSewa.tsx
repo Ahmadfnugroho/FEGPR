@@ -1,14 +1,14 @@
 import NavCard from "../components/navCard";
-import FooterSection from "../components/FooterSection";
-import BottomNavigation from "../components/BottomNavigation";
+import { MainLayout } from "../components/Layout";
 
 export default function CaraSewa() {
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 md:bg-white">
-      <NavCard />
+    <MainLayout>
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 md:bg-white flex-1">
+        <NavCard />
 
-      {/* Main Container - Responsive Layout */}
-      <main className="max-w-[640px] mx-auto min-h-screen flex flex-col relative has-[#Bottom-nav]:pb-[144px] pt-[60px] md:max-w-7xl md:pt-0 md:pb-0">
+        {/* Main Container - Responsive Layout */}
+        <main className="max-w-[640px] mx-auto flex flex-col relative pb-8 pt-[60px] md:max-w-7xl md:pt-0">
         {/* Header Section */}
         <div className="hidden md:flex items-baseline justify-between border-b border-gray-200 pt-24 pb-6 px-4 sm:px-6 lg:px-8"></div>
 
@@ -419,12 +419,7 @@ export default function CaraSewa() {
           </div>
         </div>
       </main>
-
-      {/* Bottom Navigation - Mobile Only */}
-      <BottomNavigation />
-
-      {/* Footer Section */}
-      <FooterSection />
-    </div>
+      </div>
+    </MainLayout>
   );
 }

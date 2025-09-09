@@ -23,10 +23,10 @@ import type {
   productSpecification,
   RentalInclude,
 } from "../types/type";
-import FooterSection from "../components/FooterSection";
-import BottomNavigation from "../components/BottomNavigation";
 import AnimatedPulseBorder from "../components/AnimatedPulseBorder";
 import EnhancedBookingForm from "../components/EnhancedBookingForm";
+import { formatPrice } from "../utils/rental-duration-helper";
+import { MainLayout } from "../components/Layout";
 
 const fetchBundling = async (slug: string | undefined) => {
   if (!slug) throw new Error("No slug provided");
@@ -109,11 +109,7 @@ export default function BundlingDetails() {
 
   const formattedPrice = useMemo(() => {
     if (!bundling) return "";
-    return new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(bundling.price);
+    return formatPrice(bundling.price);
   }, [bundling]);
 
   const handleQuantityChange = useCallback((delta: number) => {
@@ -122,39 +118,41 @@ export default function BundlingDetails() {
 
   if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <MdArrowBack className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-red-600 mb-4">
-            {error?.message || "Bundling Tidak Ditemukan"}
-          </h2>
-          <div className="space-y-3">
-            <button
-              onClick={() => refetch()}
-              className="w-full bg-accent hover:bg-accent/80 text-white font-bold py-3 px-6 rounded-lg transition"
-            >
-              Coba Lagi
-            </button>
-            <Link
-              to="/"
-              className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"
-            >
-              <MdArrowBack className="inline mr-2" />
-              Kembali ke Beranda
-            </Link>
+      <MainLayout>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <MdArrowBack className="w-16 h-16 text-red-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              {error?.message || "Bundling Tidak Ditemukan"}
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => refetch()}
+                className="w-full bg-accent hover:bg-accent/80 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                Coba Lagi
+              </button>
+              <Link
+                to="/"
+                className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"
+              >
+                <MdArrowBack className="inline mr-2" />
+                Kembali ke Beranda
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   if (!bundling) {
     return (
-      <>
+      <MainLayout>
         <NavCard />
         <AnimatedPulseBorder isLoading={true}>
-          <div className="bg-gray-50 md:bg-white min-h-screen">
-            <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-32 md:pb-8 pt-20 md:pt-28">
+          <div className="bg-gray-50 md:bg-white flex-1">
+            <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-8 pt-20 md:pt-28">
               <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
                 {/* Left column skeleton */}
                 <div className="lg:col-span-3 flex flex-col">
@@ -218,16 +216,16 @@ export default function BundlingDetails() {
             </main>
           </div>
         </AnimatedPulseBorder>
-      </>
+      </MainLayout>
     );
   }
 
   return (
-    <>
+    <MainLayout>
       <NavCard />
       <AnimatedPulseBorder isLoading={isLoading}>
-        <div className="bg-gray-50 md:bg-white min-h-screen">
-          <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-32 md:pb-8 pt-20 md:pt-28 has-[#Bottom-nav]:pb-40 scroll-fade-in">
+        <div className="bg-gray-50 md:bg-white flex-1">
+          <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-8 pt-20 md:pt-28 scroll-fade-in">
             {/* Grid: Gambar + Info */}
             <div
               className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start scroll-fade-in"
@@ -333,7 +331,7 @@ export default function BundlingDetails() {
                               </div>
                               <div className="text-right">
                                 <p className="font-semibold text-primary">
-                                  Rp{product.price.toLocaleString("id-ID")}
+                                  {formatPrice(product.price)}
                                 </p>
                                 <p className="text-xs text-muted">/hari</p>
                               </div>
@@ -473,19 +471,18 @@ export default function BundlingDetails() {
                       </span>
                     </div>
                     <p className="font-extrabold text-3xl text-dark">
-                      Rp{bundling.price.toLocaleString("id-ID")} /hari
+                      {formatPrice(bundling.price)} /hari
                     </p>
                     <div className="text-sm text-muted">
                       <p className="mb-1">💰 Hemat dibanding sewa terpisah:</p>
                       <p className="font-semibold text-green-600">
-                        Rp
-                        {(
+                        {formatPrice(
                           bundling.products.reduce(
                             (total, product) =>
                               total + product.price * product.quantity,
                             0
                           ) - bundling.price
-                        ).toLocaleString("id-ID")}
+                        )}
                       </p>
                     </div>
 
@@ -527,7 +524,7 @@ export default function BundlingDetails() {
                   <EnhancedBookingForm
                     item={bundling}
                     type="bundling"
-                    className="mt-1 mb-1"
+                    className="mt-1 mb-1 flex-col"
                   />
                 </div>
               </div>
@@ -535,9 +532,6 @@ export default function BundlingDetails() {
           </main>
         </div>
       </AnimatedPulseBorder>
-
-      <FooterSection />
-      <BottomNavigation />
-    </>
+    </MainLayout>
   );
 }

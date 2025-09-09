@@ -1,6 +1,7 @@
 // src/components/DateRangePicker.tsx
 import { useState, useEffect, useCallback } from 'react';
 import { CalendarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { getRentalDays, formatRentalDuration } from '../utils/rental-duration-helper';
 
 interface DateRange {
   startDate: Date | null;
@@ -23,7 +24,7 @@ export default function DateRangePicker({
   value,
   onChange,
   onDurationChange,
-  minDate = new Date(),
+  minDate, // No default - allow today
   maxDate,
   unavailableDates = [],
   className = '',
@@ -36,12 +37,10 @@ export default function DateRangePicker({
   const [selectedEndDate, setSelectedEndDate] = useState<Date | null>(value.endDate);
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
 
-  // Calculate duration when dates change
+  // Calculate duration when dates change using helper function
   useEffect(() => {
     if (selectedStartDate && selectedEndDate) {
-      const duration = Math.ceil(
-        (selectedEndDate.getTime() - selectedStartDate.getTime()) / (1000 * 60 * 60 * 24)
-      ) + 1; // +1 to include both start and end date
+      const duration = getRentalDays(selectedStartDate, selectedEndDate);
       onDurationChange?.(duration);
     } else {
       onDurationChange?.(0);
@@ -77,7 +76,9 @@ export default function DateRangePicker({
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    if (date < minDate || date < today) return true;
+    // Allow today and future dates
+    if (date < today) return true;
+    if (minDate && date < minDate) return true;
     if (maxDate && date > maxDate) return true;
     if (isDateUnavailable(date)) return true;
     
@@ -112,6 +113,12 @@ export default function DateRangePicker({
       setSelectedEndDate(null);
       onChange({ startDate: date, endDate: null });
     } else {
+      // Check if trying to select the same date
+      if (date.toDateString() === selectedStartDate.toDateString()) {
+        // Don't allow same date selection - show error or just return
+        return;
+      }
+      
       // Complete the range
       if (date < selectedStartDate) {
         // Swap if end date is before start date
@@ -169,7 +176,7 @@ export default function DateRangePicker({
   const weekDays = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 
   const duration = selectedStartDate && selectedEndDate 
-    ? Math.ceil((selectedEndDate.getTime() - selectedStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1
+    ? getRentalDays(selectedStartDate, selectedEndDate)
     : 0;
 
   return (
@@ -194,7 +201,7 @@ export default function DateRangePicker({
                   {formatDateShort(selectedStartDate)} - {formatDateShort(selectedEndDate)}
                 </div>
                 <div className="text-xs text-gray-500">
-                  {duration} hari
+                  {formatRentalDuration(duration)}
                 </div>
               </div>
             ) : selectedStartDate ? (
@@ -314,7 +321,7 @@ export default function DateRangePicker({
                   <>
                     <div><strong>Selesai:</strong> {formatDate(selectedEndDate)}</div>
                     <div className="mt-2 text-blue-600 font-semibold">
-                      Durasi: {duration} hari
+                      Durasi: {formatRentalDuration(duration)}
                     </div>
                   </>
                 )}

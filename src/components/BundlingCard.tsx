@@ -1,6 +1,7 @@
 import React from "react";
 import type { Bundling } from "../types/type";
 import { STORAGE_BASE_URL } from "../api/constants";
+import { formatPrice } from "../utils/rental-duration-helper";
 
 interface BundlingCardProps {
   bundling: Bundling;
@@ -100,7 +101,7 @@ const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
         <div className="flex items-center justify-between mt-auto flex-shrink-0">
           <div>
             <p className="font-bold text-sm md:text-base lg:text-lg text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
-              Rp{bundling.price.toLocaleString("id-ID")}
+              {formatPrice(bundling.price)}
             </p>
             <p className="text-[10px] md:text-xs text-support-tertiary">
               /hari

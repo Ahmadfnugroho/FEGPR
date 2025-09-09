@@ -3,6 +3,7 @@ import { Product } from "../types/type";
 import { memo, useState, useCallback } from "react";
 import "swiper/swiper-bundle.css";
 import { STORAGE_BASE_URL } from "../api/constants";
+import { formatPrice } from "../utils/rental-duration-helper";
 
 // Swiper
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -122,7 +123,7 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
           <div className="flex items-center justify-center mb-2 md:mb-3 flex-shrink-0">
             <div className="text-center">
               <p className=" text-xs md:text-base lg:text-sm text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
-                Rp{product.price.toLocaleString("id-ID")}{" "}
+                {formatPrice(product.price)}{" "}
                 <span className="text-[10px] md:text-xs text-support-tertiary">
                   /hari
                 </span>

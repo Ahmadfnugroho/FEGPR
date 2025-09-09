@@ -5,22 +5,21 @@ import BrowseCategoryWrapper from "../wrappers/BrowseCategoryWrapper";
 import BrowseProductWrapper from "../wrappers/BrowseProductWrapper";
 import ErrorBoundary from "../components/ErrorBoundary";
 import NavCard from "../components/navCard";
-import FooterSection from "../components/FooterSection";
+import { MainLayout } from "../components/Layout";
 import WelcomeSection from "../components/WelcomeSection";
 import HeroSection from "../components/HeroSection";
-import BottomNavigation from "../components/BottomNavigation";
 import BenefitsSection from "../components/BenefitsSection";
 
 export default function Browse() {
   return (
-    <>
+    <MainLayout>
       {/* Main Container - Responsive Layout */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 md:bg-gray-10">
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200 md:bg-gray-10 flex-1">
         {/* Navigation */}
         <NavCard />
 
         {/* Main Content */}
-        <main className="max-w-[640px] mx-auto min-h-screen flex flex-col relative has-[#Bottom-nav]:pb-[144px] pt-[60px] md:max-w-none md:pt-0 md:pb-0">
+        <main className="max-w-[640px] mx-auto flex flex-col relative pb-8 pt-[60px] md:max-w-none md:pt-0">
           {/* Welcome Section - Mobile Only */}
           <WelcomeSection />
 
@@ -96,13 +95,7 @@ export default function Browse() {
             </ErrorBoundary>
           </section>
         </main>
-
-        {/* Bottom Navigation - Mobile Only */}
-        <BottomNavigation />
       </div>
-
-      {/* Footer Section */}
-      <FooterSection />
-    </>
+    </MainLayout>
   );
 }

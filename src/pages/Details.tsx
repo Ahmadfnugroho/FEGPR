@@ -28,7 +28,7 @@ import type {
 } from "../types/type";
 
 import NavCard from "../components/navCard";
-import FooterSection from "../components/FooterSection";
+import { MainLayout } from "../components/Layout";
 import PageSkeleton from "../components/PageSkeleton";
 import EnhancedSEOHead, { useProductSEO } from "../components/EnhancedSEOHead";
 import EnhancedBookingForm from "../components/EnhancedBookingForm";
@@ -473,42 +473,44 @@ export default function Details() {
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center max-w-md">
-          <MdError className="w-16 h-16 text-red-600 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-red-600 mb-4">
-            {error instanceof Error ? error.message : "Produk Tidak Ditemukan"}
-          </h2>
-          <div className="space-y-3">
-            <button
-              onClick={() => refetch()}
-              className="w-full bg-accent hover:bg-accent/80 text-white font-bold py-3 px-6 rounded-lg transition"
-            >
-              Coba Lagi
-            </button>
-            <Link
-              to="/"
-              className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"
-            >
-              <MdArrowBack className="inline mr-2" />
-              Kembali ke Beranda
-            </Link>
+      <MainLayout>
+        <div className="flex-1 flex items-center justify-center px-4">
+          <div className="text-center max-w-md">
+            <MdError className="w-16 h-16 text-red-600 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-red-600 mb-4">
+              {error instanceof Error ? error.message : "Produk Tidak Ditemukan"}
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => refetch()}
+                className="w-full bg-accent hover:bg-accent/80 text-white font-bold py-3 px-6 rounded-lg transition"
+              >
+                Coba Lagi
+              </button>
+              <Link
+                to="/"
+                className="block w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition"
+              >
+                <MdArrowBack className="inline mr-2" />
+                Kembali ke Beranda
+              </Link>
+            </div>
           </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   return (
-    <>
+    <MainLayout>
       {/* SEO Head */}
       {seoProps && <EnhancedSEOHead {...seoProps} />}
       
       <NavCard />
-      <div className="bg-gray-50 md:bg-white min-h-screen">
-        <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-32 md:pb-8 pt-20 md:pt-28 has-[#Bottom-nav]:pb-40">
+      <div className="bg-gray-50 md:bg-white flex-1">
+        <main className="max-w-[640px] md:max-w-[1130px] mx-auto px-4 sm:px-6 pb-24 md:pb-8 pt-20 md:pt-28">
           {/* Breadcrumb - Hidden on mobile */}
-          <nav className="mb-8 hidden md:block" aria-label="Breadcrumb">
+          <nav className="mb-4 md:mb-8 hidden md:block" aria-label="Breadcrumb">
             <ol className="flex items-center space-x-2 text-sm text-muted">
               <li>
                 <Link to="/" className="hover:text-accent transition-colors">
@@ -569,8 +571,8 @@ export default function Details() {
         </main>
       </div>
 
-      {/* Mobile Bottom Action Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40 md:hidden">
+      {/* Mobile Bottom Action Bar - positioned above footer */}
+      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30 md:hidden">
         <div className="max-w-[640px] mx-auto px-4 py-3">
           <div className="flex items-center justify-between space-x-3">
             {/* Price and Quantity */}
@@ -603,9 +605,6 @@ export default function Details() {
           </div>
         </div>
       </div>
-
-      <FooterSection />
-      <BottomNavigation />
-    </>
+    </MainLayout>
   );
 }

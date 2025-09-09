@@ -2,8 +2,7 @@ import React from "react";
 
 export default function FooterSection() {
   return (
-    <footer className="w-full py-6 md:py-8 px-4 bg-black/90 text-white mt-8 md:mt-10">
-      <section className="max-w-7xl mx-auto">
+    <section className="max-w-7xl mx-auto">
         <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-6 md:gap-8">
           {/* Brand Info */}
           <div className="flex-1 min-w-[250px]">
@@ -141,6 +140,5 @@ export default function FooterSection() {
         </div>
         <div className="text-center text-xs text-gray-800 ">madeby afn</div>
       </section>
-    </footer>
   );
 }

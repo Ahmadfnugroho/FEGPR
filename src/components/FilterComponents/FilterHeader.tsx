@@ -44,7 +44,8 @@ export default function FilterHeader({
     (currentFilters.brand || []).length +
     (currentFilters.subcategory || []).length +
     (currentFilters.available || []).length +
-    (priceRange && priceRange.min !== 0 && priceRange.max !== 0 ? 1 : 0) +
+    (priceRange && (priceRange.min > 0 || priceRange.max > 0) && 
+     !(priceRange.min === 0 && priceRange.max === 0) ? 1 : 0) +
     (currentFilters.q ? 1 : 0);
 
   // Get filter items with individual remove handlers
@@ -96,8 +97,9 @@ export default function FilterHeader({
       });
     });
 
-    // Add price range (only if meaningful)
-    if (priceRange && (priceRange.min > 0 || priceRange.max < 10000000)) {
+    // Add price range (only if both values are meaningful and not default 0-0)
+    if (priceRange && (priceRange.min > 0 || priceRange.max > 0) && 
+        !(priceRange.min === 0 && priceRange.max === 0)) {
       const minFormatted = priceRange.min.toLocaleString("id-ID");
       const maxFormatted = priceRange.max.toLocaleString("id-ID");
       items.push({
@@ -126,15 +128,15 @@ export default function FilterHeader({
   }
 
   return (
-    <div className="mb-6 p-4 bg-blue-50/50 rounded-lg border border-blue-200">
+    <div className="mb-4 p-3 bg-blue-50/50 rounded-lg border border-blue-200">
       {/* Header with title and clear all button */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-sm font-medium text-gray-800">
           Filter Aktif ({activeFiltersCount})
         </h3>
         <button
           onClick={onClearAll}
-          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300 transition-colors"
+          className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-600 bg-white border border-red-200 rounded-md hover:bg-red-50 hover:border-red-300 transition-colors"
         >
           Hapus Semua
         </button>
@@ -145,15 +147,15 @@ export default function FilterHeader({
         {activeItems.map((item, index) => (
           <span
             key={`${item.type}-${index}`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-800 border border-blue-200"
+            className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800 border border-blue-200"
           >
             <span className="truncate max-w-xs">{item.label}</span>
             <button
               onClick={item.onRemove}
-              className="inline-flex items-center justify-center w-4 h-4 rounded-full hover:bg-blue-200 text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0"
+              className="inline-flex items-center justify-center w-3 h-3 rounded-full hover:bg-blue-200 text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0"
               title={`Hapus filter ${item.label}`}
             >
-              <XMarkIcon className="w-3 h-3" />
+              <XMarkIcon className="w-2.5 h-2.5" />
             </button>
           </span>
         ))}

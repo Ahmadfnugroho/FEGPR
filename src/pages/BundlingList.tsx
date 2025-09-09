@@ -1,26 +1,32 @@
 import { useEffect, useState, useCallback } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Bundling } from "../types/type";
 import axiosInstance from "../api/axiosInstance";
 import BundlingCard from "../components/BundlingCard";
+import BundlingSearch from "../components/BundlingSearch";
 import NavCard from "../components/navCard";
 import BundlingCardSkeleton from "../components/BundlingCardSkeleton";
 import ProductSkeleton from "../components/ProductSkeleton";
-import BottomNavigation from "../components/BottomNavigation";
+import { MainLayout } from "../components/Layout";
 
 export default function BundlingList() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const params = new URLSearchParams(location.search);
+  
   const [bundlings, setBundlings] = useState<Bundling[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(Number(params.get("page") || 1));
   const [hasMore, setHasMore] = useState(true);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState<string>(params.get("q") || "");
   const pageSize = 10;
 
   // Fetch bundlings with pagination
   const fetchBundlings = useCallback(
-    async (p = 1, append = false) => {
+    async (p = 1, append = false, query = "") => {
       try {
         if (append) {
           setLoadingMore(true);
@@ -28,11 +34,17 @@ export default function BundlingList() {
           setLoading(true);
         }
 
+        const apiParams: any = {
+          page: p,
+          limit: pageSize,
+        };
+        
+        if (query) {
+          apiParams.q = query;
+        }
+
         const response = await axiosInstance.get("/bundlings", {
-          params: {
-            page: p,
-            limit: pageSize,
-          },
+          params: apiParams,
         });
 
         const data = response.data.data || [];
@@ -55,21 +67,29 @@ export default function BundlingList() {
         setLoadingMore(false);
       }
     },
-    [pageSize]
+    [pageSize, searchQuery]
   );
 
+  // Sync URL params with state
   useEffect(() => {
-    fetchBundlings(1, false);
-  }, [fetchBundlings]);
+    const urlParams = new URLSearchParams(location.search);
+    const qParam = urlParams.get("q") || "";
+    setSearchQuery(qParam);
+    setPage(Number(urlParams.get("page") || 1));
+  }, [location.search]);
+
+  useEffect(() => {
+    fetchBundlings(1, false, searchQuery);
+  }, [searchQuery]);
 
   const loadMore = () => {
     if (!hasMore || loadingMore) return;
-    fetchBundlings(page + 1, true);
+    fetchBundlings(page + 1, true, searchQuery);
   };
 
   if (loading) {
     return (
-      <>
+      <MainLayout>
         <NavCard></NavCard>
         <header className="flex flex-col w-full">
           <section
@@ -128,16 +148,22 @@ export default function BundlingList() {
             ))}
           </div>
         </section>
-      </>
+      </MainLayout>
     );
   }
 
   if (error) {
-    return <p>Error: {error}</p>;
+    return (
+      <MainLayout>
+        <div className="flex-1 flex items-center justify-center">
+          <p className="text-red-600 text-lg">Error: {error}</p>
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
-    <>
+    <MainLayout>
       <NavCard></NavCard>
 
       <header className="flex flex-col w-full">
@@ -189,14 +215,35 @@ export default function BundlingList() {
         id="Fresh-Space"
         className="flex flex-col gap-[30px] w-full max-w-[1130px] mx-auto mt-[70px] mb-[120px] scroll-fade-in"
       >
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
           <h2 className="font-bold text-[32px] leading-[48px] text-nowrap scroll-fade-in">
             Paket Bundling Kami
           </h2>
-          <p className="text-gray-600 text-sm">
-            {bundlings.length} {hasMore ? "paket tersedia" : "paket total"}
-          </p>
+          <div className="flex flex-col lg:items-end gap-2">
+            <BundlingSearch
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onSearch={(q) => {
+                const ps = new URLSearchParams(location.search);
+                if (q) ps.set("q", q); else ps.delete("q");
+                ps.set("page", "1");
+                navigate({ pathname: location.pathname, search: ps.toString() });
+              }}
+              resultsCount={bundlings.length}
+              placeholder="Cari bundling..."
+              className="lg:w-96"
+            />
+          </div>
         </div>
+        
+        {searchQuery && (
+          <div className="mb-6 text-gray-600 text-sm">
+            {bundlings.length === 0 
+              ? `Tidak ada hasil untuk "${searchQuery}"` 
+              : `Menampilkan ${bundlings.length} hasil${hasMore ? ' dari banyak' : ''} untuk "${searchQuery}"`
+            }
+          </div>
+        )}
 
         {bundlings.length === 0 ? (
           <div className="text-center py-12">
@@ -250,7 +297,6 @@ export default function BundlingList() {
           </>
         )}
       </section>
-      <BottomNavigation></BottomNavigation>
-    </>
+    </MainLayout>
   );
 }

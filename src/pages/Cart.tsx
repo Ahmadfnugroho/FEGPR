@@ -2,6 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../contexts/CartContext';
 import { STORAGE_BASE_URL } from '../api/constants';
+import { formatPrice, formatRentalDuration } from '../utils/rental-duration-helper';
 import { 
   ShoppingBagIcon,
   TrashIcon,
@@ -21,14 +22,7 @@ export default function Cart() {
     generateWhatsAppMessage
   } = useCart();
 
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+  // Use formatPrice from helper function instead
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -165,7 +159,7 @@ export default function Cart() {
                                   <div>{formatDate(item.startDate)}</div>
                                   <div>sampai {formatDate(item.endDate)}</div>
                                   <div className="text-blue-600 font-semibold">
-                                    {item.duration} hari
+                                    {formatRentalDuration(item.duration)}
                                   </div>
                                 </div>
                               </div>
@@ -214,7 +208,7 @@ export default function Cart() {
                                   {formatPrice(item.price * item.quantity * item.duration)}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {formatPrice(item.price)}/hari × {item.quantity} × {item.duration} hari
+                                  {formatPrice(item.price)}/hari × {item.quantity} × {formatRentalDuration(item.duration)}
                                 </div>
                               </div>
                             </div>

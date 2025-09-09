@@ -54,10 +54,16 @@ export default function PriceRange({
     }
   };
 
-  // Debounce onChange
+  // Debounce onChange - only send if values are meaningful
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      onChange(localMin, localMax);
+      // Only send values if at least one is greater than 0
+      if (localMin > 0 || localMax > 0) {
+        onChange(localMin, localMax);
+      } else {
+        // Send null values if both are 0 (meaning no filter)
+        onChange(null, null);
+      }
     }, 250);
 
     return () => clearTimeout(timeoutId);

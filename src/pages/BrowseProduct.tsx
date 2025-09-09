@@ -9,6 +9,7 @@ import BundlingCardSkeleton from "../components/BundlingCardSkeleton";
 import ProductCardSkeleton from "../components/ProductCardSkeleton";
 import ProductCard from "../components/ProductCard";
 import EnhancedProductCard from "../components/EnhancedProductCard";
+import ProductSearch from "../components/ProductSearch";
 import BundlingCard from "../components/BundlingCard";
 import MobileFilterDialog from "../components/FilterComponents/MobileFilterDialog";
 import DesktopFilterSidebar from "../components/FilterComponents/DesktopFilterSidebar";
@@ -73,6 +74,9 @@ export default function BrowseProduct() {
 
   // Temporary filter state for user input (before apply)
   const [tempFilter, setTempFilter] = useState(filter);
+  
+  // Search query state for ProductSearch component
+  const [searchQuery, setSearchQuery] = useState<string>(filter.q || "");
   const [priceRange, setPriceRange] = useState<{
     min: number;
     max: number;
@@ -232,13 +236,15 @@ export default function BrowseProduct() {
   // Sync URL params with state when location changes
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
+    const qParam = urlParams.get("q") || "";
     setFilter({
       category: urlParams.getAll("category") || [],
       brand: urlParams.getAll("brand") || [],
       subcategory: urlParams.getAll("subcategory") || [],
       available: urlParams.getAll("available") || [],
-      q: urlParams.get("q") || "",
+      q: qParam,
     });
+    setSearchQuery(qParam);
     setSort(urlParams.get("sort") || "name");
     setOrder((urlParams.get("order") as "asc" | "desc") || "asc");
     setPage(Number(urlParams.get("page") || 1));
@@ -629,6 +635,22 @@ export default function BrowseProduct() {
                   categoryOptions={categoryOptions}
                   brandOptions={brandOptions}
                   subCategoryOptions={subCategoryOptions}
+                />
+              </div>
+
+              {/* Product Search */}
+              <div className="mb-4">
+                <ProductSearch
+                  value={searchQuery}
+                  onChange={setSearchQuery}
+                  onSearch={(q) => {
+                    // Update URL query param and reset to page 1
+                    const ps = new URLSearchParams(location.search);
+                    if (q) ps.set("q", q); else ps.delete("q");
+                    ps.set("page", "1");
+                    navigate({ pathname: location.pathname, search: ps.toString() });
+                  }}
+                  placeholder="Cari nama produk..."
                 />
               </div>
 
