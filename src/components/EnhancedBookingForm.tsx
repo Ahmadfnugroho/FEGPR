@@ -434,79 +434,69 @@ export default function EnhancedBookingForm({
     clearAvailabilityResults,
   ]);
 
-  // Form submission handler
-  const handleSubmitBooking = async () => {
+  // Form submission handler - validates dates and fetches updated availability
+  const handleSubmitDateSelection = async () => {
     try {
       setIsSubmitting(true);
       setValidationError("");
-
+      
       // Validate dates
       if (!localDates.startDate || !localDates.endDate) {
         setValidationError("Pilih tanggal rental terlebih dahulu");
         return;
       }
-
+      
       // Validate dates with business rules
-      const validation = validateRentalDates(
-        localDates.startDate,
-        localDates.endDate
-      );
+      const validation = validateRentalDates(localDates.startDate, localDates.endDate);
       if (!validation.isValid) {
         setValidationError(validation.errors[0] || "Tanggal tidak valid");
         return;
       }
-
+      
       if (quantity < 1) {
         setValidationError("Jumlah harus minimal 1");
         return;
       }
-
-      // Check availability from parent data
-      if (!isAvailable) {
-        setValidationError("Item tidak tersedia");
-        return;
-      }
-
-      if (availableQuantity > 0 && quantity > availableQuantity) {
-        setValidationError(
-          `Jumlah melebihi ketersediaan. Maksimal ${availableQuantity} ${
-            type === "product" ? "unit" : "paket"
-          }`
-        );
-        return;
-      }
-
-      console.log("🚀 Submitting booking form:", {
+      
+      console.log('🚀 Submitting date selection form:', {
         localDates,
         quantity,
         duration,
-        source: "form_submission",
+        source: 'date_form_submission'
       });
-
+      
+      // Prepare API endpoint with date parameters
+      const startDateStr = localDates.startDate.toISOString().split('T')[0];
+      const endDateStr = localDates.endDate.toISOString().split('T')[0];
+      const endpoint = `/${type}/${item.slug}?start_date=${startDateStr}&end_date=${endDateStr}`;
+      
+      console.log('🔄 Fetching updated availability:', {
+        endpoint,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        source: 'api_call_with_dates'
+      });
+      
+      // Fetch updated item data with availability for selected dates
+      const response = await axiosInstance.get(endpoint, {
+        timeout: 10000
+      });
+      
+      console.log('✅ Updated item data received:', response.data);
+      
       // Update global context with validated dates
       setDateRange({
         startDate: localDates.startDate,
-        endDate: localDates.endDate,
+        endDate: localDates.endDate
       });
-
-      // Send API request to update server with booking dates
-      const response = await axiosInstance.post("/api/booking/date-range", {
-        start_date: localDates.startDate.toISOString().split("T")[0],
-        end_date: localDates.endDate.toISOString().split("T")[0],
-        item_type: type,
-        item_id: item.id,
-        quantity: quantity,
-      });
-
-      console.log("✅ Booking dates updated successfully:", response.data);
-
-      // Add to cart after successful date submission
-      handleAddToCart();
+      
+      // Update availability successful - no page refresh needed
+      // The parent component should re-render with new global context dates
+      
     } catch (error: any) {
-      console.error("❌ Error submitting booking:", error);
+      console.error('❌ Error submitting date selection:', error);
       setValidationError(
-        error.response?.data?.message ||
-          "Gagal memproses booking. Silakan coba lagi."
+        error.response?.data?.message || 'Gagal memproses tanggal. Silakan coba lagi.'
       );
     } finally {
       setIsSubmitting(false);
@@ -568,17 +558,20 @@ export default function EnhancedBookingForm({
   };
 
   const handleAddToCart = () => {
-    if (
-      !isBookingValid ||
-      !dateRange.startDate ||
-      !dateRange.endDate ||
-      !isAvailable
-    ) {
-      console.warn("Cannot add to cart:", {
-        isBookingValid,
-        hasStartDate: !!dateRange.startDate,
-        hasEndDate: !!dateRange.endDate,
+    // Use global context dates (should be set after form submission)
+    if (!dateRange.startDate || !dateRange.endDate) {
+      console.warn('Cannot add to cart - no global dates:', {
+        hasGlobalStartDate: !!dateRange.startDate,
+        hasGlobalEndDate: !!dateRange.endDate,
+        message: 'Submit tanggal rental terlebih dahulu'
+      });
+      return;
+    }
+    
+    if (!isAvailable) {
+      console.warn('Cannot add to cart - item not available:', {
         isAvailable,
+        message: 'Item tidak tersedia untuk tanggal yang dipilih'
       });
       return;
     }
@@ -602,7 +595,7 @@ export default function EnhancedBookingForm({
     };
 
     addItem(cartItem);
-    console.log("Added to cart:", cartItem);
+    console.log('✅ Item added to cart:', cartItem);
   };
 
   // Use formatPrice from helper function instead
@@ -746,33 +739,26 @@ export default function EnhancedBookingForm({
         </div>
       )}
 
-      {/* Submit Booking Button */}
+      {/* Form Actions */}
       <div className="space-y-3">
+        {/* Submit Date Selection Button */}
         <button
           type="button"
-          onClick={handleSubmitBooking}
-          disabled={
-            isSubmitting ||
-            !localDates.startDate ||
-            !localDates.endDate ||
-            quantity < 1
-          }
+          onClick={handleSubmitDateSelection}
+          disabled={isSubmitting || !localDates.startDate || !localDates.endDate || quantity < 1}
           className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
-            !isSubmitting &&
-            localDates.startDate &&
-            localDates.endDate &&
-            quantity >= 1
-              ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:scale-[1.02]"
+            !isSubmitting && localDates.startDate && localDates.endDate && quantity >= 1
+              ? "bg-green-600 hover:bg-green-700 hover:shadow-lg transform hover:scale-[1.02]"
               : "bg-gray-400 cursor-not-allowed"
           }`}
           title={
             !localDates.startDate || !localDates.endDate
               ? "Pilih tanggal rental terlebih dahulu"
               : quantity < 1
-              ? "Pilih jumlah minimal 1"
-              : isSubmitting
-              ? "Sedang memproses..."
-              : "Submit booking dan tambah ke keranjang"
+                ? "Pilih jumlah minimal 1"
+                : isSubmitting
+                  ? "Sedang memproses..."
+                  : "Submit tanggal rental untuk cek ketersediaan"
           }
         >
           {isSubmitting ? (
@@ -782,38 +768,75 @@ export default function EnhancedBookingForm({
             </>
           ) : (
             <>
-              <ShoppingCartIcon className="h-5 w-5 mr-2" />
+              <CheckCircleIcon className="h-5 w-5 mr-2" />
               {!localDates.startDate || !localDates.endDate
                 ? "Pilih Tanggal Dulu"
-                : isAvailable
-                ? "Tambah ke Keranjang"
-                : "Tidak Tersedia"}
+                : "Submit Tanggal Rental"}
             </>
           )}
-          {totalItems > 0 && !isSubmitting && (
+        </button>
+        
+        {/* Add to Cart Button - Only enabled after date submission */}
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={!dateRange.startDate || !dateRange.endDate || !isAvailable || isSubmitting}
+          className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
+            dateRange.startDate && dateRange.endDate && isAvailable && !isSubmitting
+              ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:scale-[1.02]"
+              : "bg-gray-400 cursor-not-allowed"
+          }`}
+          title={
+            !dateRange.startDate || !dateRange.endDate
+              ? "Submit tanggal rental terlebih dahulu"
+              : !isAvailable
+                ? "Item tidak tersedia untuk tanggal yang dipilih"
+                : isSubmitting
+                  ? "Tunggu proses selesai"
+                  : "Tambah ke keranjang belanja"
+          }
+        >
+          <ShoppingCartIcon className="h-5 w-5 mr-2" />
+          {!dateRange.startDate || !dateRange.endDate
+            ? "Submit Tanggal Dulu"
+            : !isAvailable
+              ? "Tidak Tersedia"
+              : "Tambah ke Keranjang"}
+          {totalItems > 0 && dateRange.startDate && dateRange.endDate && isAvailable && (
             <span className="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
               {totalItems}
             </span>
           )}
         </button>
-
-        {/* Help Text */}
-        <div className="text-center">
+        
+        {/* Status Information */}
+        <div className="text-center space-y-1">
           {!localDates.startDate || !localDates.endDate ? (
             <p className="text-xs text-gray-500">
               📅 Pilih tanggal rental untuk melanjutkan
+            </p>
+          ) : !dateRange.startDate || !dateRange.endDate ? (
+            <p className="text-xs text-orange-600">
+              📝 Submit tanggal untuk cek ketersediaan
+            </p>
+          ) : isSubmitting ? (
+            <p className="text-xs text-blue-600">
+              ⏳ Sedang memproses...
             </p>
           ) : !isAvailable ? (
             <p className="text-xs text-red-600">
               🚫 Tidak tersedia untuk periode yang dipilih
             </p>
-          ) : isSubmitting ? (
-            <p className="text-xs text-blue-600">
-              ⏳ Sedang memproses booking...
-            </p>
           ) : (
             <p className="text-xs text-green-600">
-              ✨ Klik tombol untuk submit booking dan tambah ke keranjang
+              ✨ Siap ditambahkan ke keranjang
+            </p>
+          )}
+          
+          {/* Current global dates display */}
+          {dateRange.startDate && dateRange.endDate && (
+            <p className="text-xs text-blue-500">
+              📅 Periode: {dateRange.startDate.toLocaleDateString('id-ID')} - {dateRange.endDate.toLocaleDateString('id-ID')}
             </p>
           )}
         </div>
