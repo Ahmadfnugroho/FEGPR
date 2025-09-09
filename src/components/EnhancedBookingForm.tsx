@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useCart } from "../contexts/CartContext";
 import { useSlugAvailability } from "../hooks/useSlugAvailability";
 import { useBookingDatesContext } from "../contexts/BookingDatesContext";
+import { useQueryClient } from "@tanstack/react-query";
 import DateRangePicker from "./DateRangePicker";
 import {
   getRentalDays,
@@ -123,6 +124,8 @@ export default function EnhancedBookingForm({
     endDate: null,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState<string>("");
 
   // Availability checking states
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
@@ -135,6 +138,9 @@ export default function EnhancedBookingForm({
 
   const { addItem, totalItems } = useCart();
   const { checkItemAvailability, isChecking } = useSlugAvailability();
+  
+  // React Query client for smooth cache invalidation
+  const queryClient = useQueryClient();
 
   // Maximum retry attempts for API calls
   const MAX_RETRY_ATTEMPTS = 3;
@@ -490,8 +496,41 @@ export default function EnhancedBookingForm({
         endDate: localDates.endDate
       });
       
-      // Update availability successful - no page refresh needed
-      // The parent component should re-render with new global context dates
+      // Invalidate React Query cache to trigger smooth re-fetch with new dates
+      const queryKeys = [
+        ["product", item.slug],
+        ["bundling", item.slug],
+        [type, item.slug]
+      ];
+      
+      // Invalidate all related queries to ensure fresh data
+      await Promise.all(
+        queryKeys.map(key => 
+          queryClient.invalidateQueries({ 
+            queryKey: key,
+            exact: false // Also invalidate queries with additional parameters
+          })
+        )
+      );
+      
+      console.log('✨ React Query cache invalidated successfully - smooth update!');
+      
+      // Show success feedback
+      setValidationError("");
+      setSubmitSuccess(true);
+      setSubmitMessage(`✅ Tanggal berhasil disubmit! Ketersediaan untuk ${localDates.startDate.toLocaleDateString('id-ID')} - ${localDates.endDate.toLocaleDateString('id-ID')} telah diperbarui.`);
+      
+      // Optional: Force immediate refetch for better UX
+      await queryClient.refetchQueries({
+        queryKey: [type, item.slug],
+        type: 'active'
+      });
+      
+      // Auto-hide success message after 3 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setSubmitMessage("");
+      }, 3000);
       
     } catch (error: any) {
       console.error('❌ Error submitting date selection:', error);
@@ -729,8 +768,18 @@ export default function EnhancedBookingForm({
         </div>
       )}
 
+      {/* Success Message */}
+      {submitSuccess && submitMessage && (
+        <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg animate-pulse">
+          <div className="flex items-center text-green-700">
+            <CheckCircleIcon className="h-4 w-4 mr-2 flex-shrink-0" />
+            <div className="text-sm font-medium">{submitMessage}</div>
+          </div>
+        </div>
+      )}
+      
       {/* Validation Error */}
-      {validationError && (
+      {validationError && !submitSuccess && (
         <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
           <div className="flex items-center text-orange-700">
             <ExclamationTriangleIcon className="h-4 w-4 mr-2 flex-shrink-0" />
@@ -764,7 +813,12 @@ export default function EnhancedBookingForm({
           {isSubmitting ? (
             <>
               <ArrowPathIcon className="animate-spin h-5 w-5 mr-2" />
-              Memproses...
+              Memperbarui Data...
+            </>
+          ) : submitSuccess ? (
+            <>
+              <CheckCircleIcon className="h-5 w-5 mr-2 text-green-400" />
+              Berhasil Disubmit!
             </>
           ) : (
             <>
@@ -811,17 +865,21 @@ export default function EnhancedBookingForm({
         
         {/* Status Information */}
         <div className="text-center space-y-1">
-          {!localDates.startDate || !localDates.endDate ? (
+          {submitSuccess ? (
+            <p className="text-xs text-green-600 font-medium animate-pulse">
+              ✨ Tanggal berhasil disubmit! Data ketersediaan diperbarui.
+            </p>
+          ) : isSubmitting ? (
+            <p className="text-xs text-blue-600 font-medium">
+              🔄 Memperbarui ketersediaan...
+            </p>
+          ) : !localDates.startDate || !localDates.endDate ? (
             <p className="text-xs text-gray-500">
               📅 Pilih tanggal rental untuk melanjutkan
             </p>
           ) : !dateRange.startDate || !dateRange.endDate ? (
             <p className="text-xs text-orange-600">
               📝 Submit tanggal untuk cek ketersediaan
-            </p>
-          ) : isSubmitting ? (
-            <p className="text-xs text-blue-600">
-              ⏳ Sedang memproses...
             </p>
           ) : !isAvailable ? (
             <p className="text-xs text-red-600">
