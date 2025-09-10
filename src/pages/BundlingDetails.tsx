@@ -104,61 +104,48 @@ export default function BundlingDetails(): JSX.Element {
     lastUpdateTime
   } = useBookingDatesContext();
   
-  // Debug logging for date state in BundlingDetails component
+  // Debug logging only in development mode
   useEffect((): void => {
-    try {
-      console.log('📦 BundlingDetails.tsx: Date state from context:', {
-        startDate,
-        endDate,
-        dateRange: {
-          startDate: bookingDateRange.startDate?.toISOString(),
-          endDate: bookingDateRange.endDate?.toISOString()
-        },
-        isDateRangeValid,
-        areDatesSelected,
-        formattedDateRange,
-        updateCount,
-        lastUpdateTime,
-        component: 'BundlingDetails.tsx',
-        source: 'context_state_debug'
-      });
-    } catch (error) {
-      console.error('❌ Error in date state debug logging:', error);
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        console.log('📦 BundlingDetails: Date state update:', {
+          dates: { startDate, endDate },
+          isValid: isDateRangeValid,
+          selected: areDatesSelected
+        });
+      } catch (error) {
+        console.error('❌ Error in debug logging:', error);
+      }
     }
-  }, [startDate, endDate, bookingDateRange, isDateRangeValid, areDatesSelected, formattedDateRange, updateCount, lastUpdateTime]);
+  }, [startDate, endDate, isDateRangeValid, areDatesSelected]);
   
 
   // Debounce date changes to prevent excessive API calls
-  // Only fetch when both dates are selected and stable for 1 second
+  // Increased delay to 2 seconds for better performance
   const { debouncedStartDate, debouncedEndDate } = useDebouncedBookingDates(
     startDate,
     endDate,
-    1000 // 1 second delay
+    2000 // 2 second delay - reduced API calls
   );
   
   // Only use debounced dates for API calls when both dates are present
-  const shouldFetchWithDates = !!(debouncedStartDate && debouncedEndDate && areDatesSelected);
+  // Added additional check to ensure dates are not changing rapidly
+  const shouldFetchWithDates = useMemo(() => {
+    return !!(debouncedStartDate && debouncedEndDate && areDatesSelected && 
+             debouncedStartDate === startDate && debouncedEndDate === endDate);
+  }, [debouncedStartDate, debouncedEndDate, areDatesSelected, startDate, endDate]);
+  
   const apiStartDate = shouldFetchWithDates ? debouncedStartDate : undefined;
   const apiEndDate = shouldFetchWithDates ? debouncedEndDate : undefined;
   
-  // Debug logging for React Query parameters
+  // Debug logging for React Query parameters - development only
   useEffect((): void => {
-    try {
-      console.log('🔍 BundlingDetails.tsx: React Query parameters:', {
-        queryKey: ["bundling", slug, apiStartDate, apiEndDate],
-        slug,
-        originalDates: { startDate, endDate },
-        debouncedDates: { debouncedStartDate, debouncedEndDate },
-        apiDates: { apiStartDate, apiEndDate },
-        shouldFetchWithDates,
-        areDatesSelected,
-        enabled: !!slug,
-        source: 'react_query_debug'
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 BundlingDetails: React Query update:', {
+        slug, apiDates: { apiStartDate, apiEndDate }
       });
-    } catch (error) {
-      console.error('❌ Error in React Query debug logging:', error);
     }
-  }, [slug, startDate, endDate, debouncedStartDate, debouncedEndDate, apiStartDate, apiEndDate, shouldFetchWithDates, areDatesSelected]);
+  }, [slug, apiStartDate, apiEndDate]);
 
   const {
     data: bundling,
@@ -169,74 +156,25 @@ export default function BundlingDetails(): JSX.Element {
   } = useQuery<Bundling, Error>({
     queryKey: ["bundling", slug, apiStartDate, apiEndDate],
     queryFn: () => {
-      console.log('🌐 BundlingDetails.tsx: Executing fetchBundling with params:', {
-        slug,
-        startDate: apiStartDate,
-        endDate: apiEndDate,
-        source: 'fetchBundling_call'
-      });
-      return fetchBundling(slug, apiStartDate, apiEndDate);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🌐 BundlingDetails: Fetching data:', { slug, apiStartDate, apiEndDate });
+      }
+      return fetchBundling(slug, apiStartDate || undefined, apiEndDate || undefined);
     },
     enabled: !!slug, // Only run when slug exists - dates are optional
   });
   
-  // Monitor React Query state changes
+  // Monitor React Query state changes - development only
   useEffect((): void => {
-    try {
+    if (process.env.NODE_ENV === 'development') {
       if (bundling) {
-        console.log('✅ BundlingDetails.tsx: React Query success:', {
-          bundlingName: bundling.name,
-          apiParams: { startDate: apiStartDate, endDate: apiEndDate },
-          originalDates: { startDate, endDate },
-          contextState: {
-            contextStartDate: startDate,
-            contextEndDate: endDate,
-            updateCount,
-            areDatesSelected
-          },
-          source: 'react_query_success'
-        });
-        
-        // Verify context state hasn't been corrupted
-        if (areDatesSelected) {
-          console.log('✅ BundlingDetails.tsx: Date state preserved after React Query success');
-        }
+        console.log('✅ BundlingDetails: Data loaded:', bundling.name);
       }
-      
       if (isError && error) {
-        console.error('❌ BundlingDetails.tsx: React Query error:', {
-          error: error.message,
-          apiParams: { startDate: apiStartDate, endDate: apiEndDate },
-          originalDates: { startDate, endDate },
-          contextState: {
-            contextStartDate: startDate,
-            contextEndDate: endDate,
-            updateCount,
-            areDatesSelected
-          },
-          source: 'react_query_error'
-        });
+        console.error('❌ BundlingDetails: Query error:', error.message);
       }
-      
-      // Log settled state
-      if (!isLoading) {
-        console.log('🏁 BundlingDetails.tsx: React Query settled:', {
-          hasData: !!bundling,
-          hasError: isError,
-          finalDateParams: { startDate, endDate },
-          contextPreserved: {
-            startDate,
-            endDate,
-            areDatesSelected,
-            updateCount
-          },
-          source: 'react_query_settled'
-        });
-      }
-    } catch (error) {
-      console.error('❌ Error in React Query state monitoring:', error);
     }
-  }, [bundling, isError, error, isLoading, startDate, endDate, areDatesSelected, updateCount]);
+  }, [bundling, isError, error]);
 
   // Computed values with proper TypeScript typing
   const allPhotos: PhotoWithProductName[] = useMemo(() => {
@@ -287,15 +225,13 @@ export default function BundlingDetails(): JSX.Element {
       (product) => !isProductAvailable(product)
     );
     
-    console.log('📦 Bundling availability calculated:', {
-      bundling: bundling.name,
-      isAvailable,
-      availableQuantity,
-      unavailableCount: unavailableProducts.length,
-      period: startDate && endDate 
-        ? `${startDate} - ${endDate}` 
-        : 'no dates selected'
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📦 Bundling availability:', {
+        name: bundling.name,
+        isAvailable,
+        availableQuantity
+      });
+    }
     
     return {
       isAvailable,
@@ -726,11 +662,12 @@ export default function BundlingDetails(): JSX.Element {
                   isAvailable={isAvailable}
                   availableQuantity={availableQuantity}
                   onAvailabilityUpdate={(newIsAvailable, newAvailableQuantity) => {
-                    console.log('🔄 BundlingDetails: Updating availability from form submission:', {
-                      newIsAvailable,
-                      newAvailableQuantity,
-                      source: 'form_callback'
-                    });
+                    if (process.env.NODE_ENV === 'development') {
+                      console.log('🔄 BundlingDetails: Availability updated:', {
+                        newIsAvailable,
+                        newAvailableQuantity
+                      });
+                    }
                     setCurrentAvailability({
                       isAvailable: newIsAvailable,
                       quantity: newAvailableQuantity

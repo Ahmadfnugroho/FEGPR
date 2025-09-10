@@ -259,11 +259,12 @@ const ProductInfo = ({
         isAvailable={isAvailable}
         availableQuantity={availableQuantity}
         onAvailabilityUpdate={(newIsAvailable, newAvailableQuantity) => {
-          console.log('🔄 Details: Updating availability from form submission:', {
-            newIsAvailable,
-            newAvailableQuantity,
-            source: 'form_callback'
-          });
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔄 Details: Availability updated:', {
+              newIsAvailable,
+              newAvailableQuantity
+            });
+          }
           setCurrentAvailability({
             isAvailable: newIsAvailable,
             quantity: newAvailableQuantity
@@ -471,55 +472,46 @@ export default function Details() {
     lastUpdateTime
   } = useBookingDatesContext();
   
-  // Debug logging for date state in Details component
+  // Debug logging only in development mode
   useEffect(() => {
-    console.log('🏠 Details.tsx: Date state from context:', {
-      startDate,
-      endDate,
-      dateRange: {
-        startDate: bookingDateRange.startDate?.toISOString(),
-        endDate: bookingDateRange.endDate?.toISOString()
-      },
-      isDateRangeValid,
-      areDatesSelected,
-      formattedDateRange,
-      updateCount,
-      lastUpdateTime,
-      component: 'Details.tsx',
-      source: 'context_state_debug'
-    });
-  }, [startDate, endDate, bookingDateRange, isDateRangeValid, areDatesSelected, formattedDateRange, updateCount, lastUpdateTime]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📝 Details: Date state update:', {
+        dates: { startDate, endDate },
+        isValid: isDateRangeValid,
+        selected: areDatesSelected
+      });
+    }
+  }, [startDate, endDate, isDateRangeValid, areDatesSelected]);
   
   // Loading state for availability updates
   const [isLoadingAvailability, setIsLoadingAvailability] = useState(false);
 
   // Debounce date changes to prevent excessive API calls
-  // Only fetch when both dates are selected and stable for 1 second
+  // Increased delay to 2 seconds for better performance
   const { debouncedStartDate, debouncedEndDate } = useDebouncedBookingDates(
     startDate,
     endDate,
-    1000 // 1 second delay
+    2000 // 2 second delay - reduced API calls
   );
   
   // Only use debounced dates for API calls when both dates are present
-  const shouldFetchWithDates = !!(debouncedStartDate && debouncedEndDate && areDatesSelected);
+  // Added additional check to ensure dates are not changing rapidly
+  const shouldFetchWithDates = useMemo(() => {
+    return !!(debouncedStartDate && debouncedEndDate && areDatesSelected && 
+             debouncedStartDate === startDate && debouncedEndDate === endDate);
+  }, [debouncedStartDate, debouncedEndDate, areDatesSelected, startDate, endDate]);
+  
   const apiStartDate = shouldFetchWithDates ? debouncedStartDate : undefined;
   const apiEndDate = shouldFetchWithDates ? debouncedEndDate : undefined;
   
-  // Debug logging for React Query parameters
+  // Debug logging for React Query parameters - development only
   useEffect(() => {
-    console.log('🔍 Details.tsx: React Query parameters:', {
-      queryKey: ["product", slug, apiStartDate, apiEndDate],
-      slug,
-      originalDates: { startDate, endDate },
-      debouncedDates: { debouncedStartDate, debouncedEndDate },
-      apiDates: { apiStartDate, apiEndDate },
-      shouldFetchWithDates,
-      areDatesSelected,
-      enabled: !!slug,
-      source: 'react_query_debug'
-    });
-  }, [slug, startDate, endDate, debouncedStartDate, debouncedEndDate, apiStartDate, apiEndDate, shouldFetchWithDates, areDatesSelected]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Details: React Query update:', {
+        slug, apiDates: { apiStartDate, apiEndDate }
+      });
+    }
+  }, [slug, apiStartDate, apiEndDate]);
 
   const {
     data: product,
@@ -530,72 +522,27 @@ export default function Details() {
   } = useQuery<Product>({
     queryKey: ["product", slug, apiStartDate, apiEndDate],
     queryFn: () => {
-      console.log('🌐 Details.tsx: Executing fetchProduct with params:', {
-        slug,
-        startDate: apiStartDate,
-        endDate: apiEndDate,
-        source: 'fetchProduct_call'
-      });
-      return fetchProduct(slug, apiStartDate, apiEndDate);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🌐 Details: Fetching product:', { slug, apiStartDate, apiEndDate });
+      }
+      return fetchProduct(slug, apiStartDate || undefined, apiEndDate || undefined);
     },
     staleTime: 10 * 60 * 1000, // fresh 10 menit
     gcTime: 30 * 60 * 1000, // cache hilang setelah 30 menit idle
     enabled: !!slug, // Only run when slug exists - dates are optional
   });
   
-  // Monitor React Query state changes
+  // Monitor React Query state changes - development only
   useEffect(() => {
-    if (product) {
-      console.log('✅ Details.tsx: React Query success:', {
-        productName: product.name,
-        apiParams: { startDate: apiStartDate, endDate: apiEndDate },
-        originalDates: { startDate, endDate },
-        contextState: {
-          contextStartDate: startDate,
-          contextEndDate: endDate,
-          updateCount,
-          areDatesSelected
-        },
-        source: 'react_query_success'
-      });
-      
-      // Verify context state hasn't been corrupted
-      if (areDatesSelected) {
-        console.log('✅ Details.tsx: Date state preserved after React Query success');
+    if (process.env.NODE_ENV === 'development') {
+      if (product) {
+        console.log('✅ Details: Data loaded:', product.name);
+      }
+      if (isError && error) {
+        console.error('❌ Details: Query error:', error.message);
       }
     }
-    
-    if (isError && error) {
-      console.error('❌ Details.tsx: React Query error:', {
-        error: error.message,
-        apiParams: { startDate: apiStartDate, endDate: apiEndDate },
-        originalDates: { startDate, endDate },
-        contextState: {
-          contextStartDate: startDate,
-          contextEndDate: endDate,
-          updateCount,
-          areDatesSelected
-        },
-        source: 'react_query_error'
-      });
-    }
-    
-    // Log settled state
-    if (!isLoading) {
-      console.log('🏁 Details.tsx: React Query settled:', {
-        hasData: !!product,
-        hasError: isError,
-        apiParams: { startDate: apiStartDate, endDate: apiEndDate },
-        contextPreserved: {
-          startDate,
-          endDate,
-          areDatesSelected,
-          updateCount
-        },
-        source: 'react_query_settled'
-      });
-    }
-  }, [product, isError, error, isLoading, startDate, endDate, apiStartDate, apiEndDate, areDatesSelected, updateCount]);
+  }, [product, isError, error]);
 
   // Memoized values that depend on product (with safe fallbacks)
   const whatsappLink = useMemo(() => {
@@ -626,21 +573,13 @@ export default function Details() {
   
   // Handler for date changes from booking form - using global context
   const handleDateChange = useCallback((newStartDate: string | null, newEndDate: string | null) => {
-    console.log('🗓️ Details.tsx: handleDateChange called:', { 
-      newStartDate, 
-      newEndDate,
-      previousDates: { startDate, endDate },
-      contextUpdateCount: updateCount,
-      component: 'Details.tsx',
-      source: 'handleDateChange_call',
-      stack: new Error().stack?.split('\n').slice(1, 5)
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🗓️ Details: Date change requested:', { newStartDate, newEndDate });
+    }
     
     // Update dates using global context - no page refresh
     setBookingDates(newStartDate, newEndDate);
-    
-    console.log('✅ Details.tsx: setBookingDates called, waiting for context update');
-  }, [setBookingDates, startDate, endDate, updateCount]);
+  }, [setBookingDates]);
 
   const handleQuantityChange = useCallback((delta: number) => {
     setQuantity((prev) => Math.max(1, Math.min(10, prev + delta)));
