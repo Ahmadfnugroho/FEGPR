@@ -1,5 +1,5 @@
 // src/components/EnhancedBookingForm.tsx
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
 import { useCart } from "../contexts/CartContext";
 import { useSlugAvailability } from "../hooks/useSlugAvailability";
 import { useBookingDatesContext } from "../contexts/BookingDatesContext";
@@ -90,7 +90,7 @@ interface EnhancedBookingFormProps {
   onAvailabilityUpdate?: (isAvailable: boolean, availableQuantity: number) => void;
 }
 
-export default function EnhancedBookingForm({
+const EnhancedBookingForm = memo(function EnhancedBookingForm({
   item,
   type,
   className = "",
@@ -297,24 +297,38 @@ export default function EnhancedBookingForm({
   //   }
   // }, [dateRange, quantity, duration, isBookingValid, validationError]);
 
-  // Auto-check availability when date range changes
+  // Auto-check availability when date range changes - with stability check
+  const stableDateRange = useMemo(() => ({
+    startDate: dateRange.startDate,
+    endDate: dateRange.endDate
+  }), [dateRange.startDate?.getTime(), dateRange.endDate?.getTime()]);
+
   useEffect(() => {
     // Reset validation when dates change
     clearValidation();
     
     // Only proceed if both dates are selected
-    if (!dateRange.startDate || !dateRange.endDate) return;
+    if (!stableDateRange.startDate || !stableDateRange.endDate) return;
     
     // Add small delay to prevent rapid API calls during date selection
     const timeoutId = setTimeout(() => {
       checkAvailability();
-    }, 300);
+    }, 800); // Further increased delay to 800ms
     
     return () => clearTimeout(timeoutId);
     
-  }, [dateRange.startDate, dateRange.endDate, quantity]);
+  }, [stableDateRange.startDate, stableDateRange.endDate, quantity]);
 
-  // Basic form validation for display only
+  // Basic form validation for display only - optimized with stable dependency
+  const validationDeps = useMemo(() => ({
+    startDate: dateRange.startDate?.getTime(),
+    endDate: dateRange.endDate?.getTime(),
+    quantity,
+    isAvailable,
+    availableQuantity,
+    type,
+  }), [dateRange.startDate?.getTime(), dateRange.endDate?.getTime(), quantity, isAvailable, availableQuantity, type]);
+
   useEffect(() => {
     const validateForm = () => {
       // Reset validation for display
@@ -352,23 +366,16 @@ export default function EnhancedBookingForm({
     };
 
     validateForm();
-  }, [
-    dateRange.startDate,
-    dateRange.endDate,
-    quantity,
-    isAvailable,
-    availableQuantity,
-    type,
-  ]);
+  }, [validationDeps]);
 
-  const handleQuantityChange = (newQuantity: number) => {
+  const handleQuantityChange = useCallback((newQuantity: number) => {
     if (newQuantity >= 1 && newQuantity <= 10) {
       setQuantity(newQuantity);
       // Availability will be checked automatically via useEffect
     }
-  };
+  }, []);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
     // Use global context dates (should be set after form submission)
     if (!dateRange.startDate || !dateRange.endDate) {
       console.warn('Cannot add to cart - no global dates:', {
@@ -407,11 +414,13 @@ export default function EnhancedBookingForm({
 
     addItem(cartItem);
     console.log('✅ Item added to cart:', cartItem);
-  };
+  }, [type, item, quantity, dateRange.startDate, dateRange.endDate, duration, isAvailable, addItem]);
 
-  // Use formatPrice from helper function instead
-
-  const totalPrice = calculateRentalPrice(item.price, quantity, duration);
+  // Memoized price calculation to prevent unnecessary recalculation
+  const totalPrice = useMemo(() => 
+    calculateRentalPrice(item.price, quantity, duration), 
+    [item.price, quantity, duration]
+  );
 
   return (
     <div className={`bg-white rounded-lg shadow-lg p-6 ${className}`}>
@@ -635,4 +644,6 @@ export default function EnhancedBookingForm({
       </div>
     </div>
   );
-}
+});
+
+export default EnhancedBookingForm;

@@ -1,8 +1,26 @@
 // src/components/DateRangePicker.tsx
-import React, { useState, useEffect, useCallback, useRef, memo } from 'react';
-import { CalendarIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { getRentalDays, formatRentalDuration } from '../utils/rental-duration-helper';
-import { createLocalDate, formatDateLocal, debugDate, isSameDate } from '../utils/dateUtils';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  memo,
+  useMemo,
+} from "react";
+import {
+  CalendarIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import {
+  getRentalDays,
+  formatRentalDuration,
+} from "../utils/rental-duration-helper";
+import {
+  createLocalDate,
+  formatDateLocal,
+  debugDate,
+  isSameDate,
+} from "../utils/dateUtils";
 
 interface DateRange {
   startDate: Date | null;
@@ -31,47 +49,55 @@ const DateRangePicker = memo(function DateRangePicker({
   minDate, // No default - allow today
   maxDate,
   unavailableDates = [],
-  className = '',
+  className = "",
   disabled = false,
   error,
   defaultValue = { startDate: null, endDate: null },
-  onLocalChange
+  onLocalChange,
 }: DateRangePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [hoverDate, setHoverDate] = useState<Date | null>(null);
-  
+
   // Local state for date selection - does NOT update global context immediately
   const [localDateRange, setLocalDateRange] = useState<DateRange>(defaultValue);
-  
+
   // Use ref to track if we're in the middle of an internal update
   const isInternalUpdate = useRef(false);
-  
+
   // Initialize from value prop if provided (for backwards compatibility)
   useEffect(() => {
-    if (value && (value.startDate !== localDateRange.startDate || value.endDate !== localDateRange.endDate)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔄 DateRangePicker: Syncing from value prop');
+    if (
+      value &&
+      (value.startDate !== localDateRange.startDate ||
+        value.endDate !== localDateRange.endDate)
+    ) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("🔄 DateRangePicker: Syncing from value prop");
       }
       setLocalDateRange(value);
     }
   }, [value]);
-  
+
   // Use local state for display
   const selectedStartDate = localDateRange.startDate;
   const selectedEndDate = localDateRange.endDate;
-  
-  // Log whenever local dates change (development only)
+
+  // Only notify parent when both dates are selected (to prevent flickering)
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📅 DateRangePicker: Local dates updated:', {
-        startDate: selectedStartDate?.toLocaleDateString(),
-        endDate: selectedEndDate?.toLocaleDateString()
-      });
+    // Only call onLocalChange when we have a complete date range or when clearing
+    if (
+      (selectedStartDate && selectedEndDate) ||
+      (!selectedStartDate && !selectedEndDate)
+    ) {
+      if (process.env.NODE_ENV === "development") {
+        console.log("📅 DateRangePicker: Complete date range updated:", {
+          startDate: selectedStartDate?.toLocaleDateString(),
+          endDate: selectedEndDate?.toLocaleDateString(),
+        });
+      }
+      onLocalChange?.(localDateRange);
     }
-    
-    // Notify parent of local changes (for validation, duration calculation, etc.)
-    onLocalChange?.(localDateRange);
   }, [selectedStartDate, selectedEndDate, localDateRange, onLocalChange]);
 
   // Calculate duration when dates change using helper function
@@ -84,105 +110,121 @@ const DateRangePicker = memo(function DateRangePicker({
     }
   }, [selectedStartDate, selectedEndDate, onDurationChange]);
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = useCallback((date: Date | null) => {
     return formatDateLocal(date, {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
-  };
+  }, []);
 
-  const formatDateShort = (date: Date | null) => {
+  const formatDateShort = useCallback((date: Date | null) => {
     return formatDateLocal(date, {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
-  };
+  }, []);
 
-  const isDateUnavailable = (date: Date) => {
-    return unavailableDates.some(unavailable => 
-      unavailable.toDateString() === date.toDateString()
-    );
-  };
+  const isDateUnavailable = useCallback(
+    (date: Date) => {
+      return unavailableDates.some(
+        (unavailable) => unavailable.toDateString() === date.toDateString()
+      );
+    },
+    [unavailableDates]
+  );
 
-  const isDateDisabled = (date: Date) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // Allow today and future dates
-    if (date < today) return true;
-    if (minDate && date < minDate) return true;
-    if (maxDate && date > maxDate) return true;
-    if (isDateUnavailable(date)) return true;
-    
-    return false;
-  };
+  const isDateDisabled = useCallback(
+    (date: Date) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-  const isDateInRange = (date: Date) => {
-    if (!selectedStartDate) return false;
-    
-    const compareDate = hoverDate || selectedEndDate;
-    if (!compareDate) return false;
-    
-    const start = selectedStartDate.getTime();
-    const end = compareDate.getTime();
-    const current = date.getTime();
-    
-    return current >= Math.min(start, end) && current <= Math.max(start, end);
-  };
+      // Allow today and future dates
+      if (date < today) return true;
+      if (minDate && date < minDate) return true;
+      if (maxDate && date > maxDate) return true;
+      if (isDateUnavailable(date)) return true;
 
-  const isDateSelected = (date: Date) => {
-    if (selectedStartDate && isSameDate(date, selectedStartDate)) return true;
-    if (selectedEndDate && isSameDate(date, selectedEndDate)) return true;
-    return false;
-  };
+      return false;
+    },
+    [minDate, maxDate, isDateUnavailable]
+  );
 
-  const handleDateClick = (date: Date) => {
-    if (isDateDisabled(date)) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ DateRangePicker: Date disabled');
-      }
-      return;
-    }
+  const isDateInRange = useCallback(
+    (date: Date) => {
+      if (!selectedStartDate) return false;
 
-    isInternalUpdate.current = true;
-    
-    if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
-      // Start new selection
-      const newRange = { startDate: date, endDate: null };
-      setLocalDateRange(newRange);
-    } else {
-      // Check if trying to select the same date
-      if (isSameDate(date, selectedStartDate)) {
-        isInternalUpdate.current = false;
+      const compareDate = hoverDate || selectedEndDate;
+      if (!compareDate) return false;
+
+      const start = selectedStartDate.getTime();
+      const end = compareDate.getTime();
+      const current = date.getTime();
+
+      return current >= Math.min(start, end) && current <= Math.max(start, end);
+    },
+    [selectedStartDate, selectedEndDate, hoverDate]
+  );
+
+  const isDateSelected = useCallback(
+    (date: Date) => {
+      if (selectedStartDate && isSameDate(date, selectedStartDate)) return true;
+      if (selectedEndDate && isSameDate(date, selectedEndDate)) return true;
+      return false;
+    },
+    [selectedStartDate, selectedEndDate]
+  );
+
+  const handleDateClick = useCallback(
+    (date: Date) => {
+      if (isDateDisabled(date)) {
+        if (process.env.NODE_ENV === "development") {
+          console.log("⚠️ DateRangePicker: Date disabled");
+        }
         return;
       }
-      
-      // Complete the range
-      let newRange;
-      if (date < selectedStartDate) {
-        // Swap if end date is before start date
-        newRange = { startDate: date, endDate: selectedStartDate };
-      } else {
-        newRange = { startDate: selectedStartDate, endDate: date };
-      }
-      
-      setLocalDateRange(newRange);
-      setIsOpen(false);
-    }
-    
-    // Small delay to reset the flag
-    setTimeout(() => {
-      isInternalUpdate.current = false;
-    }, 50); // Reduced delay
-  };
 
-  const getDaysInMonth = (date: Date) => {
+      isInternalUpdate.current = true;
+
+      if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
+        // Start new selection
+        const newRange = { startDate: date, endDate: null };
+        setLocalDateRange(newRange);
+      } else {
+        // Check if trying to select the same date
+        if (isSameDate(date, selectedStartDate)) {
+          isInternalUpdate.current = false;
+          return;
+        }
+
+        // Complete the range
+        let newRange;
+        if (date < selectedStartDate) {
+          // Swap if end date is before start date
+          newRange = { startDate: date, endDate: selectedStartDate };
+        } else {
+          newRange = { startDate: selectedStartDate, endDate: date };
+        }
+
+        setLocalDateRange(newRange);
+        // Small delay before closing to ensure state is updated
+        setTimeout(() => setIsOpen(false), 100);
+      }
+
+      // Small delay to reset the flag
+      setTimeout(() => {
+        isInternalUpdate.current = false;
+      }, 50); // Reduced delay
+    },
+    [isDateDisabled, selectedStartDate, selectedEndDate]
+  );
+
+  const getDaysInMonth = useCallback((date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
-    
+
     // Use timezone-safe date creation
     const firstDay = createLocalDate(year, month, 1);
     const lastDay = createLocalDate(year, month + 1, 0); // This gets last day of current month
@@ -190,56 +232,64 @@ const DateRangePicker = memo(function DateRangePicker({
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    
+
     // Add empty cells for days before the month starts
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    
+
     // Add days of the month using timezone-safe creation
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(createLocalDate(year, month, day));
     }
-    
+
     return days;
-  };
+  }, []);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
-    const newMonth = new Date(currentMonth);
-    if (direction === 'prev') {
-      newMonth.setMonth(newMonth.getMonth() - 1);
-    } else {
-      newMonth.setMonth(newMonth.getMonth() + 1);
-    }
-    setCurrentMonth(newMonth);
-  };
+  const navigateMonth = useCallback(
+    (direction: "prev" | "next") => {
+      const newMonth = new Date(currentMonth);
+      if (direction === "prev") {
+        newMonth.setMonth(newMonth.getMonth() - 1);
+      } else {
+        newMonth.setMonth(newMonth.getMonth() + 1);
+      }
+      setCurrentMonth(newMonth);
+    },
+    [currentMonth]
+  );
 
-  const clearSelection = () => {
-    console.log('🗑️ DateRangePicker clearSelection called (local state):', {
+  const clearSelection = useCallback(() => {
+    console.log("🗑️ DateRangePicker clearSelection called (local state):", {
       currentSelection: {
         startDate: selectedStartDate?.toISOString(),
-        endDate: selectedEndDate?.toISOString()
+        endDate: selectedEndDate?.toISOString(),
       },
-      source: 'clearSelection'
+      source: "clearSelection",
     });
-    
+
     isInternalUpdate.current = true;
     setLocalDateRange({ startDate: null, endDate: null });
-    
+
     setTimeout(() => {
       isInternalUpdate.current = false;
     }, 100);
-  };
-  
+  }, [selectedStartDate, selectedEndDate]);
+
   // Method to get current local dates (for parent to access)
   const getCurrentDates = useCallback(() => localDateRange, [localDateRange]);
 
-  const days = getDaysInMonth(currentMonth);
-  const weekDays = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+  const days = useMemo(
+    () => getDaysInMonth(currentMonth),
+    [currentMonth, getDaysInMonth]
+  );
+  const weekDays = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
 
-  const duration = selectedStartDate && selectedEndDate 
-    ? getRentalDays(selectedStartDate, selectedEndDate)
-    : 0;
+  const duration = useMemo(() => {
+    return selectedStartDate && selectedEndDate
+      ? getRentalDays(selectedStartDate, selectedEndDate)
+      : 0;
+  }, [selectedStartDate, selectedEndDate]);
 
   return (
     <div className={`relative ${className}`}>
@@ -247,11 +297,11 @@ const DateRangePicker = memo(function DateRangePicker({
       <div
         onClick={() => !disabled && setIsOpen(!isOpen)}
         className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all duration-200 ${
-          disabled 
-            ? 'bg-gray-100 cursor-not-allowed border-gray-200' 
-            : error 
-            ? 'border-red-300 bg-red-50 hover:border-red-400 focus-within:ring-2 focus-within:ring-red-200' 
-            : 'border-gray-300 bg-white hover:border-gray-400 focus-within:ring-2 focus-within:ring-blue-200'
+          disabled
+            ? "bg-gray-100 cursor-not-allowed border-gray-200"
+            : error
+            ? "border-red-300 bg-red-50 hover:border-red-400 focus-within:ring-2 focus-within:ring-red-200"
+            : "border-gray-300 bg-white hover:border-gray-400 focus-within:ring-2 focus-within:ring-blue-200"
         }`}
       >
         <div className="flex items-center space-x-3">
@@ -260,7 +310,8 @@ const DateRangePicker = memo(function DateRangePicker({
             {selectedStartDate && selectedEndDate ? (
               <div>
                 <div className="text-sm font-medium text-gray-900">
-                  {formatDateShort(selectedStartDate)} - {formatDateShort(selectedEndDate)}
+                  {formatDateShort(selectedStartDate)} -{" "}
+                  {formatDateShort(selectedEndDate)}
                 </div>
                 <div className="text-xs text-gray-500">
                   {formatRentalDuration(duration)}
@@ -275,7 +326,7 @@ const DateRangePicker = memo(function DateRangePicker({
             )}
           </div>
         </div>
-        
+
         {(selectedStartDate || selectedEndDate) && !disabled && (
           <button
             type="button"
@@ -305,22 +356,22 @@ const DateRangePicker = memo(function DateRangePicker({
           <div className="flex items-center justify-between mb-4">
             <button
               type="button"
-              onClick={() => navigateMonth('prev')}
+              onClick={() => navigateMonth("prev")}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               ←
             </button>
-            
+
             <h3 className="text-lg font-semibold text-gray-900">
-              {currentMonth.toLocaleDateString('id-ID', { 
-                month: 'long', 
-                year: 'numeric' 
+              {currentMonth.toLocaleDateString("id-ID", {
+                month: "long",
+                year: "numeric",
               })}
             </h3>
-            
+
             <button
               type="button"
-              onClick={() => navigateMonth('next')}
+              onClick={() => navigateMonth("next")}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               →
@@ -329,8 +380,11 @@ const DateRangePicker = memo(function DateRangePicker({
 
           {/* Week Days Header */}
           <div className="grid grid-cols-7 gap-1 mb-2">
-            {weekDays.map(day => (
-              <div key={day} className="text-center text-sm font-medium text-gray-500 p-2">
+            {weekDays.map((day) => (
+              <div
+                key={day}
+                className="text-center text-sm font-medium text-gray-500 p-2"
+              >
                 {day}
               </div>
             ))}
@@ -358,14 +412,14 @@ const DateRangePicker = memo(function DateRangePicker({
                   disabled={isDisabled}
                   className={`p-2 text-sm rounded-lg transition-all duration-200 ${
                     isDisabled
-                      ? 'text-gray-300 cursor-not-allowed'
+                      ? "text-gray-300 cursor-not-allowed"
                       : isSelected
-                      ? 'bg-blue-600 text-white font-semibold'
+                      ? "bg-blue-600 text-white font-semibold"
                       : isInRange
-                      ? 'bg-blue-100 text-blue-700'
+                      ? "bg-blue-100 text-blue-700"
                       : isToday
-                      ? 'bg-gray-100 text-blue-600 font-semibold'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? "bg-gray-100 text-blue-600 font-semibold"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                 >
                   {date.getDate()}
@@ -378,10 +432,14 @@ const DateRangePicker = memo(function DateRangePicker({
           {selectedStartDate && (
             <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <div className="text-sm">
-                <div><strong>Mulai:</strong> {formatDate(selectedStartDate)}</div>
+                <div>
+                  <strong>Mulai:</strong> {formatDate(selectedStartDate)}
+                </div>
                 {selectedEndDate && (
                   <>
-                    <div><strong>Selesai:</strong> {formatDate(selectedEndDate)}</div>
+                    <div>
+                      <strong>Selesai:</strong> {formatDate(selectedEndDate)}
+                    </div>
                     <div className="mt-2 text-blue-600 font-semibold">
                       Durasi: {formatRentalDuration(duration)}
                     </div>

@@ -121,11 +121,11 @@ export default function BundlingDetails(): JSX.Element {
   
 
   // Debounce date changes to prevent excessive API calls
-  // Increased delay to 2 seconds for better performance
+  // Increased delay to 3 seconds for better performance
   const { debouncedStartDate, debouncedEndDate } = useDebouncedBookingDates(
     startDate,
     endDate,
-    2000 // 2 second delay - reduced API calls
+    3000 // 3 second delay - reduced API calls
   );
   
   // Format dates consistently for API calls (YYYY-MM-DD)

@@ -1,15 +1,15 @@
 // src/components/CartSidebar.tsx
-import { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
-import { useCart } from '../contexts/CartContext';
-import { STORAGE_BASE_URL } from '../api/constants';
-import { 
-  XMarkIcon, 
+import { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import { useCart } from "../contexts/CartContext";
+import { STORAGE_BASE_URL } from "../api/constants";
+import {
+  XMarkIcon,
   ShoppingBagIcon,
   TrashIcon,
   MinusIcon,
-  PlusIcon
-} from '@heroicons/react/24/outline';
+  PlusIcon,
+} from "@heroicons/react/24/outline";
 
 interface CartSidebarProps {
   isOpen: boolean;
@@ -17,30 +17,30 @@ interface CartSidebarProps {
 }
 
 export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
-  const { 
-    items, 
-    totalItems, 
-    totalPrice, 
-    updateItem, 
-    removeItem, 
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    updateItem,
+    removeItem,
     clearCart,
-    generateWhatsAppMessage
+    generateWhatsAppMessage,
   } = useCart();
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
@@ -54,10 +54,12 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
   const handleCheckout = () => {
     const message = generateWhatsAppMessage();
-    const phoneNumber = '6281234567890'; // Replace with actual WhatsApp number
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
+    const phoneNumber = "6281234567890"; // Replace with actual WhatsApp number
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    window.open(whatsappUrl, "_blank");
     onClose();
   };
 
@@ -119,11 +121,15 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                                 Keranjang kosong
                               </h3>
                               <p className="mt-1 text-sm text-gray-500">
-                                Mulai tambahkan produk atau bundling ke keranjang.
+                                Mulai tambahkan produk atau bundling ke
+                                keranjang.
                               </p>
                             </div>
                           ) : (
-                            <ul role="list" className="-my-6 divide-y divide-gray-200">
+                            <ul
+                              role="list"
+                              className="-my-6 divide-y divide-gray-200"
+                            >
                               {items.map((item) => (
                                 <li key={item.id} className="flex py-6">
                                   <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
@@ -136,7 +142,9 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                                     ) : (
                                       <div className="h-full w-full bg-gray-100 flex items-center justify-center">
                                         <span className="text-2xl">
-                                          {item.type === 'bundling' ? '📦' : '📷'}
+                                          {item.type === "bundling"
+                                            ? "📦"
+                                            : "📷"}
                                         </span>
                                       </div>
                                     )}
@@ -156,44 +164,59 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                                           <TrashIcon className="h-4 w-4" />
                                         </button>
                                       </div>
-                                      
+
                                       {/* Type Badge */}
                                       <div className="mt-1">
-                                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                                          item.type === 'product'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-blue-100 text-blue-700'
-                                        }`}>
-                                          {item.type === 'product' ? 'Produk' : 'Bundling'}
+                                        <span
+                                          className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                            item.type === "product"
+                                              ? "bg-green-100 text-green-700"
+                                              : "bg-blue-100 text-blue-700"
+                                          }`}
+                                        >
+                                          {item.type === "product"
+                                            ? "Produk"
+                                            : "Bundling"}
                                         </span>
                                       </div>
 
                                       {/* Rental Dates */}
                                       <div className="mt-2 text-xs text-gray-500">
                                         <div>
-                                          {formatDate(item.startDate)} - {formatDate(item.endDate)}
+                                          {formatDate(item.startDate)} -{" "}
+                                          {formatDate(item.endDate)}
                                         </div>
                                         <div>{item.duration} hari</div>
                                       </div>
                                     </div>
-                                    
+
                                     <div className="flex flex-1 items-end justify-between text-sm">
                                       <div className="flex items-center space-x-2">
                                         <button
                                           type="button"
-                                          onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                          onClick={() =>
+                                            handleQuantityChange(
+                                              item.id,
+                                              item.quantity - 1
+                                            )
+                                          }
                                           className="p-1 rounded border border-gray-300 hover:bg-gray-50"
                                         >
                                           <MinusIcon className="h-3 w-3" />
                                         </button>
-                                        
+
                                         <span className="font-medium min-w-[2rem] text-center">
                                           {item.quantity}
                                         </span>
-                                        
+
                                         <button
                                           type="button"
-                                          onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                          onClick={() =>
+                                            handleQuantityChange(
+                                              item.id,
+                                              item.quantity + 1
+                                            )
+                                          }
                                           className="p-1 rounded border border-gray-300 hover:bg-gray-50"
                                         >
                                           <PlusIcon className="h-3 w-3" />
@@ -202,7 +225,11 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
                                       <div className="text-right">
                                         <div className="text-sm font-medium text-gray-900">
-                                          {formatPrice(item.price * item.quantity * item.duration)}
+                                          {formatPrice(
+                                            item.price *
+                                              item.quantity *
+                                              item.duration
+                                          )}
                                         </div>
                                         <div className="text-xs text-gray-500">
                                           {formatPrice(item.price)}/hari
@@ -242,7 +269,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
                           >
                             Checkout via WhatsApp
                           </button>
-                          
+
                           <button
                             type="button"
                             onClick={clearCart}

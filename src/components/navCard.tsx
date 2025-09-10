@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { STORAGE_BASE_URL } from "../api/constants";
 import axiosInstance from "../api/axiosInstance";
+import FloatingCartButton from "./FloatingCartButton";
 
-export default function NavCard() {
+const NavCard = memo(function NavCard() {
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -11,55 +12,62 @@ export default function NavCard() {
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Ambil saran (products + bundlings)
+  // Memoized fetch function to prevent recreation on every render
+  const fetchSuggestions = useCallback(async (searchQuery: string) => {
+    try {
+      // Fetch suggestions dari multiple sources
+      const [productRes, bundlingRes] = await Promise.allSettled([
+        axiosInstance.get("/search-suggestions", {
+          params: { q: searchQuery, limit: 10 },
+        }),
+        axiosInstance.get("/bundlings", {
+          params: { q: searchQuery, limit: 8 },
+        }),
+      ]);
+
+      let allSuggestions: any[] = [];
+
+      // Add product suggestions
+      if (
+        productRes.status === "fulfilled" &&
+        productRes.value.data.suggestions
+      ) {
+        allSuggestions = [...productRes.value.data.suggestions];
+      }
+
+      // Add bundling suggestions
+      if (bundlingRes.status === "fulfilled" && bundlingRes.value.data.data) {
+        const bundlingSuggestions = bundlingRes.value.data.data.map(
+          (bundling: any) => ({
+            display: `📦 ${bundling.name}`,
+            url: `/bundling/${bundling.slug}`,
+            thumbnail:
+              bundling.bundlingPhotos?.[0]?.photo ||
+              bundling.products?.[0]?.productPhotos?.[0]?.photo,
+            type: "bundling",
+          })
+        );
+        allSuggestions = [...allSuggestions, ...bundlingSuggestions];
+      }
+
+      // Limit total suggestions to 15 (increased from 12)
+      setSuggestions(allSuggestions.slice(0, 15));
+    } catch (err) {
+      console.error("Search suggestions error:", err);
+      setSuggestions([]);
+    }
+  }, []);
+
+  // Ambil saran (products + bundlings) with optimized debouncing
   useEffect(() => {
     if (query.length < 2) {
       setSuggestions([]);
       return;
     }
 
-    const fetchSuggestions = async () => {
-      try {
-        // Fetch suggestions dari multiple sources
-        const [productRes, bundlingRes] = await Promise.allSettled([
-          axiosInstance.get("/search-suggestions", {
-            params: { q: query, limit: 10 }, // Increase limit for products
-          }),
-          axiosInstance.get("/bundlings", {
-            params: { q: query, limit: 8 }, // Increase bundling suggestions
-          })
-        ]);
-
-        let allSuggestions: any[] = [];
-
-        // Add product suggestions
-        if (productRes.status === 'fulfilled' && productRes.value.data.suggestions) {
-          allSuggestions = [...productRes.value.data.suggestions];
-        }
-
-        // Add bundling suggestions
-        if (bundlingRes.status === 'fulfilled' && bundlingRes.value.data.data) {
-          const bundlingSuggestions = bundlingRes.value.data.data.map((bundling: any) => ({
-            display: `📦 ${bundling.name}`,
-            url: `/bundling/${bundling.slug}`,
-            thumbnail: bundling.bundlingPhotos?.[0]?.photo || 
-                      (bundling.products?.[0]?.productPhotos?.[0]?.photo),
-            type: 'bundling'
-          }));
-          allSuggestions = [...allSuggestions, ...bundlingSuggestions];
-        }
-
-        // Limit total suggestions to 15 (increased from 12)
-        setSuggestions(allSuggestions.slice(0, 15));
-      } catch (err) {
-        console.error('Search suggestions error:', err);
-        setSuggestions([]);
-      }
-    };
-
-    const debounce = setTimeout(fetchSuggestions, 300);
+    const debounce = setTimeout(() => fetchSuggestions(query), 400); // Increased debounce
     return () => clearTimeout(debounce);
-  }, [query]);
+  }, [query, fetchSuggestions]);
 
   // Klik di luar → tutup dropdown
   useEffect(() => {
@@ -77,19 +85,33 @@ export default function NavCard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (query.trim()) {
       navigate(`/browse-product?q=${encodeURIComponent(query)}`);
       setShowSuggestions(false);
     }
-  };
+  }, [query, navigate]);
 
-  const selectSuggestion = (url: string) => {
+  const selectSuggestion = useCallback((url: string) => {
     navigate(url);
     setQuery("");
     setShowSuggestions(false);
-  };
+  }, [navigate]);
+
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+    if (value.length > 0) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, []);
+
+  const handleInputFocus = useCallback(() => {
+    if (query.length > 0) setShowSuggestions(true);
+  }, [query.length]);
 
   return (
     <header
@@ -156,12 +178,8 @@ export default function NavCard() {
                 type="text"
                 name="q"
                 value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  if (e.target.value.length > 0) setShowSuggestions(true);
-                  else setShowSuggestions(false);
-                }}
-                onFocus={() => query.length > 0 && setShowSuggestions(true)}
+                onChange={handleInputChange}
+                onFocus={handleInputFocus}
                 className="w-full border border-support-subtle h-10 md:h-12 shadow-sm px-3 md:px-4 py-2 rounded-full text-support-primary placeholder:text-support-tertiary focus:outline-none focus:ring-2 focus:ring-pop-primary/40 focus:border-pop-primary text-sm md:text-base transition-all duration-300 focus:shadow-md bg-background-light-card"
                 placeholder="Cari..."
                 aria-label="Cari Produk atau Kategori"
@@ -193,7 +211,11 @@ export default function NavCard() {
                     onClick={() => selectSuggestion(item.url)}
                     className={`
                       w-full text-left px-3 md:px-4 py-2 hover:bg-base-tertiary flex items-center gap-2 md:gap-3 text-xs md:text-sm transition-all duration-300 hover:pl-4 md:hover:pl-5 first:rounded-t-lg last:rounded-b-lg
-                      ${item.type === 'bundling' ? 'border-l-2 border-l-blue-400' : ''}
+                      ${
+                        item.type === "bundling"
+                          ? "border-l-2 border-l-blue-400"
+                          : ""
+                      }
                     `}
                   >
                     {item.thumbnail && (
@@ -203,14 +225,16 @@ export default function NavCard() {
                         className="w-6 h-6 md:w-8 md:h-8 object-cover rounded flex-shrink-0"
                       />
                     )}
-                    <span className={`truncate ${
-                      item.type === 'bundling' 
-                        ? 'text-blue-700 font-medium' 
-                        : 'text-support-primary'
-                    }`}>
+                    <span
+                      className={`truncate ${
+                        item.type === "bundling"
+                          ? "text-blue-700 font-medium"
+                          : "text-support-primary"
+                      }`}
+                    >
                       {item.display}
                     </span>
-                    {item.type === 'bundling' && (
+                    {item.type === "bundling" && (
                       <span className="text-xs text-blue-500 ml-auto px-1 py-0.5 bg-blue-50 rounded">
                         Bundling
                       </span>
@@ -220,6 +244,8 @@ export default function NavCard() {
               </div>
             )}
           </form>
+          <FloatingCartButton />
+
           <div className="flex items-center flex-shrink-0">
             {/* Dark mode toggle button removed */}
           </div>
@@ -227,4 +253,6 @@ export default function NavCard() {
       </div>
     </header>
   );
-}
+});
+
+export default NavCard;

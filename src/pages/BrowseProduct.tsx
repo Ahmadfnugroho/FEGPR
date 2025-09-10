@@ -358,9 +358,11 @@ export default function BrowseProduct() {
         setPage(p);
         setError(null);
       } catch (err: any) {
-        // Handle AbortError (request was cancelled)
-        if (err.name === 'AbortError') {
-          console.log('🚫 [BrowseProduct] Bundlings request was cancelled:', err.message);
+        // Handle cancelled requests (both AbortError and CanceledError)
+        if (err.name === 'AbortError' || err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🚫 [BrowseProduct] Bundlings request cancelled');
+          }
           return; // Don't set error for cancelled requests
         }
         
@@ -428,9 +430,11 @@ export default function BrowseProduct() {
         setPage(p);
         setError(null);
       } catch (err: any) {
-        // Handle AbortError (request was cancelled)
-        if (err.name === 'AbortError') {
-          console.log('🚫 [BrowseProduct] Products request was cancelled:', err.message);
+        // Handle cancelled requests (both AbortError and CanceledError)
+        if (err.name === 'AbortError' || err.name === 'CanceledError' || err.code === 'ERR_CANCELED') {
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🚫 [BrowseProduct] Products request cancelled');
+          }
           return; // Don't set error for cancelled requests
         }
         
