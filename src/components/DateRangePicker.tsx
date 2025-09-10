@@ -50,13 +50,9 @@ const DateRangePicker = memo(function DateRangePicker({
   // Initialize from value prop if provided (for backwards compatibility)
   useEffect(() => {
     if (value && (value.startDate !== localDateRange.startDate || value.endDate !== localDateRange.endDate)) {
-      console.log('🔄 DateRangePicker syncing from value prop:', {
-        value: {
-          startDate: value.startDate?.toISOString(),
-          endDate: value.endDate?.toISOString()
-        },
-        source: 'value_prop_sync'
-      });
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🔄 DateRangePicker: Syncing from value prop');
+      }
       setLocalDateRange(value);
     }
   }, [value]);
@@ -65,13 +61,14 @@ const DateRangePicker = memo(function DateRangePicker({
   const selectedStartDate = localDateRange.startDate;
   const selectedEndDate = localDateRange.endDate;
   
-  // Log whenever local dates change
+  // Log whenever local dates change (development only)
   useEffect(() => {
-    console.log('📅 DateRangePicker local dates changed:', {
-      selectedStartDate: selectedStartDate?.toISOString(),
-      selectedEndDate: selectedEndDate?.toISOString(),
-      source: 'local_state_change'
-    });
+    if (process.env.NODE_ENV === 'development') {
+      console.log('📅 DateRangePicker: Local dates updated:', {
+        startDate: selectedStartDate?.toLocaleDateString(),
+        endDate: selectedEndDate?.toLocaleDateString()
+      });
+    }
     
     // Notify parent of local changes (for validation, duration calculation, etc.)
     onLocalChange?.(localDateRange);
@@ -144,45 +141,33 @@ const DateRangePicker = memo(function DateRangePicker({
 
   const handleDateClick = (date: Date) => {
     if (isDateDisabled(date)) {
-      console.log('⚠️ DateRangePicker: Date is disabled, ignoring click');
-      debugDate('Disabled date', date);
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ DateRangePicker: Date disabled');
+      }
       return;
     }
-
-    console.log('🎯 DateRangePicker handleDateClick (local state):');
-    debugDate('Clicked date', date);
-    if (selectedStartDate) debugDate('Current start', selectedStartDate);
-    if (selectedEndDate) debugDate('Current end', selectedEndDate);
 
     isInternalUpdate.current = true;
     
     if (!selectedStartDate || (selectedStartDate && selectedEndDate)) {
-      // Start new selection - UPDATE LOCAL STATE ONLY
+      // Start new selection
       const newRange = { startDate: date, endDate: null };
-      console.log('🆕 Starting new date selection (local):');
-      debugDate('New start date', newRange.startDate);
       setLocalDateRange(newRange);
     } else {
       // Check if trying to select the same date
       if (isSameDate(date, selectedStartDate)) {
-        console.log('⚠️ Same date selected, ignoring');
         isInternalUpdate.current = false;
         return;
       }
       
-      // Complete the range - UPDATE LOCAL STATE ONLY
+      // Complete the range
       let newRange;
       if (date < selectedStartDate) {
         // Swap if end date is before start date
         newRange = { startDate: date, endDate: selectedStartDate };
-        console.log('🔄 Swapping dates (end before start):');
       } else {
         newRange = { startDate: selectedStartDate, endDate: date };
-        console.log('✅ Completing date range:');
       }
-      
-      debugDate('Final start date', newRange.startDate);
-      debugDate('Final end date', newRange.endDate);
       
       setLocalDateRange(newRange);
       setIsOpen(false);
@@ -191,7 +176,7 @@ const DateRangePicker = memo(function DateRangePicker({
     // Small delay to reset the flag
     setTimeout(() => {
       isInternalUpdate.current = false;
-    }, 100);
+    }, 50); // Reduced delay
   };
 
   const getDaysInMonth = (date: Date) => {

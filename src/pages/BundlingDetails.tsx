@@ -128,15 +128,25 @@ export default function BundlingDetails(): JSX.Element {
     2000 // 2 second delay - reduced API calls
   );
   
-  // Only use debounced dates for API calls when both dates are present
-  // Added additional check to ensure dates are not changing rapidly
-  const shouldFetchWithDates = useMemo(() => {
-    return !!(debouncedStartDate && debouncedEndDate && areDatesSelected && 
-             debouncedStartDate === startDate && debouncedEndDate === endDate);
-  }, [debouncedStartDate, debouncedEndDate, areDatesSelected, startDate, endDate]);
+  // Format dates consistently for API calls (YYYY-MM-DD)
+  const formatDateForAPI = (dateStr: string | null): string | undefined => {
+    if (!dateStr) return undefined;
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return undefined;
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   
-  const apiStartDate = shouldFetchWithDates ? debouncedStartDate : undefined;
-  const apiEndDate = shouldFetchWithDates ? debouncedEndDate : undefined;
+  // Only use debounced dates for API calls when both dates are present
+  const shouldFetchWithDates = useMemo(() => {
+    return !!(debouncedStartDate && debouncedEndDate && areDatesSelected);
+  }, [debouncedStartDate, debouncedEndDate, areDatesSelected]);
+  
+  const apiStartDate = shouldFetchWithDates ? formatDateForAPI(debouncedStartDate) : undefined;
+  const apiEndDate = shouldFetchWithDates ? formatDateForAPI(debouncedEndDate) : undefined;
   
   // Debug logging for React Query parameters - development only
   useEffect((): void => {

@@ -132,7 +132,7 @@ export default function EnhancedBookingForm({
   const MAX_RETRY_ATTEMPTS = 3;
   const RETRY_DELAY_MS = 1000;
 
-  // Check availability and update parent component immediately after date selection
+  // Simplified availability check with guaranteed YYYY-MM-DD format
   const checkAvailability = async (): Promise<void> => {
     // Validate inputs first
     if (!dateRange.startDate || !dateRange.endDate) {
@@ -140,111 +140,94 @@ export default function EnhancedBookingForm({
       return;
     }
 
-    if (quantity < 1 || quantity > 10) {
-      setAvailabilityError("Jumlah harus antara 1-10 unit");
-      return;
-    }
-
-    // Validate date range
-    const validation = validateRentalDates(
-      dateRange.startDate,
-      dateRange.endDate
-    );
-    if (!validation.isValid) {
-      setAvailabilityError(
-        validation.errors[0] || "Rentang tanggal tidak valid"
-      );
-      return;
-    }
-
     try {
       setIsLoading(true);
       setAvailabilityError("");
+      setValidationError("");
 
-      // Construct API endpoint
-      const endpoint = `/${type}/${item.slug}`;
-      const params = {
-        start_date: dateRange.startDate.toISOString().split("T")[0],
-        end_date: dateRange.endDate.toISOString().split("T")[0],
-        quantity: quantity.toString(),
+      // Ensure YYYY-MM-DD format for API call
+      const formatDateForAPI = (date: Date): string => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
       };
 
-      // Make API call with timeout
-      const response = await axiosInstance.get(endpoint, {
-        params,
-        timeout: 10000, // 10 second timeout
+      const startDateStr = formatDateForAPI(dateRange.startDate);
+      const endDateStr = formatDateForAPI(dateRange.endDate);
+      
+      console.log(`🔍 Checking availability for ${type} ${item.slug}:`, {
+        startDate: startDateStr,
+        endDate: endDateStr,
+        quantity
       });
 
-      if (!response?.data?.data) {
-        throw new Error("Invalid response from server");
+      // Make API call
+      const response = await axiosInstance.get(`/${type}/${item.slug}`, {
+        params: {
+          start_date: startDateStr,
+          end_date: endDateStr,
+        },
+        timeout: 8000
+      });
+
+      const itemData = response.data?.data;
+      if (!itemData) {
+        throw new Error("No data received from server");
       }
 
-      const itemData = response.data.data;
-      let availabilityInfo;
-      let availableQuantity;
+      let availableQuantity = 0;
+      let isItemAvailable = false;
 
-      // Calculate availability based on type
       if (type === "product") {
-        availabilityInfo = getProductAvailabilityText(itemData);
+        // Simple product availability
         availableQuantity = itemData.available_quantity || 0;
+        isItemAvailable = availableQuantity >= quantity;
       } else {
-        availabilityInfo = getBundlingAvailabilityText(itemData);
-        // For bundling, calculate minimum available quantity from all products
+        // Bundling availability - minimum available quantity from all products
         if (itemData.products && itemData.products.length > 0) {
-          availableQuantity = Math.min(
-            ...itemData.products.map((p: any) => p.available_quantity || 0)
-          );
-        } else {
-          availableQuantity = 0;
+          const productQuantities = itemData.products.map((p: any) => p.available_quantity || 0);
+          availableQuantity = Math.min(...productQuantities);
+          isItemAvailable = availableQuantity >= quantity;
+          
+          console.log(`📦 Bundling availability:`, {
+            products: itemData.products.map((p: any) => ({ 
+              name: p.name, 
+              available_quantity: p.available_quantity 
+            })),
+            minQuantity: availableQuantity,
+            requestedQuantity: quantity,
+            isAvailable: isItemAvailable
+          });
         }
       }
 
-      const isAvailable =
-        availabilityInfo.isAvailable && availableQuantity >= quantity;
-
-      // Update booking validity
-      setIsBookingValid(isAvailable);
+      // Update states
+      setIsBookingValid(isItemAvailable);
       setLastAvailabilityCheck(new Date());
       
-      if (!isAvailable) {
-        const message = availableQuantity === 0
-          ? `Tidak tersedia untuk periode ${dateRange.startDate.toLocaleDateString("id-ID")} - ${dateRange.endDate.toLocaleDateString("id-ID")}`
-          : `Ketersediaan terbatas! Hanya ${availableQuantity} ${type === "product" ? "unit" : "paket"} tersedia, tetapi Anda meminta ${quantity}.`;
-        setValidationError(message);
-      } else {
-        setValidationError("");
-        // Show success feedback
+      if (isItemAvailable) {
         setSubmitSuccess(true);
-        setSubmitMessage(`✅ Tersedia ${availableQuantity} ${type === 'product' ? 'unit' : 'paket'} untuk periode yang dipilih!`);
-        
-        // Auto-hide success message after 3 seconds
+        setSubmitMessage(`✅ Tersedia ${availableQuantity} ${type === 'product' ? 'unit' : 'paket'}!`);
         setTimeout(() => {
           setSubmitSuccess(false);
           setSubmitMessage("");
-        }, 3000);
+        }, 2000);
+      } else {
+        const message = availableQuantity === 0
+          ? `Tidak tersedia untuk periode ${startDateStr} sampai ${endDateStr}`
+          : `Ketersediaan terbatas! Hanya tersedia ${availableQuantity} ${type === "product" ? "unit" : "paket"}`;
+        setValidationError(message);
       }
       
-      // Update parent component with new availability data
+      // Notify parent component
       if (onAvailabilityUpdate) {
-        onAvailabilityUpdate(isAvailable, availableQuantity);
+        onAvailabilityUpdate(isItemAvailable, availableQuantity);
       }
       
     } catch (error: any) {
-      let errorMessage = "Gagal memeriksa ketersediaan. ";
-
-      if (error.code === "ECONNABORTED" || error.message === "Request timeout") {
-        errorMessage += "Koneksi timeout. ";
-      } else if (error.response?.status === 404) {
-        errorMessage += "Item tidak ditemukan. ";
-      } else if (error.response?.status === 500) {
-        errorMessage += "Terjadi kesalahan server. ";
-      } else if (!navigator.onLine) {
-        errorMessage += "Tidak ada koneksi internet. ";
-      } else {
-        errorMessage += "Silakan coba lagi. ";
-      }
-
-      setAvailabilityError(errorMessage);
+      console.error('❌ Availability check failed:', error);
+      setAvailabilityError("Gagal memeriksa ketersediaan. Silakan coba lagi.");
       setIsBookingValid(false);
     } finally {
       setIsLoading(false);
@@ -322,10 +305,14 @@ export default function EnhancedBookingForm({
     // Only proceed if both dates are selected
     if (!dateRange.startDate || !dateRange.endDate) return;
     
-    // Check availability automatically when dates are selected
-    checkAvailability();
+    // Add small delay to prevent rapid API calls during date selection
+    const timeoutId = setTimeout(() => {
+      checkAvailability();
+    }, 300);
     
-  }, [dateRange.startDate, dateRange.endDate, quantity, clearValidation]);
+    return () => clearTimeout(timeoutId);
+    
+  }, [dateRange.startDate, dateRange.endDate, quantity]);
 
   // Basic form validation for display only
   useEffect(() => {
@@ -377,10 +364,7 @@ export default function EnhancedBookingForm({
   const handleQuantityChange = (newQuantity: number) => {
     if (newQuantity >= 1 && newQuantity <= 10) {
       setQuantity(newQuantity);
-      // If dates are already selected, check availability with new quantity
-      if (dateRange.startDate && dateRange.endDate) {
-        checkAvailability();
-      }
+      // Availability will be checked automatically via useEffect
     }
   };
 
