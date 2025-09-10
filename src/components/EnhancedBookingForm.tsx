@@ -88,6 +88,7 @@ interface EnhancedBookingFormProps {
   isLoadingAvailability?: boolean;
   isAvailable?: boolean;
   availableQuantity?: number;
+  onAvailabilityUpdate?: (isAvailable: boolean, availableQuantity: number) => void;
 }
 
 export default function EnhancedBookingForm({
@@ -97,6 +98,7 @@ export default function EnhancedBookingForm({
   isLoadingAvailability = false,
   isAvailable = true,
   availableQuantity = 0,
+  onAvailabilityUpdate,
 }: EnhancedBookingFormProps) {
   // Use global date context instead of local state
   const {
@@ -490,41 +492,55 @@ export default function EnhancedBookingForm({
       
       console.log('✅ Updated item data received:', response.data);
       
+      // Extract availability data from response
+      const itemData = response.data.data;
+      let newAvailableQuantity = 0;
+      let newIsAvailable = false;
+      
+      if (type === 'product') {
+        // For product, use available_quantity directly
+        newAvailableQuantity = itemData.available_quantity || 0;
+        newIsAvailable = itemData.status === 'available' && newAvailableQuantity > 0;
+      } else {
+        // For bundling, find minimum available_quantity from products array
+        if (itemData.products && itemData.products.length > 0) {
+          newAvailableQuantity = Math.min(
+            ...itemData.products.map((product: any) => product.available_quantity || 0)
+          );
+          newIsAvailable = newAvailableQuantity > 0;
+        }
+      }
+      
+      console.log('📊 Extracted availability data:', {
+        type,
+        newAvailableQuantity,
+        newIsAvailable,
+        source: 'api_response_parsing'
+      });
+      
       // Update global context with validated dates
       setDateRange({
         startDate: localDates.startDate,
         endDate: localDates.endDate
       });
       
-      // Invalidate React Query cache to trigger smooth re-fetch with new dates
-      const queryKeys = [
-        ["product", item.slug],
-        ["bundling", item.slug],
-        [type, item.slug]
-      ];
-      
-      // Invalidate all related queries to ensure fresh data
-      await Promise.all(
-        queryKeys.map(key => 
-          queryClient.invalidateQueries({ 
-            queryKey: key,
-            exact: false // Also invalidate queries with additional parameters
-          })
-        )
-      );
-      
-      console.log('✨ React Query cache invalidated successfully - smooth update!');
-      
-      // Show success feedback
+      // Show success feedback with new availability info
       setValidationError("");
       setSubmitSuccess(true);
-      setSubmitMessage(`✅ Tanggal berhasil disubmit! Ketersediaan untuk ${localDates.startDate.toLocaleDateString('id-ID')} - ${localDates.endDate.toLocaleDateString('id-ID')} telah diperbarui.`);
       
-      // Optional: Force immediate refetch for better UX
-      await queryClient.refetchQueries({
-        queryKey: [type, item.slug],
-        type: 'active'
-      });
+      const availabilityText = newIsAvailable 
+        ? `Tersedia ${newAvailableQuantity} ${type === 'product' ? 'unit' : 'paket'}`
+        : 'Tidak tersedia';
+        
+      setSubmitMessage(`✅ Tanggal berhasil disubmit! ${availabilityText} untuk periode ${localDates.startDate.toLocaleDateString('id-ID')} - ${localDates.endDate.toLocaleDateString('id-ID')}.`);
+      
+      // Update parent component with new availability data
+      if (onAvailabilityUpdate) {
+        onAvailabilityUpdate(newIsAvailable, newAvailableQuantity);
+        console.log('✨ Parent component updated with new availability!');
+      } else {
+        console.log('✨ Availability updated (no callback provided)');
+      }
       
       // Auto-hide success message after 3 seconds
       setTimeout(() => {

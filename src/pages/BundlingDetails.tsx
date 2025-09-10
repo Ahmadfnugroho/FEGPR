@@ -305,9 +305,12 @@ export default function BundlingDetails(): JSX.Element {
     };
   }, [bundling, startDate, endDate]);
 
-  // Extract values for easier access
-  const isAvailable = bundlingAvailability.isAvailable;
-  const availableQuantity = bundlingAvailability.availableQuantity;
+  // State for updated availability from form submission
+  const [currentAvailability, setCurrentAvailability] = useState<{ isAvailable: boolean; quantity: number } | null>(null);
+  
+  // Extract values for easier access - use updated availability if available
+  const isAvailable = currentAvailability?.isAvailable ?? bundlingAvailability.isAvailable;
+  const availableQuantity = currentAvailability?.quantity ?? bundlingAvailability.availableQuantity;
   const unavailableProducts = bundlingAvailability.unavailableProducts;
 
   const formattedPrice: string = useMemo(() => {
@@ -722,6 +725,17 @@ export default function BundlingDetails(): JSX.Element {
                   isLoadingAvailability={isLoading || isLoadingAvailability}
                   isAvailable={isAvailable}
                   availableQuantity={availableQuantity}
+                  onAvailabilityUpdate={(newIsAvailable, newAvailableQuantity) => {
+                    console.log('🔄 BundlingDetails: Updating availability from form submission:', {
+                      newIsAvailable,
+                      newAvailableQuantity,
+                      source: 'form_callback'
+                    });
+                    setCurrentAvailability({
+                      isAvailable: newIsAvailable,
+                      quantity: newAvailableQuantity
+                    });
+                  }}
                 />
               </div>
             </div>

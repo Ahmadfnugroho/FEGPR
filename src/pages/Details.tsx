@@ -197,9 +197,11 @@ const ProductInfo = ({
   );
 
   // Use proper availability calculation based on available_quantity + is_available
+  const [currentAvailability, setCurrentAvailability] = useState<{ isAvailable: boolean; quantity: number } | null>(null);
+  
   const availabilityInfo = getProductAvailabilityText(product);
-  const isAvailable = availabilityInfo.isAvailable;
-  const availableQuantity = availabilityInfo.quantity;
+  const isAvailable = currentAvailability?.isAvailable ?? availabilityInfo.isAvailable;
+  const availableQuantity = currentAvailability?.quantity ?? availabilityInfo.quantity;
   
   const formattedPrice = new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -256,6 +258,17 @@ const ProductInfo = ({
         isLoadingAvailability={isLoadingAvailability}
         isAvailable={isAvailable}
         availableQuantity={availableQuantity}
+        onAvailabilityUpdate={(newIsAvailable, newAvailableQuantity) => {
+          console.log('🔄 Details: Updating availability from form submission:', {
+            newIsAvailable,
+            newAvailableQuantity,
+            source: 'form_callback'
+          });
+          setCurrentAvailability({
+            isAvailable: newIsAvailable,
+            quantity: newAvailableQuantity
+          });
+        }}
       />
     </div>
   );
