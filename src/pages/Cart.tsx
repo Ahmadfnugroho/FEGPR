@@ -1,35 +1,38 @@
 // src/pages/Cart.tsx
-import { Link } from 'react-router-dom';
-import { useCart } from '../contexts/CartContext';
-import { STORAGE_BASE_URL } from '../api/constants';
-import { formatPrice, formatRentalDuration } from '../utils/rental-duration-helper';
-import { 
+import { Link } from "react-router-dom";
+import { useCart } from "../contexts/CartContext";
+import { STORAGE_BASE_URL } from "../api/constants";
+import {
+  formatPrice,
+  formatRentalDuration,
+} from "../utils/rental-duration-helper";
+import {
   ShoppingBagIcon,
   TrashIcon,
   MinusIcon,
   PlusIcon,
-  ArrowLeftIcon
-} from '@heroicons/react/24/outline';
+  ArrowLeftIcon,
+} from "@heroicons/react/24/outline";
 
 export default function Cart() {
-  const { 
-    items, 
-    totalItems, 
-    totalPrice, 
-    updateItem, 
-    removeItem, 
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    updateItem,
+    removeItem,
     clearCart,
-    generateWhatsAppMessage
+    generateWhatsAppMessage,
   } = useCart();
 
   // Use formatPrice from helper function instead
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
+    return new Date(dateString).toLocaleDateString("id-ID", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
     });
   };
 
@@ -43,10 +46,12 @@ export default function Cart() {
 
   const handleCheckout = () => {
     const message = generateWhatsAppMessage();
-    const phoneNumber = '6281234567890'; // Replace with actual WhatsApp number
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
-    window.open(whatsappUrl, '_blank');
+    const phoneNumber = "6281212349564"; // Replace with actual WhatsApp number
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    window.open(whatsappUrl, "_blank");
   };
 
   if (items.length === 0) {
@@ -59,7 +64,8 @@ export default function Cart() {
               Keranjang Anda Kosong
             </h2>
             <p className="mt-2 text-gray-600">
-              Mulai jelajahi produk dan bundling kami untuk rental peralatan foto.
+              Mulai jelajahi produk dan bundling kami untuk rental peralatan
+              foto.
             </p>
             <div className="mt-8 space-x-4">
               <Link
@@ -94,7 +100,9 @@ export default function Cart() {
             Kembali Belanja
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">Keranjang</h1>
-          <p className="text-gray-600 mt-2">{totalItems} item dalam keranjang</p>
+          <p className="text-gray-600 mt-2">
+            {totalItems} item dalam keranjang
+          </p>
         </div>
 
         <div className="lg:grid lg:grid-cols-12 lg:gap-x-8">
@@ -116,7 +124,7 @@ export default function Cart() {
                           ) : (
                             <div className="h-full w-full bg-gray-100 flex items-center justify-center">
                               <span className="text-4xl">
-                                {item.type === 'bundling' ? '📦' : '📷'}
+                                {item.type === "bundling" ? "📦" : "📷"}
                               </span>
                             </div>
                           )}
@@ -127,35 +135,49 @@ export default function Cart() {
                             <div className="flex justify-between">
                               <div className="pr-6">
                                 <h3 className="text-lg font-semibold text-gray-900">
-                                  <Link 
-                                    to={item.type === 'product' ? `/product/${item.slug}` : `/bundling/${item.slug}`} 
+                                  <Link
+                                    to={
+                                      item.type === "product"
+                                        ? `/product/${item.slug}`
+                                        : `/bundling/${item.slug}`
+                                    }
                                     className="hover:text-blue-600 transition-colors"
                                   >
                                     {item.name}
                                   </Link>
                                 </h3>
-                                
+
                                 {/* Type Badge */}
                                 <div className="mt-2">
-                                  <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                                    item.type === 'product'
-                                      ? 'bg-green-100 text-green-700'
-                                      : 'bg-blue-100 text-blue-700'
-                                  }`}>
-                                    {item.type === 'product' ? 'Produk' : 'Bundling'}
+                                  <span
+                                    className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                      item.type === "product"
+                                        ? "bg-green-100 text-green-700"
+                                        : "bg-blue-100 text-blue-700"
+                                    }`}
+                                  >
+                                    {item.type === "product"
+                                      ? "Produk"
+                                      : "Bundling"}
                                   </span>
                                 </div>
 
                                 {/* Category and Brand */}
                                 <div className="mt-2 flex items-center text-sm text-gray-500">
-                                  {item.category && <span>{item.category.name}</span>}
-                                  {item.category && item.brand && <span className="mx-2">•</span>}
+                                  {item.category && (
+                                    <span>{item.category.name}</span>
+                                  )}
+                                  {item.category && item.brand && (
+                                    <span className="mx-2">•</span>
+                                  )}
                                   {item.brand && <span>{item.brand.name}</span>}
                                 </div>
 
                                 {/* Rental Period */}
                                 <div className="mt-3 text-sm text-gray-700">
-                                  <div className="font-medium">Periode Rental:</div>
+                                  <div className="font-medium">
+                                    Periode Rental:
+                                  </div>
                                   <div>{formatDate(item.startDate)}</div>
                                   <div>sampai {formatDate(item.endDate)}</div>
                                   <div className="text-blue-600 font-semibold">
@@ -178,23 +200,35 @@ export default function Cart() {
                             <div className="flex items-center justify-between mt-4">
                               {/* Quantity Controls */}
                               <div className="flex items-center space-x-3">
-                                <span className="text-sm font-medium text-gray-700">Jumlah:</span>
+                                <span className="text-sm font-medium text-gray-700">
+                                  Jumlah:
+                                </span>
                                 <div className="flex items-center space-x-2">
                                   <button
                                     type="button"
-                                    onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                                    onClick={() =>
+                                      handleQuantityChange(
+                                        item.id,
+                                        item.quantity - 1
+                                      )
+                                    }
                                     className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
                                   >
                                     <MinusIcon className="h-4 w-4" />
                                   </button>
-                                  
+
                                   <span className="font-medium min-w-[3rem] text-center px-3 py-2 border border-gray-300 rounded-lg">
                                     {item.quantity}
                                   </span>
-                                  
+
                                   <button
                                     type="button"
-                                    onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                                    onClick={() =>
+                                      handleQuantityChange(
+                                        item.id,
+                                        item.quantity + 1
+                                      )
+                                    }
                                     className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
                                   >
                                     <PlusIcon className="h-4 w-4" />
@@ -205,10 +239,14 @@ export default function Cart() {
                               {/* Price */}
                               <div className="text-right">
                                 <div className="text-lg font-bold text-gray-900">
-                                  {formatPrice(item.price * item.quantity * item.duration)}
+                                  {formatPrice(
+                                    item.price * item.quantity * item.duration
+                                  )}
                                 </div>
                                 <div className="text-sm text-gray-500">
-                                  {formatPrice(item.price)}/hari × {item.quantity} × {formatRentalDuration(item.duration)}
+                                  {formatPrice(item.price)}/hari ×{" "}
+                                  {item.quantity} ×{" "}
+                                  {formatRentalDuration(item.duration)}
                                 </div>
                               </div>
                             </div>
@@ -249,7 +287,8 @@ export default function Cart() {
                   <div className="flex justify-between text-sm">
                     <span>Total Hari Rental:</span>
                     <span>
-                      {items.reduce((total, item) => total + item.duration, 0)} hari-unit
+                      {items.reduce((total, item) => total + item.duration, 0)}{" "}
+                      hari-unit
                     </span>
                   </div>
                   <hr />
@@ -268,11 +307,17 @@ export default function Cart() {
 
                 {/* Additional Info */}
                 <div className="mt-6 text-xs text-gray-500 space-y-2">
-                  <div className="font-medium text-gray-700">Informasi Penting:</div>
+                  <div className="font-medium text-gray-700">
+                    Informasi Penting:
+                  </div>
                   <ul className="space-y-1">
                     <li>• Harga dapat berubah setelah konfirmasi admin</li>
-                    <li>• Pembayaran dilakukan setelah konfirmasi ketersediaan</li>
-                    <li>• Barang dapat diambil atau dikirim (biaya terpisah)</li>
+                    <li>
+                      • Pembayaran dilakukan setelah konfirmasi ketersediaan
+                    </li>
+                    <li>
+                      • Barang dapat diambil atau dikirim (biaya terpisah)
+                    </li>
                     <li>• Konfirmasi pemesanan melalui WhatsApp</li>
                   </ul>
                 </div>

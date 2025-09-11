@@ -21,10 +21,7 @@ interface EnhancedProductCardProps {
 }
 
 const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
-  ({
-    product,
-    variant = "grid",
-  }) => {
+  ({ product, variant = "grid" }) => {
     const [imageError, setImageError] = useState(false);
     const [imageLoading, setImageLoading] = useState(true);
 
@@ -77,7 +74,6 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
     const handleImageLoad = useCallback(() => {
       setImageLoading(false);
     }, []);
-
 
     if (variant === "list") {
       return (
@@ -133,9 +129,9 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
               </h3>
 
               <div className="space-y-4">
-                <div className="text-xl md:text-2xl font-bold text-navy-blue-800">
+                <div className="text-xs md:text-xs font-bold text-navy-blue-800">
                   {formatPrice(product.price)}
-                  <span className="text-base font-normal text-gray-600">
+                  <span className="text-xs font-normal text-gray-600">
                     /hari
                   </span>
                 </div>
@@ -145,7 +141,10 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
                     Sewa Sekarang
                   </button>
                 ) : (
-                  <button disabled className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg text-base font-medium cursor-not-allowed">
+                  <button
+                    disabled
+                    className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg text-base font-medium cursor-not-allowed"
+                  >
                     Tidak Tersedia
                   </button>
                 )}
@@ -173,7 +172,6 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
               <span className="hidden sm:inline">{statusConfig.label}</span>
             </span>
           </div>
-
 
           {/* Image with loading state */}
           {imageLoading && (
@@ -214,24 +212,27 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
 
         {/* Content */}
         <div className="p-5 space-y-4">
-          <h3 className="font-semibold text-gray-900 text-base line-clamp-2 group-hover:text-navy-blue-800 transition-colors">
+          <h3 className="font-extralight text-gray-900 text-xs line-clamp-2 group-hover:text-navy-blue-800 transition-colors whitespace-normal break-words text-center">
             {product.name}
           </h3>
-
 
           {/* Price and action */}
           <div className="space-y-4">
             <div className="font-bold text-navy-blue-800 text-center">
-              <span className="text-xl">{formatPrice(product.price)}</span>
-              <span className="text-base font-normal text-gray-600">/hari</span>
+              <span className="text-xs font-extralight">
+                {formatPrice(product.price)}
+              </span>
+              <span className="text-xs font-extralight text-gray-600">
+                /hari
+              </span>
             </div>
 
             {product.status === "available" ? (
               <button
-                className="w-full px-5 py-3 bg-navy-blue-800 text-white rounded-lg text-base font-medium hover:bg-navy-blue-900 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-navy-blue-800 focus:ring-offset-2"
+                className="w-full px-5 py-3 bg-navy-blue-800 text-white rounded-lg text-xs font-thin hover:bg-navy-blue-900 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-navy-blue-800 focus:ring-offset-2 whitespace-nowrap"
                 onClick={(e) => {
-                  e.preventDefault();
-                  // Handle quick rent action
+                  e.stopPropagation(); // cegah trigger Link parent
+                  window.location.href = `/product/${product.slug}`;
                 }}
               >
                 Sewa Sekarang

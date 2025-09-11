@@ -54,7 +54,7 @@ export default function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
 
   const handleCheckout = () => {
     const message = generateWhatsAppMessage();
-    const phoneNumber = "6281234567890"; // Replace with actual WhatsApp number
+    const phoneNumber = "6281212349564"; // Replace with actual WhatsApp number
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message
     )}`;
