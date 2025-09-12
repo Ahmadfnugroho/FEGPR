@@ -1,8 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 
 export default function FloatingWhatsAppButton() {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const initialMousePos = useRef({ x: 0, y: 0 });
+  const hasDragged = useRef(false);
+  const DRAG_THRESHOLD = 5; // pixels
+  const positionRef = useRef(position); // Add this line
+
+  useEffect(() => {
+    positionRef.current = position; // Update ref whenever position changes
+  }, [position]);
 
   // Show button after page loads to avoid layout shift
   useEffect(() => {
@@ -15,6 +26,10 @@ export default function FloatingWhatsAppButton() {
     "https://wa.me/6281212349564?text=Halo,%20saya%20mau%20sewa%20kamera";
 
   const handleClick = () => {
+    if (hasDragged.current) {
+      hasDragged.current = false;
+      return;
+    }
     // Add small click animation
     const button = document.getElementById("floating-whatsapp-btn");
     if (button) {
@@ -26,12 +41,52 @@ export default function FloatingWhatsAppButton() {
     window.open(whatsappUrl, "_blank", "noopener,noreferrer");
   };
 
+  const onMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    initialMousePos.current = { x: e.clientX, y: e.clientY };
+    const initialButtonX = positionRef.current.x; // Use ref
+    const initialButtonY = positionRef.current.y; // Use ref
+
+    const onMouseMove = (e: MouseEvent) => {
+      const deltaX = e.clientX - initialMousePos.current.x;
+      const deltaY = e.clientY - initialMousePos.current.y;
+
+      const newX = initialButtonX + deltaX;
+      const newY = initialButtonY + deltaY;
+
+      setPosition({ x: newX, y: newY });
+
+      const dx = Math.abs(deltaX);
+      const dy = Math.abs(deltaY);
+      if (dx > DRAG_THRESHOLD || dy > DRAG_THRESHOLD) {
+        hasDragged.current = true;
+      }
+    };
+
+    const onMouseUp = () => {
+      setIsDragging(false);
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, []); // Empty dependency array as position is accessed via ref
+
   return (
-    <div className="fixed bottom-24 right-6 z-50">
+    <div
+      className="fixed bottom-40 right-6 z-50"
+      style={{
+        transform: `translate(${position.x}px, ${position.y}px)`,
+        cursor: isDragging ? "grabbing" : "grab",
+      }}
+    >
       {/* Tooltip */}
 
       <button
         id="floating-whatsapp-btn"
+        ref={buttonRef}
+        onMouseDown={onMouseDown}
         onClick={handleClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -42,7 +97,7 @@ export default function FloatingWhatsAppButton() {
           shadow-lg hover:shadow-2xl
           flex items-center justify-center gap-2
           transition-all duration-300 ease-in-out
-          transform hover:scale-110
+          transform hover:scale-110 animate-bounce-soft
           ${
             isVisible ? "translate-y-0 opacity-100" : "translate-y-16 opacity-0"
           }
@@ -62,14 +117,14 @@ export default function FloatingWhatsAppButton() {
         </svg>
 
         {/* Text */}
-        <span className="text-sm md:text-base font-medium whitespace-nowrap">
+        <span className="text-xs md:text-sm font-extralight whitespace-nowrap">
           Hubungi Kami
         </span>
 
         {/* Animated pulse ring */}
         <div
           className={`
-          absolute inset-0 rounded-full bg-green-400 animate-ping opacity-30
+          absolute inset-0 rounded-full opacity-30
           ${isHovered ? "opacity-50" : "opacity-30"}
         `}
         ></div>

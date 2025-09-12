@@ -793,7 +793,7 @@ export default function Details() {
 
   const mobileBottomBar = useMemo(
     () => (
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30 md:hidden">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30 md:hidden">
         <div className="max-w-[640px] mx-auto px-4 py-3">
           <div className="flex items-center justify-between space-x-3">
             {/* Price and Quantity */}
@@ -812,7 +812,7 @@ export default function Details() {
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center justify-center px-6 py-3 rounded-full font-medium text-sm transition-all duration-200 ${
+                className={`flex items-center justify-center px-4 py-2 rounded-full font-medium text-sm transition-all duration-200 ${
                   isAvailable
                     ? "bg-text-light-primary hover:bg-blue-700 text-white shadow-md"
                     : "bg-gray-400 text-gray-600 cursor-not-allowed"

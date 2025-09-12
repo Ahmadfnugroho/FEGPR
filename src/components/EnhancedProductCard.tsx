@@ -123,31 +123,33 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
             </div>
 
             {/* Content */}
-            <div className="flex-1 min-w-0 space-y-4">
-              <h3 className="text-gray-900 text-base md:text-xs font-extralight line-clamp-2 group-hover:text-navy-blue-800 transition-colors">
-                {product.name}
-              </h3>
+            <div className="mt-auto">
+              <div className="flex-1 min-w-0 space-y-4">
+                <h3 className="text-gray-900 text-base md:text-xs font-extralight line-clamp-2 group-hover:text-navy-blue-800 transition-colors">
+                  {product.name}
+                </h3>
 
-              <div className="space-y-4">
-                <div className="text-xs md:text-xs font-bold text-navy-blue-800">
-                  {formatPrice(product.price)}
-                  <span className="text-xs font-normal text-gray-600">
-                    /hari
-                  </span>
+                <div className="space-y-4">
+                  <div className="text-xs md:text-xs font-bold text-navy-blue-800">
+                    {formatPrice(product.price)}
+                    <span className="text-xs font-normal text-gray-600">
+                      /hari
+                    </span>
+                  </div>
+
+                  {product.status === "available" ? (
+                    <button className="w-full px-5 py-3 bg-navy-blue-800 text-white rounded-lg text-base font-medium hover:bg-navy-blue-900 transition-colors transform hover:scale-105">
+                      Sewa Sekarang
+                    </button>
+                  ) : (
+                    <button
+                      disabled
+                      className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg text-base font-medium cursor-not-allowed"
+                    >
+                      Tidak Tersedia
+                    </button>
+                  )}
                 </div>
-
-                {product.status === "available" ? (
-                  <button className="w-full px-5 py-3 bg-navy-blue-800 text-white rounded-lg text-base font-medium hover:bg-navy-blue-900 transition-colors transform hover:scale-105">
-                    Sewa Sekarang
-                  </button>
-                ) : (
-                  <button
-                    disabled
-                    className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg text-base font-medium cursor-not-allowed"
-                  >
-                    Tidak Tersedia
-                  </button>
-                )}
               </div>
             </div>
           </div>
@@ -211,13 +213,13 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
         </div>
 
         {/* Content */}
-        <div className="p-5 space-y-4">
-          <h3 className="font-extralight text-gray-900 text-xs line-clamp-2 group-hover:text-navy-blue-800 transition-colors whitespace-normal break-words text-center">
+        <div className="p-5 flex flex-col h-full... justify-between">
+          <h3 className="font-extralight text-gray-900 text-xs line-clamp-2 group-hover:text-navy-blue-800 transition-colors whitespace-normal break-words text-center h-8">
             {product.name}
           </h3>
 
           {/* Price and action */}
-          <div className="space-y-4">
+          <div className="mt-auto">
             <div className="font-bold text-navy-blue-800 text-center">
               <span className="text-xs font-extralight">
                 {formatPrice(product.price)}
@@ -240,7 +242,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
             ) : (
               <button
                 disabled
-                className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg text-base font-medium cursor-not-allowed"
+                className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg  text-xs font-thincursor-not-allowed whitespace-nowrap"
               >
                 Tidak Tersedia
               </button>

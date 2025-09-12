@@ -8,10 +8,10 @@ interface BadgeProps {
 
 const Badge: React.FC<BadgeProps> = ({ count, show = false }) => {
   if (!show || !count) return null;
-  
+
   return (
     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center border-2 border-white">
-      {count > 99 ? '99+' : count}
+      {count > 99 ? "99+" : count}
     </span>
   );
 };
@@ -24,23 +24,30 @@ interface NavItemProps {
   isActive?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, href, children, badge, isActive }) => {
-  const baseClasses = "relative flex flex-col items-center p-2 rounded-xl transition-all duration-300 min-h-[60px] min-w-[60px]";
-  const activeClasses = isActive 
-    ? "bg-navy-blue-50 scale-105" 
+const NavItem: React.FC<NavItemProps> = ({
+  to,
+  href,
+  children,
+  badge,
+  isActive,
+}) => {
+  const baseClasses =
+    "relative flex flex-col items-center p-2 rounded-xl transition-all duration-300 min-h-[60px] min-w-[60px]";
+  const activeClasses = isActive
+    ? "bg-navy-blue-50 scale-105"
     : "hover:bg-gray-50 active:scale-95";
-  
+
   const content = (
     <div className={`${baseClasses} ${activeClasses}`}>
       {children}
       <Badge count={badge} show={!!badge} />
     </div>
   );
-  
+
   if (to) {
     return <Link to={to}>{content}</Link>;
   }
-  
+
   if (href) {
     return (
       <a href={href} target="_blank" rel="noopener noreferrer">
@@ -48,49 +55,53 @@ const NavItem: React.FC<NavItemProps> = ({ to, href, children, badge, isActive }
       </a>
     );
   }
-  
+
   return content;
 };
 
 export default function BottomNavigation() {
   const location = useLocation();
   const [wishlistCount, setWishlistCount] = useState(0);
-  
+
   // Mock wishlist count - replace with real data
   useEffect(() => {
     // Simulate wishlist count from localStorage or API
-    const count = localStorage.getItem('wishlist-count');
+    const count = localStorage.getItem("wishlist-count");
     setWishlistCount(count ? parseInt(count) : 0);
   }, []);
-  
+
   const isActive = (path: string) => {
-    if (path === '/') return location.pathname === '/';
+    if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
-  
+
   return (
     <>
       {/* Safe area spacer for devices with bottom safe area */}
       <div className="h-20 md:hidden" />
-      
+
       <nav
         id="Bottom-nav"
         className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
         style={{
-          paddingBottom: 'env(safe-area-inset-bottom)', // iOS safe area
+          paddingBottom: "env(safe-area-inset-bottom)", // iOS safe area
         }}
       >
         <div className="bg-white/95 backdrop-blur-md border-t border-gray-200 shadow-lg">
           <div className="max-w-md mx-auto px-4 py-2">
             <div className="grid grid-cols-4 gap-1">
               {/* Home */}
-              <NavItem to="/" isActive={isActive('/')}>
-                <div className={`flex flex-col items-center text-center gap-1 transition-all duration-300 ${
-                  isActive('/') ? 'text-navy-blue-800' : 'text-gray-500'
-                }`}>
-                  <div className={`w-8 h-8 flex shrink-0 p-1.5 rounded-lg ${
-                    isActive('/') ? 'bg-navy-blue-100' : 'bg-gray-50'
-                  }`}>
+              <NavItem to="/" isActive={isActive("/")}>
+                <div
+                  className={`flex flex-col items-center text-center gap-1 transition-all duration-300 ${
+                    isActive("/") ? "text-navy-blue-800" : "text-gray-500"
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 flex shrink-0 p-1.5 rounded-lg ${
+                      isActive("/") ? "bg-navy-blue-100" : "bg-gray-50"
+                    }`}
+                  >
                     <svg
                       width={20}
                       height={20}
@@ -117,15 +128,26 @@ export default function BottomNavigation() {
                   <p className="font-semibold text-xs">Home</p>
                 </div>
               </NavItem>
-              
+
               {/* Browse Products */}
-              <NavItem to="/browse-product" isActive={isActive('/browse-product')}>
-                <div className={`flex flex-col items-center text-center gap-1 transition-all duration-300 ${
-                  isActive('/browse-product') ? 'text-navy-blue-800' : 'text-gray-500'
-                }`}>
-                  <div className={`w-8 h-8 flex shrink-0 p-1.5 rounded-lg ${
-                    isActive('/browse-product') ? 'bg-navy-blue-100' : 'bg-gray-50'
-                  }`}>
+              <NavItem
+                to="/browse-product"
+                isActive={isActive("/browse-product")}
+              >
+                <div
+                  className={`flex flex-col items-center text-center gap-1 transition-all duration-300 ${
+                    isActive("/browse-product")
+                      ? "text-navy-blue-800"
+                      : "text-gray-500"
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 flex shrink-0 p-1.5 rounded-lg ${
+                      isActive("/browse-product")
+                        ? "bg-navy-blue-100"
+                        : "bg-gray-50"
+                    }`}
+                  >
                     <svg
                       width={20}
                       height={20}
@@ -133,24 +155,62 @@ export default function BottomNavigation() {
                       fill="none"
                       xmlns="http://www.w3.org/2000/svg"
                     >
-                      <rect x="3" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth={2} />
-                      <rect x="14" y="3" width="7" height="7" rx="1" stroke="currentColor" strokeWidth={2} />
-                      <rect x="14" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth={2} />
-                      <rect x="3" y="14" width="7" height="7" rx="1" stroke="currentColor" strokeWidth={2} />
+                      <rect
+                        x="3"
+                        y="3"
+                        width="7"
+                        height="7"
+                        rx="1"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      />
+                      <rect
+                        x="14"
+                        y="3"
+                        width="7"
+                        height="7"
+                        rx="1"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      />
+                      <rect
+                        x="14"
+                        y="14"
+                        width="7"
+                        height="7"
+                        rx="1"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      />
+                      <rect
+                        x="3"
+                        y="14"
+                        width="7"
+                        height="7"
+                        rx="1"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      />
                     </svg>
                   </div>
-                  <p className="font-semibold text-xs">Kategori</p>
+                  <p className="font-semibold text-xs">Koleksi</p>
                 </div>
               </NavItem>
-              
+
               {/* Cara Sewa */}
-              <NavItem to="/cara-sewa" isActive={isActive('/cara-sewa')}>
-                <div className={`flex flex-col items-center text-center gap-1 transition-all duration-300 ${
-                  isActive('/cara-sewa') ? 'text-navy-blue-800' : 'text-gray-500'
-                }`}>
-                  <div className={`w-8 h-8 flex shrink-0 p-1.5 rounded-lg ${
-                    isActive('/cara-sewa') ? 'bg-navy-blue-100' : 'bg-gray-50'
-                  }`}>
+              <NavItem to="/cara-sewa" isActive={isActive("/cara-sewa")}>
+                <div
+                  className={`flex flex-col items-center text-center gap-1 transition-all duration-300 ${
+                    isActive("/cara-sewa")
+                      ? "text-navy-blue-800"
+                      : "text-gray-500"
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 flex shrink-0 p-1.5 rounded-lg ${
+                      isActive("/cara-sewa") ? "bg-navy-blue-100" : "bg-gray-50"
+                    }`}
+                  >
                     <svg
                       width={20}
                       height={20}
@@ -170,9 +230,12 @@ export default function BottomNavigation() {
                   <p className="font-semibold text-xs">Cara Sewa</p>
                 </div>
               </NavItem>
-              
+
               {/* Registration */}
-              <NavItem href="http://bit.ly/formglobalphotorental" badge={wishlistCount}>
+              <NavItem
+                href="http://bit.ly/formglobalphotorental"
+                badge={wishlistCount}
+              >
                 <div className="flex flex-col items-center text-center gap-1 transition-all duration-300 text-gray-500">
                   <div className="w-8 h-8 flex shrink-0 p-1.5 bg-gray-50 rounded-lg">
                     <svg

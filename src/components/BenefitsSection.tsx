@@ -2,7 +2,7 @@ export default function BenefitsSection() {
   return (
     <section
       id="Benefits"
-      className="hidden md:flex items-center justify-center w-[1015px] mx-auto gap-[100px] mt-8 scroll-fade-in"
+      className="hidden md:flex items-center justify-center lg:w-[1015px] mx-auto lg:gap-[100px] mt-8 scroll-fade-in"
       data-delay="100"
     >
       <h2 className="font-bold text-[32px] leading-[48px] text-nowrap text-dark scroll-fade-in">
@@ -14,7 +14,7 @@ export default function BenefitsSection() {
         data-staggerdelay="100"
       >
         <div className="flex items-center gap-4 stagger-item" data-index="0">
-          <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
+          <div className="flex items-center justify-center shrink-0 lg:w-[70px] lg:h-[70px] rounded-[23px] bg-white overflow-hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -30,17 +30,17 @@ export default function BenefitsSection() {
             </svg>
           </div>
           <div className="flex flex-col gap-[5px]">
-            <p className="font-bold text-lg leading-[27px] text-dark">
+            <p className="font-bold text-sm lg:text-lg leading-[27px] text-dark">
               Stok Realtime
             </p>
-            <p className="text-sm leading-[24px] text-dark">
+            <p className="text-xs lg:text-sm leading-[24px] text-dark">
               Tidak perlu antri, masukkan saja tanggal dan cek stok alat secara
               realtime.
             </p>
           </div>
         </div>
         <div className="flex items-center gap-4 stagger-item" data-index="1">
-          <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
+          <div className="flex items-center justify-center shrink-0 lg:w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -56,17 +56,17 @@ export default function BenefitsSection() {
             </svg>
           </div>
           <div className="flex flex-col gap-[5px]">
-            <p className="font-bold text-lg leading-[27px] text-dark">
+            <p className="font-bold text-sm lg:text-lg leading-[27px] text-dark">
               Mudah dan Fleksibel
             </p>
-            <p className="text-sm leading-[24px] text-dark">
+            <p className="text-xs lg:text-sm leading-[24px] text-dark">
               Identitas luar daerah? Tidak masalah. Sewa mendadak tanpa
               terdaftar? Bisa. Sewa tanpa jaminan? Tentu saja!
             </p>
           </div>
         </div>
         <div className="flex items-center gap-4 stagger-item" data-index="2">
-          <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
+          <div className="flex items-center justify-center shrink-0 lg:w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -82,17 +82,17 @@ export default function BenefitsSection() {
             </svg>
           </div>
           <div className="flex flex-col gap-[5px]">
-            <p className="font-bold text-lg leading-[27px] text-dark">
+            <p className="font-bold text-sm lg:text-lg leading-[27px] text-dark">
               Cepat & Praktis
             </p>
-            <p className="text-sm leading-[24px] text-dark">
+            <p className="text-xs lg:text-sm leading-[24px] text-dark">
               Booking online 24 jam, ambil & kembalikan alat 24 jam. Pembayaran
               Mudah. Notifikasi status order otomatis via WhatsApp."
             </p>
           </div>
         </div>
         <div className="flex items-center gap-4 stagger-item" data-index="3">
-          <div className="flex items-center justify-center shrink-0 w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
+          <div className="flex items-center justify-center shrink-0 lg:w-[70px] h-[70px] rounded-[23px] bg-white overflow-hidden">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -108,10 +108,10 @@ export default function BenefitsSection() {
             </svg>
           </div>
           <div className="flex flex-col gap-[5px]">
-            <p className="font-bold text-lg leading-[27px] text-dark">
+            <p className="font-bold text-sm lg:text-lg leading-[27px] text-dark">
               Berpengalaman & Handal
             </p>
-            <p className="text-sm leading-[24px] text-dark">
+            <p className="text-xs lg:text-sm leading-[24px] text-dark">
               Dengan pengalaman belasan tahun di industri foto dan video, kami
               tidak hanya menyewakan, tetapi juga menjadi rekan yang memahami
               kebutuhan Anda.
