@@ -4,9 +4,7 @@ import { Pagination } from "swiper/modules";
 
 import NavCard from "../components/navCard";
 import { useParams, Link } from "react-router-dom";
-import {
-  MdArrowBack,
-} from "react-icons/md";
+import { MdArrowBack } from "react-icons/md";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { STORAGE_BASE_URL } from "../api/constants";
@@ -27,7 +25,7 @@ import {
   isBundlingAvailable,
   getBundlingAvailableQuantity,
   getBundlingAvailabilityText,
-  isProductAvailable
+  isProductAvailable,
 } from "../utils/availabilityUtils";
 import { useBookingDatesContext } from "../contexts/BookingDatesContext";
 import { useDebouncedBookingDates } from "../hooks/useDebounce";
@@ -50,47 +48,48 @@ type PhotoWithProductName = (ProductPhoto | BundlingPhoto) & {
 
 // API fetch function with proper error handling and typing
 const fetchBundling = async (
-  slug: string | undefined, 
-  startDate?: string, 
+  slug: string | undefined,
+  startDate?: string,
   endDate?: string
 ): Promise<Bundling> => {
   if (!slug) {
     throw new Error("No slug provided");
   }
-  
+
   try {
     const params: Record<string, string> = {};
     if (startDate && endDate) {
       params.start_date = startDate;
       params.end_date = endDate;
     }
-    
+
     const { data } = await axiosInstance.get(`/bundling/${slug}`, {
       params,
-      timeout: 10000
+      timeout: 10000,
     });
-    
+
     if (!data?.data) {
       throw new Error("Bundling tidak ditemukan");
     }
-    
+
     return data.data as Bundling;
   } catch (error) {
-    console.error('❌ Error fetching bundling:', error);
+    console.error("❌ Error fetching bundling:", error);
     throw error;
   }
 };
 
 export default function BundlingDetails(): JSX.Element {
   const { slug } = useParams<{ slug: string }>();
-  
+
   // Component state with proper TypeScript typing
   const [quantity, setQuantity] = useState<number>(1);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [expandedSpecs, setExpandedSpecs] = useState<ExpandedSpecsState>({});
-  const [isLoadingAvailability, setIsLoadingAvailability] = useState<boolean>(false);
-  
+  const [isLoadingAvailability, setIsLoadingAvailability] =
+    useState<boolean>(false);
+
   // Global persistent date management using context
   const {
     startDate,
@@ -101,24 +100,23 @@ export default function BundlingDetails(): JSX.Element {
     areDatesSelected,
     formattedDateRange,
     updateCount,
-    lastUpdateTime
+    lastUpdateTime,
   } = useBookingDatesContext();
-  
+
   // Debug logging only in development mode
   useEffect((): void => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       try {
-        console.log('📦 BundlingDetails: Date state update:', {
+        console.log("📦 BundlingDetails: Date state update:", {
           dates: { startDate, endDate },
           isValid: isDateRangeValid,
-          selected: areDatesSelected
+          selected: areDatesSelected,
         });
       } catch (error) {
-        console.error('❌ Error in debug logging:', error);
+        console.error("❌ Error in debug logging:", error);
       }
     }
   }, [startDate, endDate, isDateRangeValid, areDatesSelected]);
-  
 
   // Debounce date changes to prevent excessive API calls
   // Increased delay to 3 seconds for better performance
@@ -127,32 +125,37 @@ export default function BundlingDetails(): JSX.Element {
     endDate,
     3000 // 3 second delay - reduced API calls
   );
-  
+
   // Format dates consistently for API calls (YYYY-MM-DD)
   const formatDateForAPI = (dateStr: string | null): string | undefined => {
     if (!dateStr) return undefined;
     const date = new Date(dateStr);
     if (isNaN(date.getTime())) return undefined;
-    
+
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
     return `${year}-${month}-${day}`;
   };
-  
+
   // Only use debounced dates for API calls when both dates are present
   const shouldFetchWithDates = useMemo(() => {
     return !!(debouncedStartDate && debouncedEndDate && areDatesSelected);
   }, [debouncedStartDate, debouncedEndDate, areDatesSelected]);
-  
-  const apiStartDate = shouldFetchWithDates ? formatDateForAPI(debouncedStartDate) : undefined;
-  const apiEndDate = shouldFetchWithDates ? formatDateForAPI(debouncedEndDate) : undefined;
-  
+
+  const apiStartDate = shouldFetchWithDates
+    ? formatDateForAPI(debouncedStartDate)
+    : undefined;
+  const apiEndDate = shouldFetchWithDates
+    ? formatDateForAPI(debouncedEndDate)
+    : undefined;
+
   // Debug logging for React Query parameters - development only
   useEffect((): void => {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 BundlingDetails: React Query update:', {
-        slug, apiDates: { apiStartDate, apiEndDate }
+    if (process.env.NODE_ENV === "development") {
+      console.log("🔍 BundlingDetails: React Query update:", {
+        slug,
+        apiDates: { apiStartDate, apiEndDate },
       });
     }
   }, [slug, apiStartDate, apiEndDate]);
@@ -166,22 +169,30 @@ export default function BundlingDetails(): JSX.Element {
   } = useQuery<Bundling, Error>({
     queryKey: ["bundling", slug, apiStartDate, apiEndDate],
     queryFn: () => {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🌐 BundlingDetails: Fetching data:', { slug, apiStartDate, apiEndDate });
+      if (process.env.NODE_ENV === "development") {
+        console.log("🌐 BundlingDetails: Fetching data:", {
+          slug,
+          apiStartDate,
+          apiEndDate,
+        });
       }
-      return fetchBundling(slug, apiStartDate || undefined, apiEndDate || undefined);
+      return fetchBundling(
+        slug,
+        apiStartDate || undefined,
+        apiEndDate || undefined
+      );
     },
     enabled: !!slug, // Only run when slug exists - dates are optional
   });
-  
+
   // Monitor React Query state changes - development only
   useEffect((): void => {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       if (bundling) {
-        console.log('✅ BundlingDetails: Data loaded:', bundling.name);
+        console.log("✅ BundlingDetails: Data loaded:", bundling.name);
       }
       if (isError && error) {
-        console.error('❌ BundlingDetails: Query error:', error.message);
+        console.error("❌ BundlingDetails: Query error:", error.message);
       }
     }
   }, [bundling, isError, error]);
@@ -224,39 +235,50 @@ export default function BundlingDetails(): JSX.Element {
 
   // Calculate bundling availability using proper utils
   const bundlingAvailability: BundlingAvailability = useMemo(() => {
-    if (!bundling) return { isAvailable: false, availableQuantity: 0, unavailableProducts: [], text: 'Tidak tersedia' };
-    
+    if (!bundling)
+      return {
+        isAvailable: false,
+        availableQuantity: 0,
+        unavailableProducts: [],
+        text: "Tidak tersedia",
+      };
+
     const isAvailable = isBundlingAvailable(bundling);
     const availableQuantity = getBundlingAvailableQuantity(bundling);
     const availabilityText = getBundlingAvailabilityText(bundling);
-    
+
     // Find products that are not available
     const unavailableProducts = bundling.products.filter(
       (product) => !isProductAvailable(product)
     );
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('📦 Bundling availability:', {
+
+    if (process.env.NODE_ENV === "development") {
+      console.log("📦 Bundling availability:", {
         name: bundling.name,
         isAvailable,
-        availableQuantity
+        availableQuantity,
       });
     }
-    
+
     return {
       isAvailable,
       availableQuantity,
       unavailableProducts,
-      text: availabilityText.text
+      text: availabilityText.text,
     };
   }, [bundling, startDate, endDate]);
 
   // State for updated availability from form submission
-  const [currentAvailability, setCurrentAvailability] = useState<{ isAvailable: boolean; quantity: number } | null>(null);
-  
+  const [currentAvailability, setCurrentAvailability] = useState<{
+    isAvailable: boolean;
+    quantity: number;
+  } | null>(null);
+
   // Extract values for easier access - use updated availability if available
-  const isAvailable = currentAvailability?.isAvailable ?? bundlingAvailability.isAvailable;
-  const availableQuantity = currentAvailability?.quantity ?? bundlingAvailability.availableQuantity;
+  const isAvailable =
+    currentAvailability?.isAvailable ?? bundlingAvailability.isAvailable;
+  const availableQuantity =
+    currentAvailability?.quantity ?? bundlingAvailability.availableQuantity;
   const unavailableProducts = bundlingAvailability.unavailableProducts;
 
   const formattedPrice: string = useMemo(() => {
@@ -573,7 +595,10 @@ export default function BundlingDetails(): JSX.Element {
               </div>
 
               {/* Kolom 2: Info Bundling */}
-              <div className="lg:col-span-2 space-y-6 scroll-fade-in" data-delay="200">
+              <div
+                className="lg:col-span-2 space-y-6 scroll-fade-in"
+                data-delay="200"
+              >
                 {/* Availability Status */}
                 <div className="flex items-center justify-between">
                   <span
@@ -589,7 +614,9 @@ export default function BundlingDetails(): JSX.Element {
                         isAvailable ? "bg-green-500" : "bg-red-500"
                       }`}
                     ></span>
-                    {isAvailable ? `Tersedia (${availableQuantity} paket)` : "Tidak Tersedia"}
+                    {isAvailable
+                      ? `Tersedia (${availableQuantity} paket)`
+                      : "Tidak Tersedia"}
                   </span>
                 </div>
 
@@ -605,11 +632,11 @@ export default function BundlingDetails(): JSX.Element {
                       </span>
                     )}
                   </div>
-                  
+
                   <h1 className="font-bold text-2xl lg:text-3xl text-gray-900 leading-tight">
                     {bundling.name}
                   </h1>
-                  
+
                   <p className="text-lg text-gray-600">
                     {bundling.products.length} produk dalam paket
                   </p>
@@ -643,7 +670,9 @@ export default function BundlingDetails(): JSX.Element {
                     <div className="flex items-start space-x-2">
                       <div className="flex-shrink-0">
                         <span className="inline-flex items-center justify-center w-5 h-5 bg-red-500 rounded-full">
-                          <span className="text-white text-xs font-bold">!</span>
+                          <span className="text-white text-xs font-bold">
+                            !
+                          </span>
                         </span>
                       </div>
                       <div className="flex-1">
@@ -671,27 +700,30 @@ export default function BundlingDetails(): JSX.Element {
                   isLoadingAvailability={isLoading || isLoadingAvailability}
                   isAvailable={isAvailable}
                   availableQuantity={availableQuantity}
-                  onAvailabilityUpdate={(newIsAvailable, newAvailableQuantity) => {
-                    if (process.env.NODE_ENV === 'development') {
-                      console.log('🔄 BundlingDetails: Availability updated:', {
+                  onAvailabilityUpdate={(
+                    newIsAvailable,
+                    newAvailableQuantity
+                  ) => {
+                    if (process.env.NODE_ENV === "development") {
+                      console.log("🔄 BundlingDetails: Availability updated:", {
                         newIsAvailable,
-                        newAvailableQuantity
+                        newAvailableQuantity,
                       });
                     }
                     setCurrentAvailability({
                       isAvailable: newIsAvailable,
-                      quantity: newAvailableQuantity
+                      quantity: newAvailableQuantity,
                     });
                   }}
                 />
               </div>
             </div>
-            
+
             {/* Additional Information Section */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start mt-8">
               {/* Empty space for columns 1-3 */}
               <div className="lg:col-span-3 hidden lg:block"></div>
-              
+
               {/* Bundling Benefits in columns 4-5 */}
               <div className="lg:col-span-2">
                 <section className="bg-white rounded-xl shadow-sm border overflow-hidden">
@@ -701,57 +733,105 @@ export default function BundlingDetails(): JSX.Element {
                       Keuntungan Bundling:
                     </h2>
                   </div>
-                  
+
                   <div className="p-6">
                     <div className="space-y-4">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Hemat Biaya</p>
-                          <p className="text-sm text-gray-600">Lebih murah dibanding sewa produk terpisah</p>
+                          <p className="font-medium text-gray-900">
+                            Hemat Biaya
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Lebih murah dibanding sewa produk terpisah
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Satu Paket Lengkap</p>
-                          <p className="text-sm text-gray-600">Semua peralatan sudah disesuaikan satu sama lain</p>
+                          <p className="font-medium text-gray-900">
+                            Satu Paket Lengkap
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Semua peralatan sudah disesuaikan satu sama lain
+                          </p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                          <svg
+                            className="w-3 h-3 text-white"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">Proses Mudah</p>
-                          <p className="text-sm text-gray-600">Satu kali booking untuk semua kebutuhan</p>
+                          <p className="font-medium text-gray-900">
+                            Proses Mudah
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Satu kali booking untuk semua kebutuhan
+                          </p>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                       <div className="flex items-start space-x-3">
                         <div className="flex-shrink-0">
-                          <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          <svg
+                            className="w-5 h-5 text-blue-600"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path
+                              fillRule="evenodd"
+                              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                              clipRule="evenodd"
+                            />
                           </svg>
                         </div>
                         <div className="flex-1">
-                          <h4 className="text-sm font-medium text-blue-900">Informasi Penting</h4>
+                          <h4 className="text-sm font-medium text-blue-900">
+                            Informasi Penting
+                          </h4>
                           <p className="text-sm text-blue-700 mt-1">
-                            Semua produk dalam bundling sudah dicek kompatibilitasnya. Peralatan akan dikirim dalam kondisi siap pakai dan sudah dikalibrasi.
+                            Semua produk dalam bundling sudah dicek
+                            kompatibilitasnya. Peralatan akan dikirim dalam
+                            kondisi siap pakai dan sudah dikalibrasi.
                           </p>
                         </div>
                       </div>
@@ -763,7 +843,7 @@ export default function BundlingDetails(): JSX.Element {
           </main>
         </div>
       </AnimatedPulseBorder>
-      
+
       {/* Mobile Bottom Action Bar - positioned above footer */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-30 md:hidden">
         <div className="max-w-[640px] mx-auto px-4 py-3">
@@ -777,9 +857,11 @@ export default function BundlingDetails(): JSX.Element {
                 </span>
               </div>
               <div className="text-xs text-green-600">
-                💰 Hemat {formatPrice(
+                💰 Hemat{" "}
+                {formatPrice(
                   bundling.products.reduce(
-                    (total, product) => total + product.price * product.quantity,
+                    (total, product) =>
+                      total + product.price * product.quantity,
                     0
                   ) - bundling.price
                 )}
@@ -799,8 +881,12 @@ export default function BundlingDetails(): JSX.Element {
                 }`}
                 {...(!isAvailable && { "aria-disabled": "true" })}
               >
-                <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488"/>
+                <svg
+                  className="w-4 h-4 mr-2"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.488" />
                 </svg>
                 {isAvailable ? "Sewa Bundling" : "Tidak Tersedia"}
               </a>

@@ -8,21 +8,20 @@ interface BundlingCardProps {
 }
 
 const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
-
   // Get thumbnail - prioritize bundling photos first, then product photos as fallback
   const getThumbnail = () => {
     // First priority: bundling photos
     if (bundling.bundlingPhotos && bundling.bundlingPhotos.length > 0) {
       return `${STORAGE_BASE_URL}/${bundling.bundlingPhotos[0].photo}`;
     }
-    
+
     // Fallback: product photos
     for (const product of bundling.products) {
       if (product.productPhotos && product.productPhotos.length > 0) {
         return `${STORAGE_BASE_URL}/${product.productPhotos[0].photo}`;
       }
     }
-    
+
     // Final fallback: placeholder
     return "/placeholder-image.jpg";
   };
@@ -62,7 +61,7 @@ const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
       {/* Content */}
       <div className="p-2 md:p-3 lg:p-4 flex-grow flex flex-col transition-all duration-300 group-hover:transform group-hover:translate-y-[-2px]">
         {/* Title */}
-        <h3 className="font-bold text-sm md:text-base lg:text-lg text-support-primary mb-1 md:mb-2 line-clamp-2 flex-shrink-0 transition-all duration-300 group-hover:text-navy-blue-800">
+        <h3 className="font-extralight text-xs text-support-primary mb-1 md:mb-2 line-clamp-2 flex-shrink-0 transition-all duration-300 group-hover:text-navy-blue-800">
           {bundling.name}
         </h3>
 
@@ -100,7 +99,7 @@ const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
         {/* Price */}
         <div className="flex items-center justify-between mt-auto flex-shrink-0">
           <div>
-            <p className="font-bold text-sm md:text-base lg:text-lg text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
+            <p className="font-extralight text-xs  text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
               {formatPrice(bundling.price)}
             </p>
             <p className="text-[10px] md:text-xs text-support-tertiary">

@@ -29,7 +29,9 @@ interface MobileFilterDialogProps {
   tempFilter: FilterData;
   setTempFilter: React.Dispatch<React.SetStateAction<FilterData>>;
   tempPriceRange: PriceRangeData | null;
-  setTempPriceRange: React.Dispatch<React.SetStateAction<PriceRangeData | null>>;
+  setTempPriceRange: React.Dispatch<
+    React.SetStateAction<PriceRangeData | null>
+  >;
   priceBounds: PriceRangeData;
   categoryOptions: FilterOption[];
   brandOptions: FilterOption[];
@@ -69,7 +71,7 @@ export default function MobileFilterDialog({
           className="relative ml-auto flex h-full max-w-xs transform flex-col overflow-y-auto bg-white py-4 pb-6 shadow-xl transition duration-300 ease-in-out data-[closed]:translate-x-full w-full"
         >
           <div className="flex items-center justify-between px-4">
-            <h2 className="text-lg font-medium text-gray-900">Filters</h2>
+            <h2 className="text-xs font-extralight text-gray-900">Filters</h2>
             <button
               type="button"
               onClick={onClose}

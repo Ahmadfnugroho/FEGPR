@@ -87,7 +87,10 @@ interface EnhancedBookingFormProps {
   isLoadingAvailability?: boolean;
   isAvailable?: boolean;
   availableQuantity?: number;
-  onAvailabilityUpdate?: (isAvailable: boolean, availableQuantity: number) => void;
+  onAvailabilityUpdate?: (
+    isAvailable: boolean,
+    availableQuantity: number
+  ) => void;
 }
 
 const EnhancedBookingForm = memo(function EnhancedBookingForm({
@@ -123,7 +126,8 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
 
   // Availability checking states - simplified
   const [availabilityError, setAvailabilityError] = useState<string>("");
-  const [lastAvailabilityCheck, setLastAvailabilityCheck] = useState<Date | null>(null);
+  const [lastAvailabilityCheck, setLastAvailabilityCheck] =
+    useState<Date | null>(null);
 
   const { addItem, totalItems } = useCart();
   const { checkItemAvailability, isChecking } = useSlugAvailability();
@@ -148,18 +152,18 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
       // Ensure YYYY-MM-DD format for API call
       const formatDateForAPI = (date: Date): string => {
         const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
       };
 
       const startDateStr = formatDateForAPI(dateRange.startDate);
       const endDateStr = formatDateForAPI(dateRange.endDate);
-      
+
       console.log(`🔍 Checking availability for ${type} ${item.slug}:`, {
         startDate: startDateStr,
         endDate: endDateStr,
-        quantity
+        quantity,
       });
 
       // Make API call
@@ -168,7 +172,7 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
           start_date: startDateStr,
           end_date: endDateStr,
         },
-        timeout: 8000
+        timeout: 8000,
       });
 
       const itemData = response.data?.data;
@@ -186,18 +190,20 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
       } else {
         // Bundling availability - minimum available quantity from all products
         if (itemData.products && itemData.products.length > 0) {
-          const productQuantities = itemData.products.map((p: any) => p.available_quantity || 0);
+          const productQuantities = itemData.products.map(
+            (p: any) => p.available_quantity || 0
+          );
           availableQuantity = Math.min(...productQuantities);
           isItemAvailable = availableQuantity >= quantity;
-          
+
           console.log(`📦 Bundling availability:`, {
-            products: itemData.products.map((p: any) => ({ 
-              name: p.name, 
-              available_quantity: p.available_quantity 
+            products: itemData.products.map((p: any) => ({
+              name: p.name,
+              available_quantity: p.available_quantity,
             })),
             minQuantity: availableQuantity,
             requestedQuantity: quantity,
-            isAvailable: isItemAvailable
+            isAvailable: isItemAvailable,
           });
         }
       }
@@ -205,28 +211,34 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
       // Update states
       setIsBookingValid(isItemAvailable);
       setLastAvailabilityCheck(new Date());
-      
+
       if (isItemAvailable) {
         setSubmitSuccess(true);
-        setSubmitMessage(`✅ Tersedia ${availableQuantity} ${type === 'product' ? 'unit' : 'paket'}!`);
+        setSubmitMessage(
+          `✅ Tersedia ${availableQuantity} ${
+            type === "product" ? "unit" : "paket"
+          }!`
+        );
         setTimeout(() => {
           setSubmitSuccess(false);
           setSubmitMessage("");
         }, 2000);
       } else {
-        const message = availableQuantity === 0
-          ? `Tidak tersedia untuk periode ${startDateStr} sampai ${endDateStr}`
-          : `Ketersediaan terbatas! Hanya tersedia ${availableQuantity} ${type === "product" ? "unit" : "paket"}`;
+        const message =
+          availableQuantity === 0
+            ? `Tidak tersedia untuk periode ${startDateStr} sampai ${endDateStr}`
+            : `Ketersediaan terbatas! Hanya tersedia ${availableQuantity} ${
+                type === "product" ? "unit" : "paket"
+              }`;
         setValidationError(message);
       }
-      
+
       // Notify parent component
       if (onAvailabilityUpdate) {
         onAvailabilityUpdate(isItemAvailable, availableQuantity);
       }
-      
     } catch (error: any) {
-      console.error('❌ Availability check failed:', error);
+      console.error("❌ Availability check failed:", error);
       setAvailabilityError("Gagal memeriksa ketersediaan. Silakan coba lagi.");
       setIsBookingValid(false);
     } finally {
@@ -242,7 +254,7 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
   const isAvailabilityCheckNeeded = (): boolean => {
     if (!dateRange.startDate || !dateRange.endDate) return false;
     if (!lastAvailabilityCheck) return true;
-    
+
     // Reduced refresh interval - check only if more than 2 minutes have passed
     const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
     return lastAvailabilityCheck < twoMinutesAgo;
@@ -298,36 +310,48 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
   // }, [dateRange, quantity, duration, isBookingValid, validationError]);
 
   // Auto-check availability when date range changes - with stability check
-  const stableDateRange = useMemo(() => ({
-    startDate: dateRange.startDate,
-    endDate: dateRange.endDate
-  }), [dateRange.startDate?.getTime(), dateRange.endDate?.getTime()]);
+  const stableDateRange = useMemo(
+    () => ({
+      startDate: dateRange.startDate,
+      endDate: dateRange.endDate,
+    }),
+    [dateRange.startDate?.getTime(), dateRange.endDate?.getTime()]
+  );
 
   useEffect(() => {
     // Reset validation when dates change
     clearValidation();
-    
+
     // Only proceed if both dates are selected
     if (!stableDateRange.startDate || !stableDateRange.endDate) return;
-    
+
     // Add small delay to prevent rapid API calls during date selection
     const timeoutId = setTimeout(() => {
       checkAvailability();
     }, 800); // Further increased delay to 800ms
-    
+
     return () => clearTimeout(timeoutId);
-    
   }, [stableDateRange.startDate, stableDateRange.endDate, quantity]);
 
   // Basic form validation for display only - optimized with stable dependency
-  const validationDeps = useMemo(() => ({
-    startDate: dateRange.startDate?.getTime(),
-    endDate: dateRange.endDate?.getTime(),
-    quantity,
-    isAvailable,
-    availableQuantity,
-    type,
-  }), [dateRange.startDate?.getTime(), dateRange.endDate?.getTime(), quantity, isAvailable, availableQuantity, type]);
+  const validationDeps = useMemo(
+    () => ({
+      startDate: dateRange.startDate?.getTime(),
+      endDate: dateRange.endDate?.getTime(),
+      quantity,
+      isAvailable,
+      availableQuantity,
+      type,
+    }),
+    [
+      dateRange.startDate?.getTime(),
+      dateRange.endDate?.getTime(),
+      quantity,
+      isAvailable,
+      availableQuantity,
+      type,
+    ]
+  );
 
   useEffect(() => {
     const validateForm = () => {
@@ -378,18 +402,18 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
   const handleAddToCart = useCallback(() => {
     // Use global context dates (should be set after form submission)
     if (!dateRange.startDate || !dateRange.endDate) {
-      console.warn('Cannot add to cart - no global dates:', {
+      console.warn("Cannot add to cart - no global dates:", {
         hasGlobalStartDate: !!dateRange.startDate,
         hasGlobalEndDate: !!dateRange.endDate,
-        message: 'Submit tanggal rental terlebih dahulu'
+        message: "Submit tanggal rental terlebih dahulu",
       });
       return;
     }
-    
+
     if (!isAvailable) {
-      console.warn('Cannot add to cart - item not available:', {
+      console.warn("Cannot add to cart - item not available:", {
         isAvailable,
-        message: 'Item tidak tersedia untuk tanggal yang dipilih'
+        message: "Item tidak tersedia untuk tanggal yang dipilih",
       });
       return;
     }
@@ -413,12 +437,21 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
     };
 
     addItem(cartItem);
-    console.log('✅ Item added to cart:', cartItem);
-  }, [type, item, quantity, dateRange.startDate, dateRange.endDate, duration, isAvailable, addItem]);
+    console.log("✅ Item added to cart:", cartItem);
+  }, [
+    type,
+    item,
+    quantity,
+    dateRange.startDate,
+    dateRange.endDate,
+    duration,
+    isAvailable,
+    addItem,
+  ]);
 
   // Memoized price calculation to prevent unnecessary recalculation
-  const totalPrice = useMemo(() => 
-    calculateRentalPrice(item.price, quantity, duration), 
+  const totalPrice = useMemo(
+    () => calculateRentalPrice(item.price, quantity, duration),
     [item.price, quantity, duration]
   );
 
@@ -533,7 +566,7 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
               <span>{formatRentalDuration(duration)}</span>
             </div>
             <hr className="border-blue-200" />
-            <div className="flex justify-between font-semibold text-lg text-blue-600">
+            <div className="flex justify-between font-semibold text-xs text-blue-600">
               <span>Total:</span>
               <span>{formatPrice(totalPrice)}</span>
             </div>
@@ -550,7 +583,7 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
           </div>
         </div>
       )}
-      
+
       {/* Validation Error */}
       {validationError && !submitSuccess && (
         <div className="mb-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
@@ -567,9 +600,17 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={!dateRange.startDate || !dateRange.endDate || !isAvailable || isLoading}
+          disabled={
+            !dateRange.startDate ||
+            !dateRange.endDate ||
+            !isAvailable ||
+            isLoading
+          }
           className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-white transition-all duration-200 ${
-            dateRange.startDate && dateRange.endDate && isAvailable && !isLoading
+            dateRange.startDate &&
+            dateRange.endDate &&
+            isAvailable &&
+            !isLoading
               ? "bg-blue-600 hover:bg-blue-700 hover:shadow-lg transform hover:scale-[1.02]"
               : "bg-gray-400 cursor-not-allowed"
           }`}
@@ -577,10 +618,10 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
             !dateRange.startDate || !dateRange.endDate
               ? "Pilih tanggal rental terlebih dahulu"
               : !isAvailable
-                ? "Item tidak tersedia untuk tanggal yang dipilih"
-                : isLoading
-                  ? "Tunggu proses selesai"
-                  : "Tambah ke keranjang belanja"
+              ? "Item tidak tersedia untuk tanggal yang dipilih"
+              : isLoading
+              ? "Tunggu proses selesai"
+              : "Tambah ke keranjang belanja"
           }
         >
           <ShoppingCartIcon className="h-5 w-5 mr-2" />
@@ -596,13 +637,16 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
           ) : (
             "Tambah ke Keranjang"
           )}
-          {totalItems > 0 && dateRange.startDate && dateRange.endDate && isAvailable && (
-            <span className="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
-              {totalItems}
-            </span>
-          )}
+          {totalItems > 0 &&
+            dateRange.startDate &&
+            dateRange.endDate &&
+            isAvailable && (
+              <span className="ml-2 bg-white text-blue-600 px-2 py-1 rounded-full text-sm font-bold">
+                {totalItems}
+              </span>
+            )}
         </button>
-        
+
         {/* Status Information - Simplified */}
         <div className="text-center space-y-1">
           {submitSuccess ? (
@@ -626,11 +670,12 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
               ✨ Siap ditambahkan ke keranjang
             </p>
           )}
-          
+
           {/* Current global dates display */}
           {dateRange.startDate && dateRange.endDate && (
             <p className="text-xs text-blue-500">
-              📅 Periode: {dateRange.startDate.toLocaleDateString('id-ID')} - {dateRange.endDate.toLocaleDateString('id-ID')}
+              📅 Periode: {dateRange.startDate.toLocaleDateString("id-ID")} -{" "}
+              {dateRange.endDate.toLocaleDateString("id-ID")}
             </p>
           )}
         </div>

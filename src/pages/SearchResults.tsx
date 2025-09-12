@@ -1,36 +1,40 @@
 // src/pages/SearchResults.tsx
-import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { useAdvancedSearch } from '../hooks/useAdvancedSearch';
-import { SearchFilters } from '../utils/searchUtils';
-import { STORAGE_BASE_URL } from '../api/constants';
-import { highlightMatches } from '../utils/searchUtils';
-import LoadingSpinner from '../components/LoadingSpinner';
-import { MagnifyingGlassIcon, FunnelIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { useState, useEffect } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { useAdvancedSearch } from "../hooks/useAdvancedSearch";
+import { SearchFilters } from "../utils/searchUtils";
+import { STORAGE_BASE_URL } from "../api/constants";
+import { highlightMatches } from "../utils/searchUtils";
+import LoadingSpinner from "../components/LoadingSpinner";
+import {
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 export default function SearchResults() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showFilters, setShowFilters] = useState(false);
-  
-  const query = searchParams.get('q') || '';
-  const categoryParam = searchParams.get('category');
-  const brandParam = searchParams.get('brand');
-  const typeParam = searchParams.get('type');
+
+  const query = searchParams.get("q") || "";
+  const categoryParam = searchParams.get("category");
+  const brandParam = searchParams.get("brand");
+  const typeParam = searchParams.get("type");
 
   // Initialize filters from URL params
   const [filters, setFilters] = useState<SearchFilters>(() => {
     const initialFilters: SearchFilters = {};
-    
+
     if (categoryParam) {
-      initialFilters.category = categoryParam.split(',');
+      initialFilters.category = categoryParam.split(",");
     }
     if (brandParam) {
-      initialFilters.brand = brandParam.split(',');
+      initialFilters.brand = brandParam.split(",");
     }
     if (typeParam) {
-      initialFilters.type = typeParam.split(',') as ('product' | 'bundling')[];
+      initialFilters.type = typeParam.split(",") as ("product" | "bundling")[];
     }
-    
+
     return initialFilters;
   });
 
@@ -40,39 +44,39 @@ export default function SearchResults() {
     isSearching,
     setQuery,
     setFilters: updateFilters,
-    error
+    error,
   } = useAdvancedSearch({
     initialQuery: query,
     initialFilters: filters,
-    debounceMs: 200
+    debounceMs: 200,
   });
 
   // Update URL when filters change
   useEffect(() => {
     const params = new URLSearchParams(searchParams);
-    
+
     if (query) {
-      params.set('q', query);
+      params.set("q", query);
     } else {
-      params.delete('q');
+      params.delete("q");
     }
 
     if (filters.category && filters.category.length > 0) {
-      params.set('category', filters.category.join(','));
+      params.set("category", filters.category.join(","));
     } else {
-      params.delete('category');
+      params.delete("category");
     }
 
     if (filters.brand && filters.brand.length > 0) {
-      params.set('brand', filters.brand.join(','));
+      params.set("brand", filters.brand.join(","));
     } else {
-      params.delete('brand');
+      params.delete("brand");
     }
 
     if (filters.type && filters.type.length > 0) {
-      params.set('type', filters.type.join(','));
+      params.set("type", filters.type.join(","));
     } else {
-      params.delete('type');
+      params.delete("type");
     }
 
     setSearchParams(params, { replace: true });
@@ -90,9 +94,9 @@ export default function SearchResults() {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -135,14 +139,14 @@ export default function SearchResults() {
                 </p>
               )}
             </div>
-            
+
             {/* Filter Toggle */}
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium transition-colors ${
-                showFilters 
-                  ? 'bg-blue-50 text-blue-700 border-blue-300' 
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
+                showFilters
+                  ? "bg-blue-50 text-blue-700 border-blue-300"
+                  : "bg-white text-gray-700 hover:bg-gray-50"
               }`}
             >
               <FunnelIcon className="h-5 w-5" />
@@ -160,10 +164,14 @@ export default function SearchResults() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="lg:grid lg:grid-cols-4 lg:gap-8">
           {/* Filters Sidebar */}
-          <div className={`lg:col-span-1 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+          <div
+            className={`lg:col-span-1 ${
+              showFilters ? "block" : "hidden lg:block"
+            }`}
+          >
             <div className="bg-white rounded-lg shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Filter</h3>
+                <h3 className="text-xs font-medium text-gray-900">Filter</h3>
                 {activeFilterCount > 0 && (
                   <button
                     onClick={clearAllFilters}
@@ -179,22 +187,31 @@ export default function SearchResults() {
                 <h4 className="text-sm font-medium text-gray-900 mb-3">Tipe</h4>
                 <div className="space-y-2">
                   {[
-                    { value: 'product', label: 'Produk' },
-                    { value: 'bundling', label: 'Bundling' }
+                    { value: "product", label: "Produk" },
+                    { value: "bundling", label: "Bundling" },
                   ].map(({ value, label }) => (
                     <label key={value} className="flex items-center">
                       <input
                         type="checkbox"
                         className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        checked={filters.type?.includes(value as 'product' | 'bundling') || false}
+                        checked={
+                          filters.type?.includes(
+                            value as "product" | "bundling"
+                          ) || false
+                        }
                         onChange={(e) => {
                           const newTypes = e.target.checked
-                            ? [...(filters.type || []), value as 'product' | 'bundling']
-                            : (filters.type || []).filter(t => t !== value);
+                            ? [
+                                ...(filters.type || []),
+                                value as "product" | "bundling",
+                              ]
+                            : (filters.type || []).filter((t) => t !== value);
                           handleFilterChange({ ...filters, type: newTypes });
                         }}
                       />
-                      <span className="ml-2 text-sm text-gray-700">{label}</span>
+                      <span className="ml-2 text-sm text-gray-700">
+                        {label}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -207,14 +224,19 @@ export default function SearchResults() {
                     Filter Aktif
                   </h4>
                   <div className="space-y-2">
-                    {filters.type?.map(type => (
-                      <div key={type} className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg">
+                    {filters.type?.map((type) => (
+                      <div
+                        key={type}
+                        className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg"
+                      >
                         <span className="text-sm text-blue-800">
-                          {type === 'product' ? 'Produk' : 'Bundling'}
+                          {type === "product" ? "Produk" : "Bundling"}
                         </span>
                         <button
                           onClick={() => {
-                            const newTypes = (filters.type || []).filter(t => t !== type);
+                            const newTypes = (filters.type || []).filter(
+                              (t) => t !== type
+                            );
                             handleFilterChange({ ...filters, type: newTypes });
                           }}
                           className="text-blue-600 hover:text-blue-800"
@@ -256,7 +278,7 @@ export default function SearchResults() {
             {!isSearching && !error && totalResults === 0 && query && (
               <div className="text-center py-12">
                 <MagnifyingGlassIcon className="mx-auto h-16 w-16 text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-xs font-medium text-gray-900 mb-2">
                   Tidak ada hasil ditemukan
                 </h3>
                 <p className="text-gray-600 mb-4">
@@ -293,7 +315,7 @@ export default function SearchResults() {
                       ) : (
                         <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
                           <span className="text-4xl">
-                            {item.type === 'bundling' ? '📦' : '📷'}
+                            {item.type === "bundling" ? "📦" : "📷"}
                           </span>
                         </div>
                       )}
@@ -303,39 +325,35 @@ export default function SearchResults() {
                     <div className="p-4">
                       {/* Type Badge */}
                       <div className="mb-2">
-                        <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                          item.type === 'product'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {item.type === 'product' ? 'Produk' : 'Bundling'}
+                        <span
+                          className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                            item.type === "product"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-blue-100 text-blue-700"
+                          }`}
+                        >
+                          {item.type === "product" ? "Produk" : "Bundling"}
                         </span>
                       </div>
 
                       {/* Name with highlighting */}
-                      <h3 
-                        className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors"
-                        dangerouslySetInnerHTML={{ 
-                          __html: highlightMatches(item.name, query) 
+                      <h3
+                        className="text-xs font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors"
+                        dangerouslySetInnerHTML={{
+                          __html: highlightMatches(item.name, query),
                         }}
                       />
 
                       {/* Category and Brand */}
                       <div className="flex items-center text-sm text-gray-500 mb-3 gap-2">
-                        {item.category && (
-                          <span>{item.category.name}</span>
-                        )}
-                        {item.category && item.brand && (
-                          <span>•</span>
-                        )}
-                        {item.brand && (
-                          <span>{item.brand.name}</span>
-                        )}
+                        {item.category && <span>{item.category.name}</span>}
+                        {item.category && item.brand && <span>•</span>}
+                        {item.brand && <span>{item.brand.name}</span>}
                       </div>
 
                       {/* Price */}
                       {item.price && (
-                        <div className="text-lg font-bold text-blue-600">
+                        <div className="text-xs font-bold text-blue-600">
                           {formatPrice(item.price)}
                         </div>
                       )}
@@ -343,8 +361,8 @@ export default function SearchResults() {
                       {/* Match Score (dev only) */}
                       {import.meta.env.DEV && (
                         <div className="mt-2 text-xs text-gray-400">
-                          Score: {Math.round(item.score * 100)}% | 
-                          Matched: {item.matchedFields.join(', ')}
+                          Score: {Math.round(item.score * 100)}% | Matched:{" "}
+                          {item.matchedFields.join(", ")}
                         </div>
                       )}
                     </div>

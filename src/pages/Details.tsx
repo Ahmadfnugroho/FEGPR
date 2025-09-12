@@ -138,7 +138,7 @@ const ProductImageGallery = memo(
         <div className="w-full h-[400px] md:h-[500px] lg:h-[600px] rounded-xl bg-gray-100 flex items-center justify-center shadow-sm border">
           <div className="text-center">
             <MdError className="w-16 h-16 text-gray-400 mx-auto mb-3" />
-            <span className="text-gray-500 text-lg">
+            <span className="text-gray-500 text-xs">
               Tidak ada gambar tersedia
             </span>
           </div>
@@ -301,7 +301,7 @@ const ProductInfo = memo(
           </h1>
 
           {categoryItems.length > 0 && (
-            <p className="text-lg text-gray-600">{categoryItems.join(" • ")}</p>
+            <p className="text-xs text-gray-600">{categoryItems.join(" • ")}</p>
           )}
         </header>
 
@@ -309,7 +309,7 @@ const ProductInfo = memo(
         <div className="bg-gray-50 rounded-xl p-6 border">
           <p className="text-3xl font-bold text-gray-900 mb-1">
             {formattedPrice}
-            <span className="text-lg font-normal text-gray-600 ml-1">
+            <span className="text-xs font-normal text-gray-600 ml-1">
               /hari
             </span>
           </p>
@@ -798,7 +798,7 @@ export default function Details() {
           <div className="flex items-center justify-between space-x-3">
             {/* Price and Quantity */}
             <div className="flex-1">
-              <div className="text-lg font-bold text-gray-900">
+              <div className="text-xs font-bold text-gray-900">
                 {formattedPrice}
                 <span className="text-sm font-normal text-gray-600 ml-1">
                   /hari

@@ -124,7 +124,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
 
             {/* Content */}
             <div className="flex-1 min-w-0 space-y-4">
-              <h3 className="font-semibold text-gray-900 text-base md:text-lg line-clamp-2 group-hover:text-navy-blue-800 transition-colors">
+              <h3 className="text-gray-900 text-base md:text-xs font-extralight line-clamp-2 group-hover:text-navy-blue-800 transition-colors">
                 {product.name}
               </h3>
 

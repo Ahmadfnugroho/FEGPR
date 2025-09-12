@@ -362,7 +362,7 @@ const DateRangePicker = memo(function DateRangePicker({
               ←
             </button>
 
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-xs font-extralight text-gray-900">
               {currentMonth.toLocaleDateString("id-ID", {
                 month: "long",
                 year: "numeric",
