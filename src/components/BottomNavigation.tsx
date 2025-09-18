@@ -78,11 +78,11 @@ export default function BottomNavigation() {
   return (
     <>
       {/* Safe area spacer for devices with bottom safe area */}
-      <div className="h-20 md:hidden" />
+      <div className="h-20 lg:hidden" />
 
       <nav
         id="Bottom-nav"
-        className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+        className="fixed bottom-0 left-0 right-0 z-50 lg:hidden"
         style={{
           paddingBottom: "env(safe-area-inset-bottom)", // iOS safe area
         }}

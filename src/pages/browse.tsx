@@ -54,14 +54,6 @@ export default function Browse() {
             className="flex flex-col gap-3 mt-2  bg-white/90 backdrop-blur-sm mx-2 rounded-2xl  shadow-md border border-gray-100 scroll-fade-in   md:bg-transparent md:shadow-none md:border-none md:backdrop-blur-none md:mx-0 md:px-0 md:rounded-none"
             data-delay="300"
           >
-            <div className="text-center md:hidden">
-              <h2 className="font-bold text-lg leading-5 text-gray-800 mb-1">
-                🌟 Produk Unggulan
-              </h2>
-              <p className="text-blue-600 text-sm">
-                Direkomendasikan untuk Anda
-              </p>
-            </div>
             <div className="md:scroll-fade-in md:mx-20" data-delay="400">
               <ErrorBoundary>
                 <BrowseProductWrapper />
