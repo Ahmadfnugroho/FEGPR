@@ -169,7 +169,7 @@ const NavCard = memo(function NavCard() {
             </Link>
             <a
               className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-primary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
-              href="http://bit.ly/formglobalphotorental"
+              href="https://admin.globalphotorental.com/register"
               target="_blank"
               rel="noopener noreferrer"
             >
