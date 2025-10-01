@@ -233,7 +233,7 @@ export default function BottomNavigation() {
 
               {/* Registration */}
               <NavItem
-                href="http://bit.ly/formglobalphotorental"
+                href="https://admin.globalphotorental.com/register"
                 badge={wishlistCount}
               >
                 <div className="flex flex-col items-center text-center gap-1 transition-all duration-300 text-gray-500">
