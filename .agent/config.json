@@ -1,0 +1,47 @@
+{
+  "models": {
+    "local": [
+      {
+        "name": "kimi-k2:1t-cloud",
+        "host": "http://localhost:11434"
+      },
+      {
+        "name": "qwen3-coder",
+        "host": "http://localhost:11434"
+      },
+      {
+        "name": "devstral",
+        "host": "http://localhost:11434"
+      }
+    ],
+    "cloud": [],
+    "fallbackOrder": [
+      "local.0",
+      "local.1",
+      "local.2"
+    ]
+  },
+  "policy": {
+    "editMode": "review",
+    "autoApprove": false
+  },
+  "sandbox": {
+    "enabled": true,
+    "whitelist": [
+      "npm",
+      "git",
+      "ls",
+      "dir",
+      "cat",
+      "type",
+      "python",
+      "node"
+    ],
+    "denylistPatterns": [
+      "rm -rf",
+      "del /f",
+      "format",
+      "rmdir /s"
+    ]
+  }
+}
