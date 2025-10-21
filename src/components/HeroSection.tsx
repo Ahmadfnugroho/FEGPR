@@ -9,7 +9,7 @@ export default function HeroSection() {
       >
         <div
           id="Hero-Text"
-          className="relative flex flex-col w-full max-w-[650px] h-fit rounded-[30px] border border-[#E0DEF7] p-10 gap-[30px] bg-white mt-[100px] lg:ml-[calc((100%-1130px)/2)] z-10 scroll-fade-in"
+          className="relative flex flex-col w-full max-w-[650px] h-fit rounded-[30px] border border-[#E0DEF7] p-10 gap-[30px] bg-white mt-[100px]  z-10 scroll-fade-in ml-6"
         >
           <div className="flex items-center w-fit rounded-full py-2 px-4 gap-[10px] bg-text-light-primary">
             <img
@@ -56,7 +56,7 @@ export default function HeroSection() {
             src="/assets/hero-bg.png"
             className="w-full h-full object-cover scale-110"
             alt="hero background"
-            style={{ transform: "scaleX(-1)" }}
+            // style={{ transform: "scaleX(-1)" }}
           />
         </div>
       </section>
