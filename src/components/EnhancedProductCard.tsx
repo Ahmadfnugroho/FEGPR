@@ -168,7 +168,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
           {/* Status badge */}
           <div className="absolute top-3 left-3 z-10">
             <span
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border backdrop-blur-sm ${statusConfig.className}`}
+              className={`inline-flex items-center px-1 py-1 rounded-full text-[8px] font-medium border backdrop-blur-sm  ${statusConfig.className}`}
             >
               <StatusIcon className="w-3 h-3" />
               <span className="hidden sm:inline">{statusConfig.label}</span>
@@ -213,25 +213,27 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
         </div>
 
         {/* Content */}
-        <div className="p-5 flex flex-col h-full... justify-between">
-          <h3 className="font-extralight text-gray-900 text-xs line-clamp-2 group-hover:text-navy-blue-800 transition-colors whitespace-normal break-words text-center h-8">
+        <div className="p-1 flex flex-col h-auto justify-between">
+          <h3 className="font-extralight text-gray-900 text-[10px] line-clamp-2 group-hover:text-navy-blue-800 transition-colors whitespace-normal break-words text-center h-auto">
             {product.name}
           </h3>
 
           {/* Price and action */}
-          <div className="mt-auto">
+          <div className="mt-auto flex flex-col items-center gap-1">
+            {/* Harga */}
             <div className="font-bold text-navy-blue-800 text-center">
-              <span className="text-xs font-extralight">
+              <span className="text-[10px] font-extralight">
                 {formatPrice(product.price)}
               </span>
-              <span className="text-xs font-extralight text-gray-600">
+              <span className="text-[10px] font-extralight text-gray-600">
                 /hari
               </span>
             </div>
 
+            {/* Tombol */}
             {product.status === "available" ? (
               <button
-                className="w-full px-5 py-3 bg-navy-blue-800 text-white rounded-lg text-xs font-thin hover:bg-navy-blue-900 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-navy-blue-800 focus:ring-offset-2 whitespace-nowrap"
+                className="w-3/4 py-1 bg-navy-blue-800 text-white rounded-lg text-[10px] font-thin hover:bg-navy-blue-900 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-navy-blue-800 focus:ring-offset-2 whitespace-nowrap"
                 onClick={(e) => {
                   e.stopPropagation(); // cegah trigger Link parent
                   window.location.href = `/product/${product.slug}`;
@@ -242,7 +244,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
             ) : (
               <button
                 disabled
-                className="w-full px-5 py-3 bg-gray-300 text-gray-500 rounded-lg  text-xs font-thincursor-not-allowed whitespace-nowrap"
+                className="w-3/4 py-1 bg-gray-300 text-gray-500 rounded-lg text-[10px] font-thin cursor-not-allowed whitespace-nowrap"
               >
                 Tidak Tersedia
               </button>

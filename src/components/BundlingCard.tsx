@@ -100,11 +100,9 @@ const BundlingCard: React.FC<BundlingCardProps> = ({ bundling }) => {
         <div className="flex items-center justify-between mt-auto flex-shrink-0">
           <div>
             <p className="font-extralight text-xs  text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
-              {formatPrice(bundling.price)}
+              {formatPrice(bundling.price)} /hari
             </p>
-            <p className="text-[10px] md:text-xs text-support-tertiary">
-              /hari
-            </p>
+            {/* <p className="text-[10px] md:text-xs text-support-tertiary"></p> */}
           </div>
         </div>
       </div>

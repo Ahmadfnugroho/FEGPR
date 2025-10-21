@@ -23,8 +23,7 @@ export default function FloatingWhatsAppButton() {
 
   // WhatsApp URL from footer
   const whatsappUrl =
-    "https://wa.me/6281212349564?text=Halo,%20saya%20mau%20sewa%20kamera";
-
+    "https://wa.me/6281212349564?text=Halo%20admin,%20saya%20mau%20sewa,%0A%0ANama%20Lengkap:%0AAkan%20sewa%20alat:%0A1.%0A2.%0A%0ATanggal%20Pengambilan:%20%0AJam:%20%0A%0ATanggal%20Kembali:%20%0AJam:%20%0A%0AUntuk%20keperluan%20(wajib%20diisi):%20%0A%0AApakah%20tersedia%3F";
   const handleClick = () => {
     if (hasDragged.current) {
       hasDragged.current = false;
