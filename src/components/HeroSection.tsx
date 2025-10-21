@@ -53,7 +53,7 @@ export default function HeroSection() {
           data-delay="200"
         >
           <img
-            src="/assets/hero-bg.png"
+            src="/assets/hero-bg1.png"
             className="w-full h-full object-cover scale-110"
             alt="hero background"
             // style={{ transform: "scaleX(-1)" }}
