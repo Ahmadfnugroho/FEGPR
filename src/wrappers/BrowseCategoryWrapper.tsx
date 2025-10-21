@@ -48,18 +48,18 @@ export default function BrowseCategoryWrapper() {
   }, [fetchCategories]);
 
   // Bundling category
-  const bundlingCategory = {
-    id: 9999,
-    name: "Bundling",
-    slug: "bundling",
-    photo:
-      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop&crop=center&auto=format&q=80",
-    products_count: 0,
-    products: [],
-  };
+  // const bundlingCategory = {
+  //   id: 9999,
+  //   name: "Bundling",
+  //   slug: "bundling",
+  //   photo:
+  //     "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=400&fit=crop&crop=center&auto=format&q=80",
+  //   products_count: 0,
+  //   products: [],
+  // };
 
   const safeCategories = Array.isArray(categories) ? categories : [];
-  const allCategories = [bundlingCategory, ...safeCategories];
+  const allCategories = [...safeCategories];
 
   if (loading) {
     return (
@@ -72,13 +72,13 @@ export default function BrowseCategoryWrapper() {
               spaceBetween={8}
               slidesPerView="auto"
               navigation={{
-                nextEl: '.swiper-button-next-custom-mobile',
-                prevEl: '.swiper-button-prev-custom-mobile',
+                nextEl: ".swiper-button-next-custom-mobile",
+                prevEl: ".swiper-button-prev-custom-mobile",
               }}
-              pagination={{ 
+              pagination={{
                 clickable: true,
                 dynamicBullets: true,
-                dynamicMainBullets: 3
+                dynamicMainBullets: 3,
               }}
               className="category-swiper-compact"
             >
@@ -88,16 +88,36 @@ export default function BrowseCategoryWrapper() {
                 </SwiperSlide>
               ))}
             </Swiper>
-            
+
             {/* Custom Navigation Buttons for Mobile */}
             <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-3 h-3 text-text-light-primary group-hover:text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </div>
             <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                className="w-3 h-3 text-text-light-primary group-hover:text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </div>
           </div>
@@ -117,13 +137,13 @@ export default function BrowseCategoryWrapper() {
               spaceBetween={12}
               slidesPerView="auto"
               navigation={{
-                nextEl: '.swiper-button-next-custom',
-                prevEl: '.swiper-button-prev-custom',
+                nextEl: ".swiper-button-next-custom",
+                prevEl: ".swiper-button-prev-custom",
               }}
-              pagination={{ 
+              pagination={{
                 clickable: true,
                 dynamicBullets: true,
-                dynamicMainBullets: 5
+                dynamicMainBullets: 5,
               }}
               className="category-swiper-compact"
             >
@@ -133,16 +153,36 @@ export default function BrowseCategoryWrapper() {
                 </SwiperSlide>
               ))}
             </Swiper>
-            
+
             {/* Custom Navigation Buttons */}
             <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-4 h-4 text-text-light-primary group-hover:text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </div>
             <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-              <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                className="w-4 h-4 text-text-light-primary group-hover:text-primary"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </div>
           </div>
@@ -165,13 +205,13 @@ export default function BrowseCategoryWrapper() {
             spaceBetween={8}
             slidesPerView="auto"
             navigation={{
-              nextEl: '.swiper-button-next-custom-mobile',
-              prevEl: '.swiper-button-prev-custom-mobile',
+              nextEl: ".swiper-button-next-custom-mobile",
+              prevEl: ".swiper-button-prev-custom-mobile",
             }}
-            pagination={{ 
+            pagination={{
               clickable: true,
               dynamicBullets: true,
-              dynamicMainBullets: 3
+              dynamicMainBullets: 3,
             }}
             touchRatio={1.2}
             simulateTouch={true}
@@ -192,16 +232,36 @@ export default function BrowseCategoryWrapper() {
               </SwiperSlide>
             ))}
           </Swiper>
-          
+
           {/* Custom Navigation Buttons for Mobile - Smaller and more compact */}
           <div className="swiper-button-prev-custom-mobile absolute top-1/2 -translate-y-1/2 left-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-3 h-3 text-text-light-primary group-hover:text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </div>
           <div className="swiper-button-next-custom-mobile absolute top-1/2 -translate-y-1/2 right-1 z-10 w-7 h-7 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-3 h-3 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="w-3 h-3 text-text-light-primary group-hover:text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </div>
         </div>
@@ -227,13 +287,13 @@ export default function BrowseCategoryWrapper() {
             spaceBetween={12}
             slidesPerView="auto"
             navigation={{
-              nextEl: '.swiper-button-next-custom',
-              prevEl: '.swiper-button-prev-custom',
+              nextEl: ".swiper-button-next-custom",
+              prevEl: ".swiper-button-prev-custom",
             }}
-            pagination={{ 
+            pagination={{
               clickable: true,
               dynamicBullets: true,
-              dynamicMainBullets: 5
+              dynamicMainBullets: 5,
             }}
             touchRatio={1.2}
             simulateTouch={true}
@@ -254,16 +314,36 @@ export default function BrowseCategoryWrapper() {
               </SwiperSlide>
             ))}
           </Swiper>
-          
+
           {/* Custom Navigation Buttons for Web */}
           <div className="swiper-button-prev-custom absolute top-1/2 -translate-y-1/2 left-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-4 h-4 text-text-light-primary group-hover:text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </div>
           <div className="swiper-button-next-custom absolute top-1/2 -translate-y-1/2 right-2 z-10 w-8 h-8 bg-white/80 hover:bg-white/90 rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all duration-300 group hover:scale-110">
-            <svg className="w-4 h-4 text-text-light-primary group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            <svg
+              className="w-4 h-4 text-text-light-primary group-hover:text-primary"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
             </svg>
           </div>
         </div>
