@@ -4,10 +4,10 @@ import { memo, useState, useCallback, useEffect } from "react";
 import "swiper/swiper-bundle.css";
 import { STORAGE_BASE_URL } from "../api/constants";
 import { formatPrice } from "../utils/rental-duration-helper";
-import { 
-  getValidProductPhotoUrls, 
+import {
+  getValidProductPhotoUrls,
   hasValidProductPhotos,
-  validateProduct 
+  validateProduct,
 } from "../utils/productValidation";
 
 // Swiper
@@ -61,35 +61,38 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   // Validate and process photos when product changes
   useEffect(() => {
     if (!product) {
-      console.warn('🚨 [ProductCard] Product is null or undefined');
+      console.warn("🚨 [ProductCard] Product is null or undefined");
       setValidatedPhotos(["/images/placeholder-product.png"]);
       setHasPhotos(false);
-      setValidationErrors(['Product is null or undefined']);
+      setValidationErrors(["Product is null or undefined"]);
       return;
     }
 
     // Validate product structure
     const validation = validateProduct(product);
     if (!validation.isValid) {
-      console.warn('🚨 [ProductCard] Product validation failed:', {
+      console.warn("🚨 [ProductCard] Product validation failed:", {
         product: product.name,
-        errors: validation.errors
+        errors: validation.errors,
       });
       setValidationErrors(validation.errors);
     }
 
     // Get valid photo URLs
     const validPhotoUrls = getValidProductPhotoUrls(product);
-    
+
     if (validPhotoUrls.length === 0) {
-      console.log('📷 [ProductCard] No valid photos found, using placeholder:', product.name);
+      console.log(
+        "📷 [ProductCard] No valid photos found, using placeholder:",
+        product.name
+      );
       setValidatedPhotos(["/images/placeholder-product.png"]);
       setHasPhotos(false);
     } else {
-      console.log('📷 [ProductCard] Valid photos found:', {
+      console.log("📷 [ProductCard] Valid photos found:", {
         product: product.name,
         photoCount: validPhotoUrls.length,
-        photos: validPhotoUrls
+        photos: validPhotoUrls,
       });
       setValidatedPhotos(validPhotoUrls);
       setHasPhotos(true);
@@ -104,20 +107,20 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="card">
       <div
-        className="flex flex-col rounded-xl md:rounded-2xl border border-support-subtle bg-base-secondary shadow-md hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group focus-within:ring-2 focus-within:ring-pop-primary cursor-pointer h-[250px] md:h-[300px]"
+        className="flex flex-col rounded-xl md:rounded-2xl border border-support-subtle bg-base-secondary shadow-md hover:shadow-xl hover:translate-y-[-4px] transition-all duration-300 group focus-within:ring-2 focus-within:ring-pop-primary cursor-pointer h-48 md:h-56"
         tabIndex={0}
         aria-label={`Lihat detail produk ${product.name}`}
       >
         {/* Thumbnail Carousel */}
-        <div className="thumbnail-container relative w-full aspect-[4/3] overflow-hidden rounded-t-xl md:rounded-t-2xl">
-          {product.premiere == 1 && (
+        <div className="thumbnail-container relative h-auto overflow-hidden rounded-t-xl md:rounded-t-2xl">
+          {/* {product.premiere == 1 && (
             <div className="absolute top-2 right-2 z-10">
               <span className="inline-block px-1.5 md:px-2 py-1 text-xs font-semibold text-white bg-text-light-primary rounded shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:rotate-3">
                 <span className="hidden sm:inline">⭐ Terlaris</span>
                 <span className="sm:hidden">⭐</span>
               </span>
             </div>
-          )}
+          )} */}
 
           <Swiper
             modules={[Navigation, Pagination]}
@@ -143,13 +146,16 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-all duration-300 cursor-zoom-in hover:brightness-110"
                     loading="lazy"
                     onError={(e) => {
-                      console.error('📷 [ProductCard] Image load error:', {
+                      console.error("📷 [ProductCard] Image load error:", {
                         product: product.name,
                         photo,
-                        index
+                        index,
                       });
                       // Fallback to placeholder
-                      if (e.currentTarget.src !== "/images/placeholder-product.png") {
+                      if (
+                        e.currentTarget.src !==
+                        "/images/placeholder-product.png"
+                      ) {
                         e.currentTarget.src = "/images/placeholder-product.png";
                       }
                     }}
@@ -172,32 +178,30 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Detail Produk */}
-        <div className="p-2 md:p-3 lg:p-4 flex-grow flex flex-col transition-all duration-300 group-hover:transform group-hover:translate-y-[-2px]">
+        <div className="p-1 md:p-1 lg:p-1 flex-grow flex flex-col transition-all justify-end duration-300 group-hover:transform group-hover:translate-y-[-2px]">
           {/* Title */}
-          <h3 className="text-xs md:text-base lg:text-sm text-support-primary mb-1 md:mb-2 line-clamp-2 flex-shrink-0 transition-all duration-300 group-hover:text-navy-blue-800 text-center">
+          <h3 className="text-xs font-medium text-support-primary line-clamp-2 flex-shrink-0 transition-all duration-300 group-hover:text-navy-blue-800 text-center">
             {product.name}
           </h3>
 
           {/* Price */}
-          <div className="flex items-center justify-center mb-2 md:mb-3 flex-shrink-0">
+          <div className="flex items-center justify-center align-bottom flex-shrink-0">
             <div className="text-center">
-              <p className=" text-xs md:text-base lg:text-sm text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
+              <p className=" text-xs lg:text-xs text-navy-blue-800 transition-all duration-300 group-hover:scale-105">
                 {formatPrice(product.price)}{" "}
-                <span className="text-[10px] md:text-xs text-support-tertiary">
-                  /hari
-                </span>
+                <span className="text-xs text-support-tertiary">/hari</span>
               </p>
             </div>
           </div>
 
           {/* Button */}
-          <button
+          {/* <button
             className="w-full rounded-full py-1.5 md:py-2 bg-text-light-primary text-white font-bold text-xs md:text-sm lg:text-base shadow-lg hover:bg-pop-hover hover:shadow-xl hover:translate-y-[-2px] transition-all duration-300 focus-visible:ring-2 focus-visible:ring-pop-primary mt-auto"
             tabIndex={0}
             aria-label={`Sewa sekarang produk ${product.name}`}
           >
             Sewa Sekarang
-          </button>
+          </button> */}
         </div>
       </div>
 

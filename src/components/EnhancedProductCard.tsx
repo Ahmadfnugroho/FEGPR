@@ -114,9 +114,9 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
               {/* Status badge */}
               <div className="absolute -top-2 -right-2">
                 <span
-                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium border ${statusConfig.className}`}
+                  className={`inline-flex items-center rounded-full text-xs font-xs border ${statusConfig.className}`}
                 >
-                  <StatusIcon className="w-3 h-3" />
+                  <StatusIcon className="" />
                   <span className="hidden sm:inline">{statusConfig.label}</span>
                 </span>
               </div>
@@ -165,10 +165,19 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
       >
         {/* Image container */}
         <div className="relative aspect-[4/3] overflow-hidden bg-gray-100">
+          {product.premiere == 1 && (
+            <div className="absolute top right-1 z-10">
+              <span className="inline-flex  text-[8px]  text-white bg-text-light-primary rounded shadow-md transition-all duration-300 group-hover:shadow-lg group-hover:scale-105 group-hover:rotate-3">
+                <span className="hidden sm:inline">⭐Terlaris</span>
+                <span className="sm:hidden">⭐</span>
+              </span>
+            </div>
+          )}
+
           {/* Status badge */}
-          <div className="absolute top-3 left-3 z-10">
+          <div className="absolute top-1 left-1 z-10">
             <span
-              className={`inline-flex items-center px-1 py-1 rounded-full text-[8px] font-medium border backdrop-blur-sm  ${statusConfig.className}`}
+              className={`inline-flex items-center rounded-full text-[8px] border backdrop-blur-sm  ${statusConfig.className}`}
             >
               <StatusIcon className="w-3 h-3" />
               <span className="hidden sm:inline">{statusConfig.label}</span>
@@ -231,7 +240,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
             </div>
 
             {/* Tombol */}
-            {product.status === "available" ? (
+            {/* {product.status === "available" ? (
               <button
                 className="w-3/4 py-1 bg-navy-blue-800 text-white rounded-lg text-[10px] font-thin hover:bg-navy-blue-900 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-navy-blue-800 focus:ring-offset-2 whitespace-nowrap"
                 onClick={(e) => {
@@ -248,7 +257,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
               >
                 Tidak Tersedia
               </button>
-            )}
+            )} */}
           </div>
         </div>
       </Link>
