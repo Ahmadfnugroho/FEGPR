@@ -1,9 +1,9 @@
 // src/components/AdvancedSearchBar.tsx
-import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
-import { useAutocomplete } from '../hooks/useAdvancedSearch';
-import { STORAGE_BASE_URL } from '../api/constants';
+import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useAutocomplete } from "../hooks/useAdvancedSearch";
+import { STORAGE_BASE_URL } from "../api/constants";
 
 interface SearchBarProps {
   className?: string;
@@ -12,19 +12,22 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({
-  className = '',
-  placeholder = 'Cari produk, bundling...',
-  maxSuggestions = 6
+  className = "",
+  placeholder = "Cari produk, bundling...",
+  maxSuggestions = 6,
 }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  
+
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
-  const { suggestions, isLoading, error } = useAutocomplete(query, maxSuggestions);
+
+  const { suggestions, isLoading, error } = useAutocomplete(
+    query,
+    maxSuggestions
+  );
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -40,8 +43,8 @@ export default function SearchBar({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Handle keyboard navigation
@@ -49,19 +52,19 @@ export default function SearchBar({
     if (!showSuggestions || suggestions.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex((prev) =>
           prev < suggestions.length - 1 ? prev + 1 : 0
         );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => 
+        setSelectedIndex((prev) =>
           prev > 0 ? prev - 1 : suggestions.length - 1
         );
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0) {
           selectSuggestion(suggestions[selectedIndex]);
@@ -69,7 +72,7 @@ export default function SearchBar({
           handleSearch(e as any);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setShowSuggestions(false);
         setSelectedIndex(-1);
         inputRef.current?.blur();
@@ -81,7 +84,7 @@ export default function SearchBar({
     const value = e.target.value;
     setQuery(value);
     setSelectedIndex(-1);
-    
+
     if (value.length >= 2) {
       setShowSuggestions(true);
     } else {
@@ -101,23 +104,23 @@ export default function SearchBar({
 
   const selectSuggestion = (suggestion: any) => {
     navigate(suggestion.url);
-    setQuery('');
+    setQuery("");
     setShowSuggestions(false);
     setSelectedIndex(-1);
     inputRef.current?.blur();
   };
 
   const clearSearch = () => {
-    setQuery('');
+    setQuery("");
     setShowSuggestions(false);
     setSelectedIndex(-1);
     inputRef.current?.focus();
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(price);
@@ -146,14 +149,14 @@ export default function SearchBar({
           aria-haspopup="listbox"
           autoComplete="off"
         />
-        
+
         {/* Loading indicator */}
         {isLoading && (
           <div className="absolute top-3 md:top-4 right-12 md:right-14">
             <div className="animate-spin h-4 w-4 border-2 border-pop-primary border-t-transparent rounded-full"></div>
           </div>
         )}
-        
+
         {/* Clear button */}
         {query && (
           <button
@@ -165,7 +168,7 @@ export default function SearchBar({
             <XMarkIcon className="h-4 w-4 md:h-5 md:w-5" />
           </button>
         )}
-        
+
         {/* Search button */}
         <button
           type="submit"
@@ -191,9 +194,7 @@ export default function SearchBar({
               onClick={() => selectSuggestion(item)}
               onMouseEnter={() => setSelectedIndex(index)}
               className={`w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors first:rounded-t-lg last:rounded-b-lg border-b border-gray-100 last:border-b-0 ${
-                selectedIndex === index 
-                  ? 'bg-blue-50 border-blue-200' 
-                  : ''
+                selectedIndex === index ? "bg-blue-50 border-blue-200" : ""
               }`}
               role="option"
               aria-selected={selectedIndex === index}
@@ -207,7 +208,7 @@ export default function SearchBar({
                 />
               ) : (
                 <div className="w-10 h-10 bg-gray-200 rounded flex items-center justify-center flex-shrink-0">
-                  {item.type === 'bundling' ? '📦' : '📷'}
+                  {item.type === "bundling" ? "📦" : "📷"}
                 </div>
               )}
 
@@ -216,17 +217,19 @@ export default function SearchBar({
                 <div className="font-medium text-support-primary truncate">
                   {item.name}
                 </div>
-                
+
                 {/* Type and Price */}
                 <div className="flex items-center justify-between text-xs text-support-tertiary mt-1">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                    item.type === 'product' 
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-blue-100 text-blue-700'
-                  }`}>
-                    {item.type === 'product' ? 'Produk' : 'Bundling'}
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium ${
+                      item.type === "product"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}
+                  >
+                    {item.type === "product" ? "Produk" : "Bundling"}
                   </span>
-                  
+
                   {item.price && (
                     <span className="font-semibold text-pop-primary">
                       {formatPrice(item.price)}
@@ -236,7 +239,7 @@ export default function SearchBar({
               </div>
             </button>
           ))}
-          
+
           {/* Show more results link */}
           {suggestions.length >= maxSuggestions && query.trim() && (
             <div className="px-3 md:px-4 py-2 border-t border-gray-200 dark:border-gray-600">
@@ -256,26 +259,29 @@ export default function SearchBar({
       )}
 
       {/* No results message */}
-      {showSuggestions && query.length >= 2 && suggestions.length === 0 && !isLoading && (
-        <div
-          ref={dropdownRef}
-          className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-support-subtle rounded-lg shadow-lg z-50 p-4 text-center"
-        >
-          <div className="text-support-tertiary text-sm">
-            Tidak ada hasil untuk "{query}"
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              navigate(`/search?q=${encodeURIComponent(query)}`);
-              setShowSuggestions(false);
-            }}
-            className="mt-2 text-pop-primary hover:text-pop-secondary text-sm font-medium transition-colors bg-white px-3 py-1 rounded"
+      {showSuggestions &&
+        query.length >= 2 &&
+        suggestions.length === 0 &&
+        !isLoading && (
+          <div
+            ref={dropdownRef}
+            className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-support-subtle rounded-lg shadow-lg z-50 p-4 text-center"
           >
-            Cari di semua produk
-          </button>
-        </div>
-      )}
+            <div className="text-support-tertiary text-sm">
+              Tidak ada hasil untuk "{query}"
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                navigate(`/search?q=${encodeURIComponent(query)}`);
+                setShowSuggestions(false);
+              }}
+              className="mt-2 text-pop-primary hover:text-pop-secondary text-sm font-medium transition-colors bg-white px-3 py-1 rounded"
+            >
+              Cari di semua produk
+            </button>
+          </div>
+        )}
 
       {/* Error message */}
       {error && showSuggestions && (
