@@ -130,7 +130,9 @@ export default function FooterSection() {
             rel="noopener noreferrer"
             className="block mt-2 text-xs md:text-sm hover:text-primary transition-colors leading-relaxed"
           >
-            Jalan Kepu Selatan No. 11A, Kemayoran, Jakarta Pusat <br />
+            Jalan Kepu Selatan No 27C RT 001 RW 003 Kel. Kemayoran, Kec.
+            kemayoran, Jakarta Pusat, DKI Jakarta 10620
+            <br />
             Buka Setiap Hari <br />
             Jam Operasional : 07:00-22:00 WIB
           </a>
