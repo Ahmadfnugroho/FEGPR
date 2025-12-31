@@ -128,7 +128,7 @@ export default function FooterSection() {
             href="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15866.871702864491!2d106.8439828!3d-6.1685137!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f59ab7791adb%3A0xbd23ce14a107aee2!2sGlobal%20Photo%20Rental!5e0!3m2!1sid!2sid!4v1711423981245!5m2!1sid!2sid"
             target="_blank"
             rel="noopener noreferrer"
-            className="block mt-2 text-xs md:text-sm hover:text-primary transition-colors leading-relaxed"
+            className="block mt-2 text-xs md:text-sm transition-colors leading-relaxed"
           >
             Jalan Kepu Selatan No 27C RT 001 RW 003 Kel. Kemayoran, Kec.
             kemayoran, Jakarta Pusat, DKI Jakarta 10620
