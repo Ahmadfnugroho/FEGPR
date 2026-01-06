@@ -146,8 +146,9 @@ export default function ProductSearch({
   const handleClear = () => {
     onChange("");
     onSearch("");
-    setSuggestions([]);
+    // clear input and close dropdown (suggestions come from hook)
     setShowSuggestionDropdown(false);
+    if (propsOnCloseRef.current) propsOnCloseRef.current();
     inputRef.current?.focus();
   };
 
@@ -300,12 +301,12 @@ export default function ProductSearch({
                       {s.is_available !== undefined && (
                         <span
                           className={`text-xs font-semibold ${
-                            isProductAvailable(s)
+                            isProductAvailable(s as any)
                               ? "text-green-600"
                               : "text-red-600"
                           }`}
                         >
-                          {getProductAvailabilityText(s).text}
+                          {getProductAvailabilityText(s as any).text}
                         </span>
                       )}
                     </li>

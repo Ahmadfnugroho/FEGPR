@@ -168,7 +168,17 @@ const NavCard = memo(function NavCard() {
                     <button
                       key={index}
                       type="button"
-                      onClick={() => selectSuggestion(item.url)}
+                      onClick={() => {
+                        if (item.url) {
+                          selectSuggestion(item.url);
+                        } else if (item.slug) {
+                          const path =
+                            item.type === "bundling"
+                              ? `/bundling/${item.slug}`
+                              : `/product/${item.slug}`;
+                          selectSuggestion(path);
+                        }
+                      }}
                       className={`
                         w-full text-left px-3 lg:px-4 py-2 hover:bg-base-tertiary flex items-center gap-2 lg:gap-3 text-xs lg:text-sm transition-all duration-300 hover:pl-4 lg:hover:pl-5 first:rounded-t-lg last:rounded-b-lg
                         ${
