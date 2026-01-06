@@ -6,7 +6,6 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../api/axiosInstance";
 import { STORAGE_BASE_URL } from "../api/constants";
 import {
   ProductPhoto,
@@ -18,21 +17,11 @@ import {
   getProductAvailabilityText,
 } from "../utils/availabilityUtils";
 import { localDateToUTC } from "../utils/dateUtils";
+import useSearchSuggestions, {
+  Suggestion as SearchSuggestion,
+} from "../hooks/useSearchSuggestions";
 
-interface ProductSuggestion {
-  id: number;
-  name: string;
-  slug: string;
-  thumbnail: string;
-  price: number;
-  available_quantity?: number;
-  is_available?: boolean;
-  status: "available" | "unavailable";
-  quantity: number;
-  productPhotos: ProductPhoto[];
-  productSpecifications: productSpecification[];
-  rentalIncludes: RentalInclude[];
-}
+type ProductSuggestion = SearchSuggestion;
 
 interface ProductSearchProps {
   value: string;
@@ -41,10 +30,19 @@ interface ProductSearchProps {
   placeholder?: string;
   className?: string;
   showSuggestions?: boolean;
-  maxSuggestions?: number;
+  /** Max product suggestions to request */
+  productLimit?: number;
+  /** Max bundling suggestions to request */
+  bundlingLimit?: number;
+  /** Debounce in milliseconds for suggestions */
+  debounceMs?: number;
   startDate?: string;
   endDate?: string;
   onSuggestionSelect?: (product: ProductSuggestion) => void;
+  /** Optional external signal to close the suggestion dropdown (e.g. incrementing counter) */
+  externalCloseSignal?: any;
+  /** Optional callback when suggestions are closed */
+  onClose?: () => void;
 }
 
 export default function ProductSearch({
@@ -54,58 +52,88 @@ export default function ProductSearch({
   placeholder = "Cari produk...",
   className = "",
   showSuggestions = true,
-  maxSuggestions = 6,
+  productLimit = 10,
+  bundlingLimit = 5,
+  debounceMs = 300,
   startDate,
   endDate,
   onSuggestionSelect,
+  externalCloseSignal,
+  onClose,
 }: ProductSearchProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const [suggestions, setSuggestions] = useState<ProductSuggestion[]>([]);
+  const {
+    suggestions,
+    loading: loadingSuggestions,
+    products: suggestionProducts,
+    bundlings: suggestionBundlings,
+  } = useSearchSuggestions(value, {
+    debounceMs,
+    productLimit,
+    bundlingLimit,
+    enabled: showSuggestions,
+  });
   const [showSuggestionDropdown, setShowSuggestionDropdown] = useState(false);
-  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  // keep latest onClose in a ref to avoid stale closures
+  const propsOnCloseRef = useRef<(() => void) | undefined>(undefined);
+  useEffect(() => {
+    propsOnCloseRef.current = onClose;
+  }, [onClose]);
 
+  // suggestions + loading provided by useSearchSuggestions hook
   useEffect(() => {
     if (!showSuggestions || value.length < 2) {
-      setSuggestions([]);
       setShowSuggestionDropdown(false);
       return;
     }
+    if (value.length >= 2 && suggestions.length > 0) {
+      setShowSuggestionDropdown(true);
+    }
+  }, [suggestions, value, showSuggestions]);
 
-    const fetchSuggestions = async () => {
-      try {
-        setLoadingSuggestions(true);
-
-        const params: any = {
-          q: value,
-          limit: maxSuggestions,
-        };
-
-        if (startDate && endDate) {
-          params.start_date =
-            localDateToUTC(startDate)?.split("T")[0] || startDate;
-          params.end_date = localDateToUTC(endDate)?.split("T")[0] || endDate;
+  // Click-away and Escape handling: close suggestion dropdown when clicking outside
+  // or when pressing Escape.
+  useEffect(() => {
+    const onDocumentClick = (e: MouseEvent) => {
+      const node = containerRef.current;
+      if (!node) return;
+      if (e.target instanceof Node && !node.contains(e.target)) {
+        if (showSuggestionDropdown) {
+          setShowSuggestionDropdown(false);
+          if (propsOnCloseRef.current) propsOnCloseRef.current();
         }
-
-        const response = await axiosInstance.get("/search-suggestions", {
-          params,
-        });
-
-        if (response.data.suggestions) {
-          setSuggestions(response.data.suggestions);
-          setShowSuggestionDropdown(true);
-        }
-      } catch (error) {
-        setSuggestions([]);
-      } finally {
-        setLoadingSuggestions(false);
       }
     };
 
-    const debounce = setTimeout(fetchSuggestions, 300);
-    return () => clearTimeout(debounce);
-  }, [value, maxSuggestions, startDate, endDate, showSuggestions]);
+    const onDocumentKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (showSuggestionDropdown) {
+          setShowSuggestionDropdown(false);
+          if (propsOnCloseRef.current) propsOnCloseRef.current();
+        }
+      }
+    };
+
+    document.addEventListener("click", onDocumentClick, true);
+    document.addEventListener("keydown", onDocumentKey, true);
+    return () => {
+      document.removeEventListener("click", onDocumentClick, true);
+      document.removeEventListener("keydown", onDocumentKey, true);
+    };
+  }, [showSuggestionDropdown]);
+
+  // Support external signal to close suggestions
+  useEffect(() => {
+    if (externalCloseSignal !== undefined) {
+      setShowSuggestionDropdown(false);
+      if (propsOnCloseRef.current) propsOnCloseRef.current();
+    }
+    // only trigger when externalCloseSignal changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [externalCloseSignal]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,14 +155,21 @@ export default function ProductSearch({
     if (onSuggestionSelect) {
       onSuggestionSelect(suggestion);
     } else {
-      navigate(`/product/${suggestion.slug}`);
+      if (suggestion.type === "bundling") {
+        navigate(`/bundling/${suggestion.slug}`);
+      } else {
+        navigate(`/product/${suggestion.slug}`);
+      }
     }
     setShowSuggestionDropdown(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") {
-      handleClear();
+      if (showSuggestionDropdown) {
+        setShowSuggestionDropdown(false);
+        if (onClose) onClose();
+      }
     }
   };
 
@@ -148,7 +183,7 @@ export default function ProductSearch({
   };
 
   return (
-    <div className={`relative w-full max-w-md ${className}`}>
+    <div ref={containerRef} className={`relative w-full max-w-md ${className}`}>
       <form onSubmit={handleSubmit} className="relative">
         <div
           className={`
@@ -188,7 +223,20 @@ export default function ProductSearch({
                 setShowSuggestionDropdown(true);
               }
             }}
-            onBlur={() => setIsFocused(false)}
+            onBlur={() => {
+              setIsFocused(false);
+              // Delay check so clicks inside the container (suggestion items)
+              // won't be treated as outside clicks.
+              setTimeout(() => {
+                if (
+                  containerRef.current &&
+                  !containerRef.current.contains(document.activeElement)
+                ) {
+                  setShowSuggestionDropdown(false);
+                  if (onClose) onClose();
+                }
+              }, 0);
+            }}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className="w-full pl-10 pr-10 py-3 bg-transparent border-none outline-none text-gray-900 placeholder-gray-500 text-sm"
@@ -210,48 +258,106 @@ export default function ProductSearch({
         </button>
       </form>
 
-      {/* MAIN DROPDOWN */}
-      {showSuggestions && showSuggestionDropdown && suggestions.length > 0 && (
-        <ul className="py-1 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-64 overflow-y-auto">
-          {suggestions.map((suggestion) => (
-            <li
-              key={suggestion.id}
-              className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
-              onClick={() => handleSuggestionClick(suggestion)}
-            >
-              <div className="flex items-center">
-                {suggestion.thumbnail && (
-                  <img
-                    src={`${STORAGE_BASE_URL}/${suggestion.thumbnail}`}
-                    alt={suggestion.name}
-                    className="w-8 h-8 object-cover rounded-md mr-3"
-                  />
-                )}
-                <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {suggestion.name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {formatPrice(suggestion.price)}
-                  </p>
+      {/* MAIN DROPDOWN - grouped: Products then Bundlings */}
+      {showSuggestions &&
+        showSuggestionDropdown &&
+        (suggestionProducts.length > 0 || suggestionBundlings.length > 0) && (
+          <div className="py-1 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto">
+            {suggestionProducts.length > 0 && (
+              <div>
+                <div className="px-3 py-2 text-xs text-gray-500 font-medium">
+                  Produk
                 </div>
-              </div>
+                <ul>
+                  {suggestionProducts.map((s) => (
+                    <li
+                      key={s.id}
+                      className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() =>
+                        handleSuggestionClick(s as ProductSuggestion)
+                      }
+                    >
+                      <div className="flex items-center">
+                        {s.thumbnail && (
+                          <img
+                            src={`${STORAGE_BASE_URL}/${s.thumbnail}`}
+                            alt={s.name}
+                            className="w-8 h-8 object-cover rounded-md mr-3"
+                          />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">
+                            {s.name}
+                          </p>
+                          {typeof s.price === "number" && (
+                            <p className="text-xs text-gray-500">
+                              {formatPrice(s.price)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
-              {suggestion.is_available !== undefined && (
-                <span
-                  className={`text-xs font-semibold ${
-                    isProductAvailable(suggestion)
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {getProductAvailabilityText(suggestion).text}
-                </span>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+                      {s.is_available !== undefined && (
+                        <span
+                          className={`text-xs font-semibold ${
+                            isProductAvailable(s)
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {getProductAvailabilityText(s).text}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {suggestionBundlings.length > 0 && (
+              <div>
+                <div className="px-3 py-2 text-xs text-gray-500 font-medium">
+                  Bundling
+                </div>
+                <ul>
+                  {suggestionBundlings.map((s) => (
+                    <li
+                      key={s.id}
+                      className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() =>
+                        handleSuggestionClick(s as ProductSuggestion)
+                      }
+                    >
+                      <div className="flex items-center">
+                        {s.thumbnail && (
+                          <img
+                            src={`${STORAGE_BASE_URL}/${s.thumbnail}`}
+                            alt={s.name}
+                            className="w-8 h-8 object-cover rounded-md mr-3"
+                          />
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-blue-700">
+                            {s.name}
+                          </p>
+                          {typeof s.price === "number" && (
+                            <p className="text-xs text-gray-500">
+                              {formatPrice(s.price)}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <span className="text-xs text-blue-600 ml-auto px-1 py-0.5 bg-blue-50 rounded">
+                        Bundling
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
       {value && !showSuggestionDropdown && (
         <div className="mt-2 text-xs text-gray-500">
@@ -265,7 +371,13 @@ export default function ProductSearch({
         suggestions.length === 0 &&
         showSuggestionDropdown && (
           <div className="mt-1 bg-white border border-gray-200 rounded-lg shadow p-4 text-center text-sm text-gray-500">
-            Tidak ada produk yang cocok dengan "{value}"
+            Tidak ada hasil untuk "{value}".{" "}
+            <button
+              onClick={() => onSearch(value)}
+              className="text-blue-600 underline ml-1"
+            >
+              Lihat semua hasil
+            </button>
           </div>
         )}
     </div>

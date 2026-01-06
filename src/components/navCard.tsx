@@ -1,73 +1,23 @@
 import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { STORAGE_BASE_URL } from "../api/constants";
-import axiosInstance from "../api/axiosInstance";
+import useSearchSuggestions from "../hooks/useSearchSuggestions";
 import FloatingCartButton from "./FloatingCartButton";
 
 const NavCard = memo(function NavCard() {
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
+  const { suggestions, loading } = useSearchSuggestions(query, {
+    debounceMs: 400,
+    productLimit: 10,
+    bundlingLimit: 8,
+  });
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Memoized fetch function to prevent recreation on every render
-  const fetchSuggestions = useCallback(async (searchQuery: string) => {
-    try {
-      // Fetch suggestions dari multiple sources
-      const [productRes, bundlingRes] = await Promise.allSettled([
-        axiosInstance.get("/search-suggestions", {
-          params: { q: searchQuery, limit: 10 },
-        }),
-        axiosInstance.get("/bundlings", {
-          params: { q: searchQuery, limit: 8 },
-        }),
-      ]);
-
-      let allSuggestions: any[] = [];
-
-      // Add product suggestions
-      if (
-        productRes.status === "fulfilled" &&
-        productRes.value.data.suggestions
-      ) {
-        allSuggestions = [...productRes.value.data.suggestions];
-      }
-
-      // Add bundling suggestions
-      if (bundlingRes.status === "fulfilled" && bundlingRes.value.data.data) {
-        const bundlingSuggestions = bundlingRes.value.data.data.map(
-          (bundling: any) => ({
-            display: `📦 ${bundling.name}`,
-            url: `/bundling/${bundling.slug}`,
-            thumbnail:
-              bundling.bundlingPhotos?.[0]?.photo ||
-              bundling.products?.[0]?.productPhotos?.[0]?.photo,
-            type: "bundling",
-          })
-        );
-        allSuggestions = [...allSuggestions, ...bundlingSuggestions];
-      }
-
-      // Limit total suggestions to 15 (increased from 12)
-      setSuggestions(allSuggestions.slice(0, 15));
-    } catch (err) {
-      console.error("Search suggestions error:", err);
-      setSuggestions([]);
-    }
-  }, []);
-
-  // Ambil saran (products + bundlings) with optimized debouncing
-  useEffect(() => {
-    if (query.length < 2) {
-      setSuggestions([]);
-      return;
-    }
-
-    const debounce = setTimeout(() => fetchSuggestions(query), 400); // Increased debounce
-    return () => clearTimeout(debounce);
-  }, [query, fetchSuggestions]);
+  // suggestions + loading provided by useSearchSuggestions
+  // showSuggestions controlled locally when user types or focuses input
 
   // Klik di luar → tutup dropdown
   useEffect(() => {
@@ -242,7 +192,7 @@ const NavCard = memo(function NavCard() {
                             : "text-support-primary"
                         }`}
                       >
-                        {item.display}
+                        {item.name}
                       </span>
                       {item.type === "bundling" && (
                         <span className="text-xs text-blue-500 ml-auto px-1 py-0.5 bg-blue-50 rounded">
