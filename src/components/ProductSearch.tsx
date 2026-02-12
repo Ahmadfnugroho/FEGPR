@@ -85,14 +85,14 @@ export default function ProductSearch({
 
   // suggestions + loading provided by useSearchSuggestions hook
   useEffect(() => {
-    if (!showSuggestions || value.length < 2) {
+    if (!showSuggestions || value.length < 2 || !isFocused) {
       setShowSuggestionDropdown(false);
       return;
     }
-    if (value.length >= 2 && suggestions.length > 0) {
+    if (value.length >= 2 && suggestions.length > 0 && isFocused) {
       setShowSuggestionDropdown(true);
     }
-  }, [suggestions, value, showSuggestions]);
+  }, [suggestions, value, showSuggestions, isFocused]);
 
   // Click-away and Escape handling: close suggestion dropdown when clicking outside
   // or when pressing Escape.
@@ -259,106 +259,7 @@ export default function ProductSearch({
         </button>
       </form>
 
-      {/* MAIN DROPDOWN - grouped: Products then Bundlings */}
-      {showSuggestions &&
-        showSuggestionDropdown &&
-        (suggestionProducts.length > 0 || suggestionBundlings.length > 0) && (
-          <div className="py-1 bg-white border border-gray-200 rounded-lg shadow-lg mt-1 max-h-72 overflow-y-auto">
-            {suggestionProducts.length > 0 && (
-              <div>
-                <div className="px-3 py-2 text-xs text-gray-500 font-medium">
-                  Produk
-                </div>
-                <ul>
-                  {suggestionProducts.map((s) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() =>
-                        handleSuggestionClick(s as ProductSuggestion)
-                      }
-                    >
-                      <div className="flex items-center">
-                        {s.thumbnail && (
-                          <img
-                            src={`${STORAGE_BASE_URL}/${s.thumbnail}`}
-                            alt={s.name}
-                            className="w-8 h-8 object-cover rounded-md mr-3"
-                          />
-                        )}
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">
-                            {s.name}
-                          </p>
-                          {typeof s.price === "number" && (
-                            <p className="text-xs text-gray-500">
-                              {formatPrice(s.price)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {s.is_available !== undefined && (
-                        <span
-                          className={`text-xs font-semibold ${
-                            isProductAvailable(s as any)
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {getProductAvailabilityText(s as any).text}
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {suggestionBundlings.length > 0 && (
-              <div>
-                <div className="px-3 py-2 text-xs text-gray-500 font-medium">
-                  Bundling
-                </div>
-                <ul>
-                  {suggestionBundlings.map((s) => (
-                    <li
-                      key={s.id}
-                      className="flex items-center justify-between px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                      onClick={() =>
-                        handleSuggestionClick(s as ProductSuggestion)
-                      }
-                    >
-                      <div className="flex items-center">
-                        {s.thumbnail && (
-                          <img
-                            src={`${STORAGE_BASE_URL}/${s.thumbnail}`}
-                            alt={s.name}
-                            className="w-8 h-8 object-cover rounded-md mr-3"
-                          />
-                        )}
-                        <div>
-                          <p className="text-sm font-medium text-blue-700">
-                            {s.name}
-                          </p>
-                          {typeof s.price === "number" && (
-                            <p className="text-xs text-gray-500">
-                              {formatPrice(s.price)}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      <span className="text-xs text-blue-600 ml-auto px-1 py-0.5 bg-blue-50 rounded">
-                        Bundling
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
+      {/* Suggestions disabled */}
 
       {value && !showSuggestionDropdown && (
         <div className="mt-2 text-xs text-gray-500">

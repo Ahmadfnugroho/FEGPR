@@ -109,7 +109,7 @@ export default function BrowseProduct() {
     (!filter.available || filter.available.length === 0);
   const [sort, setSort] = useState(params.get("sort") || "name");
   const [order, setOrder] = useState<"asc" | "desc">(
-    (params.get("order") as "asc" | "desc") || "asc"
+    (params.get("order") as "asc" | "desc") || "asc",
   );
 
   // Sidebar / drawer
@@ -144,11 +144,11 @@ export default function BrowseProduct() {
     (c) => ({
       label: c.name,
       value: c.slug,
-    })
+    }),
   );
   const brandOptions = safeMap<Brand, { label: string; value: string }>(
     brands,
-    (b) => ({ label: b.name, value: b.slug })
+    (b) => ({ label: b.name, value: b.slug }),
   );
   const subCategoryOptions = safeMap<
     SubCategory,
@@ -174,8 +174,8 @@ export default function BrowseProduct() {
       backgroundColor: isSelected
         ? "#FBBF24"
         : isFocused
-        ? "rgba(251,191,36,0.07)"
-        : "white",
+          ? "rgba(251,191,36,0.07)"
+          : "white",
       color: isSelected ? "#0f172a" : "#111827",
     }),
   };
@@ -185,7 +185,7 @@ export default function BrowseProduct() {
     (
       p: number = 1,
       customFilter?: typeof filter,
-      customPriceRange?: typeof priceRange
+      customPriceRange?: typeof priceRange,
     ) => {
       const currentFilter = customFilter || filter;
       const currentPriceRange = customPriceRange || priceRange;
@@ -194,14 +194,14 @@ export default function BrowseProduct() {
       if (currentFilter.q) ps.set("q", currentFilter.q);
       // Use safe array operations
       safeForEach(currentFilter.category, (c: string) =>
-        ps.append("category", c)
+        ps.append("category", c),
       );
       safeForEach(currentFilter.brand, (b: string) => ps.append("brand", b));
       safeForEach(currentFilter.subcategory, (s: string) =>
-        ps.append("subcategory", s)
+        ps.append("subcategory", s),
       );
       safeForEach(currentFilter.available, (a: string) =>
-        ps.append("available", a)
+        ps.append("available", a),
       );
 
       // Only add if priceRange is set and values are valid
@@ -264,7 +264,7 @@ export default function BrowseProduct() {
 
       return ps;
     },
-    [filter, priceRange, sort, order, pageSize]
+    [filter, priceRange, sort, order, pageSize],
   );
   // Sync URL params with state when location changes
   useEffect(() => {
@@ -287,7 +287,7 @@ export default function BrowseProduct() {
   // Fetch static lists once
   useEffect(() => {
     console.log(
-      "🔄 Fetching static lists (categories, brands, sub-categories)..."
+      "🔄 Fetching static lists (categories, brands, sub-categories)...",
     );
 
     Promise.all([
@@ -410,7 +410,7 @@ export default function BrowseProduct() {
         setBundlingLoadingMore(false);
       }
     },
-    [filter.q, sort, order, pageSize]
+    [filter.q, sort, order, pageSize],
   );
 
   // Fetch products (initial or filter change)
@@ -486,7 +486,7 @@ export default function BrowseProduct() {
         setLoadingMore(false);
       }
     },
-    [buildParams, priceRange]
+    [buildParams, priceRange],
   );
 
   // Initial load and when filter/sort/pageSize changes (only applied filters)
@@ -646,7 +646,7 @@ export default function BrowseProduct() {
                                 ? "font-medium text-gray-900"
                                 : "text-gray-500",
                               "block px-4 py-2 text-sm w-full text-left",
-                              focus ? "bg-gray-100" : ""
+                              focus ? "bg-gray-100" : "",
                             )}
                           >
                             {option.label}
@@ -714,7 +714,7 @@ export default function BrowseProduct() {
                       setFilter((prev) => ({
                         ...prev,
                         subcategory: prev.subcategory.filter(
-                          (s) => s !== value
+                          (s) => s !== value,
                         ),
                       }));
                     }}
@@ -756,6 +756,7 @@ export default function BrowseProduct() {
                     productLimit={10}
                     bundlingLimit={8}
                     debounceMs={400}
+                    showSuggestions={false}
                   />
                 </div>
 
@@ -785,24 +786,36 @@ export default function BrowseProduct() {
                 {/* Dual-mode: when only search query present and no filters, show both sections */}
                 {noFiltersActive && filter.q ? (
                   <>
+                    {/* Empty state message when both products and bundlings are empty (and not loading) */}
+                    {!loading &&
+                      !bundlingLoading &&
+                      products.length === 0 &&
+                      bundlings.length === 0 && (
+                        <div className="mb-6 rounded-md border border-gray-200 bg-gray-50 p-4 text-center">
+                          <p className="text-sm text-gray-700">
+                            Produk tidak ditemukan untuk{" "}
+                            <span className="font-medium">"{filter.q}"</span>.
+                          </p>
+                        </div>
+                      )}
+
                     {/* Products section */}
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">
-                      Produk
-                    </h3>
                     {loading ? (
-                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                        {Array.from({ length: 12 }).map((_, i) => (
-                          <ProductSkeleton key={i} />
-                        ))}
-                      </div>
-                    ) : products.length === 0 ? (
-                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                          <ProductCardSkeleton key={`product-empty-${i}`} />
-                        ))}
-                      </div>
-                    ) : (
                       <>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">
+                          Produk
+                        </h3>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                          {Array.from({ length: 12 }).map((_, i) => (
+                            <ProductSkeleton key={i} />
+                          ))}
+                        </div>
+                      </>
+                    ) : products.length > 0 ? (
+                      <>
+                        <h3 className="text-lg font-medium text-gray-900 mb-4">
+                          Produk
+                        </h3>
                         <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                           {sortedProducts.map((product) => (
                             <EnhancedProductCard
@@ -825,26 +838,27 @@ export default function BrowseProduct() {
                           </div>
                         )}
                       </>
-                    )}
+                    ) : null}
 
                     {/* Bundlings section */}
-                    <h3 className="text-lg font-medium text-gray-900 mt-10 mb-4">
-                      Bundling
-                    </h3>
                     {bundlingLoading ? (
-                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                          <BundlingCardSkeleton key={`bundling-loading-${i}`} />
-                        ))}
-                      </div>
-                    ) : bundlings.length === 0 ? (
-                      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                        {Array.from({ length: 8 }).map((_, i) => (
-                          <BundlingCardSkeleton key={`bundling-empty-${i}`} />
-                        ))}
-                      </div>
-                    ) : (
                       <>
+                        <h3 className="text-lg font-medium text-gray-900 mt-10 mb-4">
+                          Bundling
+                        </h3>
+                        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                          {Array.from({ length: 8 }).map((_, i) => (
+                            <BundlingCardSkeleton
+                              key={`bundling-loading-${i}`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    ) : bundlings.length > 0 ? (
+                      <>
+                        <h3 className="text-lg font-medium text-gray-900 mt-10 mb-4">
+                          Bundling
+                        </h3>
                         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                           {sortedBundlings.map((bundling) => (
                             <Link
@@ -856,7 +870,6 @@ export default function BrowseProduct() {
                             </Link>
                           ))}
                         </div>
-
                         {bundlingHasMore && (
                           <div className="mt-8 flex justify-center">
                             <button
@@ -869,16 +882,16 @@ export default function BrowseProduct() {
                           </div>
                         )}
                       </>
-                    )}
+                    ) : null}
                   </>
                 ) : isBundlingMode ? (
-                  bundlings.length === 0 ? (
+                  bundlingLoading ? (
                     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                       {Array.from({ length: 8 }).map((_, i) => (
-                        <BundlingCardSkeleton key={`bundling-empty-${i}`} />
+                        <BundlingCardSkeleton key={`bundling-loading-${i}`} />
                       ))}
                     </div>
-                  ) : (
+                  ) : bundlings.length > 0 ? (
                     <>
                       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                         {sortedBundlings.map((bundling) => (
@@ -891,7 +904,6 @@ export default function BrowseProduct() {
                           </Link>
                         ))}
                       </div>
-
                       {bundlingHasMore && (
                         <div className="mt-8 flex justify-center">
                           <button
@@ -904,7 +916,7 @@ export default function BrowseProduct() {
                         </div>
                       )}
                     </>
-                  )
+                  ) : null
                 ) : products.length === 0 ? (
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                     {Array.from({ length: 8 }).map((_, i) => (

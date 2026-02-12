@@ -1,76 +1,39 @@
-import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
+import { useState, memo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { STORAGE_BASE_URL } from "../api/constants";
-import useSearchSuggestions from "../hooks/useSearchSuggestions";
 import FloatingCartButton from "./FloatingCartButton";
 
 const NavCard = memo(function NavCard() {
   const [query, setQuery] = useState("");
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
-  const { suggestions, loading } = useSearchSuggestions(query, {
-    debounceMs: 400,
-    productLimit: 10,
-    bundlingLimit: 8,
-  });
-  const inputRef = useRef<HTMLInputElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // suggestions + loading provided by useSearchSuggestions
-  // showSuggestions controlled locally when user types or focuses input
-
-  // Klik di luar → tutup dropdown
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(e.target as Node) &&
-        inputRef.current &&
-        !inputRef.current.contains(e.target as Node)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
 
   const handleSearch = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault();
       if (query.trim()) {
         navigate(`/browse-product?q=${encodeURIComponent(query)}`);
-        setShowSuggestions(false);
       }
     },
-    [query, navigate]
+    [query, navigate],
   );
 
   const selectSuggestion = useCallback(
     (url: string) => {
       navigate(url);
       setQuery("");
-      setShowSuggestions(false);
     },
-    [navigate]
+    [navigate],
   );
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const value = e.target.value;
       setQuery(value);
-      if (value.length > 0) {
-        setShowSuggestions(true);
-      } else {
-        setShowSuggestions(false);
-      }
     },
-    []
+    [],
   );
 
-  const handleInputFocus = useCallback(() => {
-    if (query.length > 0) setShowSuggestions(true);
-  }, [query.length]);
+  const handleInputFocus = useCallback(() => {}, []);
 
   return (
     <header
@@ -134,7 +97,6 @@ const NavCard = memo(function NavCard() {
             >
               <div className="relative">
                 <input
-                  ref={inputRef}
                   type="text"
                   name="q"
                   value={query}
@@ -157,62 +119,6 @@ const NavCard = memo(function NavCard() {
                   </svg>
                 </button>
               </div>
-
-              {/* Autocomplete Dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div
-                  ref={dropdownRef}
-                  className="absolute top-full left-0 right-0 mt-1 bg-base-secondary border border-support-subtle rounded-lg shadow-lg z-50 max-h-64 lg:max-h-80 overflow-y-auto"
-                >
-                  {suggestions.map((item, index) => (
-                    <button
-                      key={index}
-                      type="button"
-                      onClick={() => {
-                        if (item.url) {
-                          selectSuggestion(item.url);
-                        } else if (item.slug) {
-                          const path =
-                            item.type === "bundling"
-                              ? `/bundling/${item.slug}`
-                              : `/product/${item.slug}`;
-                          selectSuggestion(path);
-                        }
-                      }}
-                      className={`
-                        w-full text-left px-3 lg:px-4 py-2 hover:bg-base-tertiary flex items-center gap-2 lg:gap-3 text-xs lg:text-sm transition-all duration-300 hover:pl-4 lg:hover:pl-5 first:rounded-t-lg last:rounded-b-lg
-                        ${
-                          item.type === "bundling"
-                            ? "border-l-2 border-l-blue-400"
-                            : ""
-                        }
-                      `}
-                    >
-                      {item.thumbnail && (
-                        <img
-                          src={`${STORAGE_BASE_URL}/${item.thumbnail}`}
-                          alt=""
-                          className="w-6 h-6 lg:w-8 lg:h-8 object-cover rounded flex-shrink-0"
-                        />
-                      )}
-                      <span
-                        className={`truncate ${
-                          item.type === "bundling"
-                            ? "text-blue-700 font-medium"
-                            : "text-support-primary"
-                        }`}
-                      >
-                        {item.name}
-                      </span>
-                      {item.type === "bundling" && (
-                        <span className="text-xs text-blue-500 ml-auto px-1 py-0.5 bg-blue-50 rounded">
-                          Bundling
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
             </form>
             <div className="flex-shrink-0">
               <FloatingCartButton />
