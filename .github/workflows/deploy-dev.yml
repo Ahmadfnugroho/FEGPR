@@ -9,7 +9,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE: ghcr.io/${{ github.repository_owner }}/gpr-frontend
+  # Docker requires a lowercase repository path; the GitHub owner is mixed-case.
+  IMAGE: ghcr.io/ahmadfnugroho/gpr-frontend
 
 jobs:
   deploy:
@@ -38,14 +39,19 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      # Roll out over SSH so the cluster API on 6443 stays closed to the
+      # internet. kubectl runs on the node against the local k3s kubeconfig.
       - name: Roll out to gpr-dev
-        env:
-          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
-        run: |
-          set -euo pipefail
-          tag="sha-${GITHUB_SHA}"
-          mkdir -p "$HOME/.kube"
-          echo "$KUBE_CONFIG" | base64 -d > "$HOME/.kube/config"
-          chmod 600 "$HOME/.kube/config"
-          kubectl -n gpr-dev set image deployment/gpr-frontend frontend="$IMAGE:$tag"
-          kubectl -n gpr-dev rollout status deployment/gpr-frontend --timeout=180s
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          port: ${{ secrets.PORT }}
+          key: ${{ secrets.SSHKEY }}
+          script: |
+            set -euo pipefail
+            export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+            IMAGE=ghcr.io/ahmadfnugroho/gpr-frontend
+            TAG=sha-${{ github.sha }}
+            kubectl -n gpr-dev set image deployment/gpr-frontend frontend="$IMAGE:$TAG"
+            kubectl -n gpr-dev rollout status deployment/gpr-frontend --timeout=180s
