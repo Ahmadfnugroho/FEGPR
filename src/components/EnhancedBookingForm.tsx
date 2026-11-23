@@ -300,15 +300,6 @@ const EnhancedBookingForm = memo(function EnhancedBookingForm({
     end: string | null;
   }>({ start: null, end: null });
 
-  // Production logging removed - debug logs only active in development
-  // useEffect(() => {
-  //   if (process.env.NODE_ENV === 'development') {
-  //     console.log("📅 EnhancedBookingForm: State update:", {
-  //       dateRange, quantity, duration, isBookingValid, validationError,
-  //     });
-  //   }
-  // }, [dateRange, quantity, duration, isBookingValid, validationError]);
-
   // Auto-check availability when date range changes - with stability check
   const stableDateRange = useMemo(
     () => ({

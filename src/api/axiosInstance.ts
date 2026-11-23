@@ -21,12 +21,7 @@ axiosInstance.interceptors.request.use(
     // Enhanced debug logging
     const requestId = debugLogger.logRequest(
       config.method || 'unknown',
-      `${config.baseURL}${config.url}`,
-      {
-        headers: config.headers,
-        params: config.params,
-        data: config.data
-      }
+      `${config.baseURL}${config.url}`
     );
     
     // Store request ID for response logging
@@ -87,9 +82,7 @@ axiosInstance.interceptors.response.use(
         errorUrl,
         error.message || 'Request canceled'
       );
-      
-      // Clean "Request canceled" log for cancelled requests
-      console.log('🚫 Request canceled:', { method: errorMethod, url: errorUrl });
+
       return Promise.reject(error);
     }
 

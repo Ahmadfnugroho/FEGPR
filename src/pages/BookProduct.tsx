@@ -34,36 +34,22 @@ export default function BookProduct() {
     duration: "",
     quantity: "",
     product_id: "",
-    totalamount: 0,
   });
 
   const [formErrors, setFormErrors] = useState<z.ZodIssue[]>([]);
 
-  const [uniqueCode, setUniqueCode] = useState<number>(0);
-  const [totalamount, setTotalAmount] = useState<number>(0);
   useEffect(() => {
     axiosInstance
       .get(`/product/${slug}`)
       .then((response) => {
-        console.log("Product data fetched successfully:", response.data.data);
         setProduct(response.data.data);
-
-        const productId = response.data.data.id;
-        const generateUniqueCode = Math.floor(100 + Math.random() * 200);
-        const grandTotal = response.data.data.price + generateUniqueCode;
-
-        setUniqueCode(generateUniqueCode);
-        setTotalAmount(grandTotal);
-
         setFormData((prevData) => ({
           ...prevData,
-          product_id: String(productId),
-          totalamount: grandTotal,
+          product_id: String(response.data.data.id),
         }));
         setLoading(false);
       })
-      .catch((error: unknown) => {
-        console.error("Error fetching product data:", error);
+      .catch(() => {
         setError("An error occurred while fetching product data.");
         setLoading(false);
       });
@@ -83,31 +69,26 @@ export default function BookProduct() {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Validating form data:", formData);
     const validation = bookingSchema.safeParse(formData);
 
     if (!validation.success) {
-      console.error("Validation error:", validation.error.issues);
       setFormErrors(validation.error.issues);
       return;
     }
 
-    console.log("Form data is Valid. Submitting:", formData);
     setLoading(true);
 
     try {
       const response = await axiosInstance.post(`/transaction`, {
         ...formData,
       });
-      console.log("Booking created successfully:", response.data);
       navigate("/SuccessBooking", {
         state: {
           product,
           booking: response.data,
         },
       });
-    } catch (error: unknown) {
-      console.error("Error creating booking:", error);
+    } catch {
       setError("An error occurred while creating the booking.");
     } finally {
       setLoading(false);
@@ -217,7 +198,7 @@ export default function BookProduct() {
                   className="appearance-none outline-none w-full py-3 font-semibold placeholder:font-normal placeholder:text-[#000929]"
                   placeholder="Write your valid email"
                 />
-                {formErrors.find((error) => error.path.includes("name")) && (
+                {formErrors.find((error) => error.path.includes("email")) && (
                   <p className="text-red-500 text-xs">Email Wajib Diisi</p>
                 )}
               </div>
@@ -241,7 +222,7 @@ export default function BookProduct() {
                   className="appearance-none outline-none w-full py-3 font-semibold placeholder:font-normal placeholder:text-[#000929]"
                   placeholder="Write your valid number"
                 />
-                {formErrors.find((error) => error.path.includes("name")) && (
+                {formErrors.find((error) => error.path.includes("phone")) && (
                   <p className="text-red-500 text-xs">No HP Wajib Diisi</p>
                 )}
               </div>
@@ -264,9 +245,9 @@ export default function BookProduct() {
                   id="date"
                   className="relative appearance-none outline-none w-full py-3 font-semibold [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:opacity-0"
                 />
-                {formErrors.find((error) => error.path.includes("name")) && (
-                  <p className="text-red-500 text-xs">Tanggal Wajib Diisi</p>
-                )}
+                {formErrors.find((error) =>
+                  error.path.includes("start_date")
+                ) && <p className="text-red-500 text-xs">Tanggal Wajib Diisi</p>}
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -289,8 +270,8 @@ export default function BookProduct() {
                   className="appearance-none outline-none w-full py-3 font-semibold placeholder:font-normal placeholder:text-[#000929]"
                 />
                 {formErrors.find((error) =>
-                  error.path.includes("duration")
-                ) && <p className="text-red-500 text-xs">Durasi Wajib Diisi</p>}
+                  error.path.includes("quantity")
+                ) && <p className="text-red-500 text-xs">Jumlah Wajib Diisi</p>}
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -346,19 +327,9 @@ export default function BookProduct() {
               </p>
             </div>
             <div className="flex items-center justify-between">
-              <p className="font-semibold">Unique Code</p>
-              <p className="font-bold text-[#FF2D2D]">
-                Rp {uniqueCode.toLocaleString("id-ID")}
-              </p>
-            </div>
-            <div className="flex items-center justify-between">
               <p className="font-semibold">Grand Total</p>
               <p className="font-bold text-[22px] leading-[33px] text-[#0D903A]">
-                Rp
-                {totalamount.toLocaleString("id-ID", {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
+                Rp{product?.price.toLocaleString("id-ID")}
               </p>
             </div>
             <div className="relative rounded-xl p-[10px_20px] gap-[10px] bg-[#000929] text-white">
@@ -368,8 +339,8 @@ export default function BookProduct() {
                 alt=""
               />
               <p className="font-semibold text-sm leading-[24px] z-10">
-                Tolong perhatikan kode unik berikut ketika melakukan pembayaran
-                kantor
+                Total akhir beserta kode unik akan dikonfirmasi oleh tim kami
+                setelah pesanan diterima.
               </p>
             </div>
           </div>

@@ -105,7 +105,7 @@ export default function BundlingDetails(): JSX.Element {
 
   // Debug logging only in development mode
   useEffect((): void => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       try {
         console.log("📦 BundlingDetails: Date state update:", {
           dates: { startDate, endDate },
@@ -152,7 +152,7 @@ export default function BundlingDetails(): JSX.Element {
 
   // Debug logging for React Query parameters - development only
   useEffect((): void => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.log("🔍 BundlingDetails: React Query update:", {
         slug,
         apiDates: { apiStartDate, apiEndDate },
@@ -169,7 +169,7 @@ export default function BundlingDetails(): JSX.Element {
   } = useQuery<Bundling, Error>({
     queryKey: ["bundling", slug, apiStartDate, apiEndDate],
     queryFn: () => {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.log("🌐 BundlingDetails: Fetching data:", {
           slug,
           apiStartDate,
@@ -187,7 +187,7 @@ export default function BundlingDetails(): JSX.Element {
 
   // Monitor React Query state changes - development only
   useEffect((): void => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       if (bundling) {
         console.log("✅ BundlingDetails: Data loaded:", bundling.name);
       }
@@ -252,7 +252,7 @@ export default function BundlingDetails(): JSX.Element {
       (product) => !isProductAvailable(product)
     );
 
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.log("📦 Bundling availability:", {
         name: bundling.name,
         isAvailable,
@@ -704,7 +704,7 @@ export default function BundlingDetails(): JSX.Element {
                     newIsAvailable,
                     newAvailableQuantity
                   ) => {
-                    if (process.env.NODE_ENV === "development") {
+                    if (import.meta.env.DEV) {
                       console.log("🔄 BundlingDetails: Availability updated:", {
                         newIsAvailable,
                         newAvailableQuantity,

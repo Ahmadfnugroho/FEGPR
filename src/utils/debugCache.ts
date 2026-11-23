@@ -125,7 +125,7 @@ export const addCacheBuster = (url: string): string => {
  * Console commands for debugging (attach to window in development)
  */
 export const attachDebugCommands = (queryClient?: any): void => {
-  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+  if (import.meta.env.DEV) {
     (window as any).debugCache = {
       clear: clearAllCache,
       clearReactQuery: () => clearReactQueryCache(queryClient),

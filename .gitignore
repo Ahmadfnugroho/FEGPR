@@ -22,4 +22,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-\n.agent/\n
+.agent/
+
+# Local env
+.env
+.env.local
+.env.*.local

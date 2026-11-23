@@ -72,7 +72,7 @@ const DateRangePicker = memo(function DateRangePicker({
       (value.startDate !== localDateRange.startDate ||
         value.endDate !== localDateRange.endDate)
     ) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.log("🔄 DateRangePicker: Syncing from value prop");
       }
       setLocalDateRange(value);
@@ -90,7 +90,7 @@ const DateRangePicker = memo(function DateRangePicker({
       (selectedStartDate && selectedEndDate) ||
       (!selectedStartDate && !selectedEndDate)
     ) {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.log("📅 DateRangePicker: Complete date range updated:", {
           startDate: selectedStartDate?.toLocaleDateString(),
           endDate: selectedEndDate?.toLocaleDateString(),
@@ -180,7 +180,7 @@ const DateRangePicker = memo(function DateRangePicker({
   const handleDateClick = useCallback(
     (date: Date) => {
       if (isDateDisabled(date)) {
-        if (process.env.NODE_ENV === "development") {
+        if (import.meta.env.DEV) {
           console.log("⚠️ DateRangePicker: Date disabled");
         }
         return;

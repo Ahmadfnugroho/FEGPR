@@ -257,7 +257,7 @@ const ProductInfo = memo(
     // Memoized availability update callback to prevent re-renders
     const handleAvailabilityUpdate = useCallback(
       (newIsAvailable: boolean, newAvailableQuantity: number) => {
-        if (process.env.NODE_ENV === "development") {
+        if (import.meta.env.DEV) {
           console.log("🔄 Details: Availability updated:", {
             newIsAvailable,
             newAvailableQuantity,
@@ -528,7 +528,7 @@ export default function Details() {
 
   // Debug logging only in development mode
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.log("📝 Details: Date state update:", {
         dates: { startDate, endDate },
         isValid: isDateRangeValid,
@@ -574,7 +574,7 @@ export default function Details() {
 
   // Debug logging for React Query parameters - development only
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       console.log("🔍 Details: React Query update:", {
         slug,
         apiDates: { apiStartDate, apiEndDate },
@@ -591,7 +591,7 @@ export default function Details() {
   } = useQuery<Product>({
     queryKey: ["product", slug, apiStartDate, apiEndDate],
     queryFn: () => {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.log("🌐 Details: Fetching product:", {
           slug,
           apiStartDate,
@@ -611,7 +611,7 @@ export default function Details() {
 
   // Monitor React Query state changes - development only
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
+    if (import.meta.env.DEV) {
       if (product) {
         console.log("✅ Details: Data loaded:", product.name);
       }
@@ -652,7 +652,7 @@ export default function Details() {
   // Handler for date changes from booking form - using global context
   const handleDateChange = useCallback(
     (newStartDate: string | null, newEndDate: string | null) => {
-      if (process.env.NODE_ENV === "development") {
+      if (import.meta.env.DEV) {
         console.log("🗓️ Details: Date change requested:", {
           newStartDate,
           newEndDate,

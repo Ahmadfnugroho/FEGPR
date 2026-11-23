@@ -38,11 +38,7 @@ const queryClient = new QueryClient({
       
       // Retry delay with exponential backoff
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-      
-      // TEMPORARY: Disable cache to ensure fresh data after migrate
-      staleTime: 0,              // Data immediately stale
-      gcTime: 0,                 // Cache immediately garbage collected
-      
+
       // Always refetch to ensure fresh data
       refetchOnWindowFocus: true,
       refetchOnReconnect: true,
@@ -77,7 +73,7 @@ const initAnimationsWhenReady = () => {
 initAnimationsWhenReady();
 
 // Attach debug commands for development
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   attachDebugCommands(queryClient);
 }
 
@@ -88,7 +84,6 @@ setTimeout(() => {
     .forEach((el) => {
       if (!el.classList.contains("visible")) {
         el.classList.add("visible");
-        console.log("Fallback visibility applied to:", el);
       }
     });
 }, 3000); // Wait 3 seconds before applying fallback

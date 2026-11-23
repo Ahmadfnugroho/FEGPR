@@ -2,12 +2,17 @@
  * Konstanta untuk API
  */
 
-// Base URL untuk API.
-// Mengubah protokol dari HTTPS ke HTTP dapat digunakan untuk mengatasi SSL Protocol Error
-// saat pengembangan lokal.
-// constants.ts
-const BASE_URL = "https://admin.globalphotorental.com";
+const env = import.meta.env;
+
+if (!env.VITE_API_URL) {
+  throw new Error('VITE_API_URL belum diset di .env');
+}
+if (!env.VITE_API_KEY) {
+  throw new Error('VITE_API_KEY belum diset di .env');
+}
+
+const BASE_URL = env.VITE_API_URL;
 
 export const API_BASE_URL = `${BASE_URL}/api`;
 export const STORAGE_BASE_URL = `${BASE_URL}/storage`;
-export const API_KEY = "gbTnWu4oBizYlgeZ0OPJlbpnG11ARjsf";
+export const API_KEY = env.VITE_API_KEY;

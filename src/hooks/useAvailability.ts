@@ -16,6 +16,8 @@ import {
 } from '../utils/availabilityUtils';
 import { Product, Bundling } from '../types/type';
 
+const ACTIVE_BOOKING_STATUSES = ['booking', 'paid', 'on_rented'];
+
 export interface AvailabilityCheck {
   type: 'product' | 'bundling';
   id: number;
@@ -57,20 +59,13 @@ export function useAvailability({ enabled = true }: UseAvailabilityProps = {}) {
   const { data: transactions, isLoading: isLoadingTransactions } = useQuery({
     queryKey: ['transactions', 'active'],
     queryFn: async (): Promise<Transaction[]> => {
-      try {
-        // Use the correct transactions endpoint or return empty array if endpoint doesn't exist
-        const response = await axiosInstance.get('/transactions', {
-          params: {
-            status: 'active',
-            limit: 1000
-          }
-        });
-        return response.data.data || [];
-      } catch (error) {
-        console.warn('Transactions endpoint not available, using mock data for availability check:', error);
-        // Return empty array to prevent errors - this allows the app to function without backend
-        return [];
-      }
+      const response = await axiosInstance.get('/transactions', {
+        params: {
+          status: 'active',
+          limit: 1000
+        }
+      });
+      return response.data.data || [];
     },
     enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -102,7 +97,7 @@ export function useAvailability({ enabled = true }: UseAvailabilityProps = {}) {
 
         transactions.forEach(transaction => {
           // Only check active transactions
-          if (transaction.booking_status !== 'confirmed' && transaction.booking_status !== 'active') {
+          if (!ACTIVE_BOOKING_STATUSES.includes(transaction.booking_status)) {
             return;
           }
 
@@ -200,7 +195,7 @@ export function useAvailability({ enabled = true }: UseAvailabilityProps = {}) {
       const unavailableDates: Date[] = [];
 
       transactions.forEach(transaction => {
-        if (transaction.booking_status !== 'confirmed' && transaction.booking_status !== 'active') {
+        if (!ACTIVE_BOOKING_STATUSES.includes(transaction.booking_status)) {
           return;
         }
 
@@ -235,7 +230,7 @@ export function useAvailability({ enabled = true }: UseAvailabilityProps = {}) {
       if (!transactions) return true;
 
       return transactions.every(transaction => {
-        if (transaction.booking_status !== 'confirmed' && transaction.booking_status !== 'active') {
+        if (!ACTIVE_BOOKING_STATUSES.includes(transaction.booking_status)) {
           return true;
         }
 
@@ -309,8 +304,6 @@ export function useAvailabilitySync({
       setIsLoading(true);
       setError(null);
 
-      console.log(`🔄 Syncing ${type} "${slug}" availability...`);
-
       let itemData;
       if (type === 'product') {
         itemData = await getProductWithAvailability(
@@ -328,19 +321,6 @@ export function useAvailabilitySync({
 
       setItem(itemData);
       setLastSynced(new Date());
-
-      console.log(`✅ ${type} "${slug}" availability synced:`, {
-        available: type === 'product' 
-          ? isProductAvailable(itemData as Product)
-          : isBundlingAvailable(itemData as Bundling),
-        quantity: type === 'product'
-          ? getProductAvailableQuantity(itemData as Product)
-          : getBundlingAvailableQuantity(itemData as Bundling),
-        period: syncStartDate && syncEndDate 
-          ? `${syncStartDate} - ${syncEndDate}`
-          : 'current period'
-      });
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to sync availability';
       setError(errorMessage);

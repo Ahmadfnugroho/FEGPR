@@ -396,7 +396,7 @@ export default function BrowseProduct() {
           err.name === "CanceledError" ||
           err.code === "ERR_CANCELED"
         ) {
-          if (process.env.NODE_ENV === "development") {
+          if (import.meta.env.DEV) {
             console.log("🚫 [BrowseProduct] Bundlings request cancelled");
           }
           return; // Don't set error for cancelled requests
@@ -472,7 +472,7 @@ export default function BrowseProduct() {
           err.name === "CanceledError" ||
           err.code === "ERR_CANCELED"
         ) {
-          if (process.env.NODE_ENV === "development") {
+          if (import.meta.env.DEV) {
             console.log("🚫 [BrowseProduct] Products request cancelled");
           }
           return; // Don't set error for cancelled requests
