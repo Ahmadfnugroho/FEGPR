@@ -15,7 +15,8 @@ COPY docker/entrypoint.sh /usr/local/bin/entrypoint
 USER 0
 RUN chmod +x /usr/local/bin/entrypoint \
  && chgrp -R 0 /usr/share/nginx/html /etc/nginx/conf.d \
- && chmod -R g=u /usr/share/nginx/html /etc/nginx/conf.d
+ && chmod -R g=u /usr/share/nginx/html /etc/nginx/conf.d \
+ && chown 101:101 /usr/share/nginx/html/config.js
 USER 101
 EXPOSE 8080
 ENTRYPOINT ["/usr/local/bin/entrypoint"]
