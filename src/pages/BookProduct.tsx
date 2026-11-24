@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Product } from "../types/type";
-import { z } from "zod";
 import { bookingSchema } from "../types/ValidationBooking";
 import { STORAGE_BASE_URL } from "../api/constants";
 import axiosInstance from "../api/axiosInstance";
@@ -36,7 +35,9 @@ export default function BookProduct() {
     product_id: "",
   });
 
-  const [formErrors, setFormErrors] = useState<z.ZodIssue[]>([]);
+  const [formErrors, setFormErrors] = useState<
+    { path: (string | number)[]; message: string }[]
+  >([]);
 
   useEffect(() => {
     axiosInstance
@@ -69,6 +70,7 @@ export default function BookProduct() {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors([]);
     const validation = bookingSchema.safeParse(formData);
 
     if (!validation.success) {
@@ -88,12 +90,26 @@ export default function BookProduct() {
           booking: response.data,
         },
       });
-    } catch {
-      setError("An error occurred while creating the booking.");
+    } catch (err) {
+      const data = (err as { response?: { status?: number; data?: { errors?: Record<string, string[]>; message?: string } } }).response;
+      const serverErrors = data?.data?.errors;
+      if (serverErrors) {
+        setFormErrors(
+          Object.entries(serverErrors).flatMap(([field, messages]) =>
+            messages.map((message) => ({ path: [field], message })),
+          ),
+        );
+      } else {
+        setError(data?.data?.message || "An error occurred while creating the booking.");
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  const unitPrice = product?.price ?? 0;
+  const subTotal = unitPrice * (Number(formData.quantity) || 0);
+  const grandTotal = subTotal * (Number(formData.duration) || 0);
   return (
     <>
       <div
@@ -120,7 +136,15 @@ export default function BookProduct() {
           <div className="flex items-center gap-4">
             <div className="flex shrink-0 w-[140px] h-[100px] rounded-[20px] overflow-hidden">
               <img
-                src={`${STORAGE_BASE_URL}/${product?.thumbnail}`}
+                src={
+                  product?.thumbnail
+                    ? `${STORAGE_BASE_URL}/${product.thumbnail}`
+                    : "/assets/images/thumbnails/thumbnail-details-4.png"
+                }
+                onError={(e) => {
+                  e.currentTarget.src =
+                    "/assets/images/thumbnails/thumbnail-details-4.png";
+                }}
                 className="w-full h-full object-cover"
                 alt="thumbnail"
               />
@@ -270,8 +294,13 @@ export default function BookProduct() {
                   className="appearance-none outline-none w-full py-3 font-semibold placeholder:font-normal placeholder:text-[#000929]"
                 />
                 {formErrors.find((error) =>
-                  error.path.includes("quantity")
-                ) && <p className="text-red-500 text-xs">Jumlah Wajib Diisi</p>}
+                  error.path.includes("duration")
+                ) && (
+                  <p className="text-red-500 text-xs">
+                    {formErrors.find((e) => e.path.includes("duration"))?.message ||
+                      "Durasi Wajib Diisi"}
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex flex-col gap-2">
@@ -294,8 +323,13 @@ export default function BookProduct() {
                   placeholder="Jumlah Produk"
                 />
                 {formErrors.find((error) =>
-                  error.path.includes("duration")
-                ) && <p className="text-red-500 text-xs">Durasi Wajib Diisi</p>}
+                  error.path.includes("quantity")
+                ) && (
+                  <p className="text-red-500 text-xs">
+                    {formErrors.find((e) => e.path.includes("quantity"))?.message ||
+                      "Jumlah Wajib Diisi"}
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -318,18 +352,20 @@ export default function BookProduct() {
           <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between">
               <p className="font-semibold">Jumlah</p>
-              <p className="font-bold">{product?.quantity}Buah</p>
+              <p className="font-bold">
+                {Number(formData.quantity) || 0}Buah
+              </p>
             </div>
             <div className="flex items-center justify-between">
               <p className="font-semibold">Sub Total</p>
               <p className="font-bold">
-                Rp{product?.price.toLocaleString("id-ID")}
+                Rp{subTotal.toLocaleString("id-ID")}
               </p>
             </div>
             <div className="flex items-center justify-between">
               <p className="font-semibold">Grand Total</p>
               <p className="font-bold text-[22px] leading-[33px] text-[#0D903A]">
-                Rp{product?.price.toLocaleString("id-ID")}
+                Rp{grandTotal.toLocaleString("id-ID")}
               </p>
             </div>
             <div className="relative rounded-xl p-[10px_20px] gap-[10px] bg-[#000929] text-white">

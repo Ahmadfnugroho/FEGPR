@@ -25,4 +25,5 @@ if (!KEY) {
 
 export const API_BASE_URL = `${BASE_URL}/api`;
 export const STORAGE_BASE_URL = `${BASE_URL}/storage`;
+export const ADMIN_BASE_URL = BASE_URL;
 export const API_KEY = KEY;

@@ -1,6 +1,6 @@
 import { useState, memo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { STORAGE_BASE_URL } from "../api/constants";
+import { ADMIN_BASE_URL, STORAGE_BASE_URL } from "../api/constants";
 import FloatingCartButton from "./FloatingCartButton";
 
 const NavCard = memo(function NavCard() {
@@ -82,7 +82,7 @@ const NavCard = memo(function NavCard() {
             </Link>
             <a
               className="inline-block rounded-lg px-3 py-2 text-lg font-medium text-support-primary transition-all duration-300 hover:bg-base-light-primary hover:text-pop-primary hover:shadow-md hover:translate-y-[-2px] focus-visible:ring-2 focus-visible:ring-pop-primary"
-              href="https://admin.globalphotorental.com/register"
+              href={`${ADMIN_BASE_URL}/register`}
               target="_blank"
               rel="noopener noreferrer"
             >
