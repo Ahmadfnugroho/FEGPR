@@ -95,7 +95,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
                         ? `${STORAGE_BASE_URL}/${product.photo}`
                         : product.productPhotos?.[0]?.photo
                         ? `${STORAGE_BASE_URL}/${product.productPhotos[0].photo}`
-                        : "/images/placeholder-product.png"
+                        : "/assets/logo_GPR.png"
                     }
                     alt={product.name}
                     className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${
@@ -196,7 +196,7 @@ const EnhancedProductCard: React.FC<EnhancedProductCardProps> = memo(
                   ? `${STORAGE_BASE_URL}/${product.photo}`
                   : product.productPhotos?.[0]?.photo
                   ? `${STORAGE_BASE_URL}/${product.productPhotos[0].photo}`
-                  : "/images/placeholder-product.png"
+                  : "/assets/logo_GPR.png"
               }
               alt={product.name}
               className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-300 ${

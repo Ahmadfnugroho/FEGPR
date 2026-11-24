@@ -1,4 +1,5 @@
 import React from 'react';
+import { STORAGE_BASE_URL } from '../api/constants';
 
 interface SEOProps {
   title: string;
@@ -17,7 +18,7 @@ const EnhancedSEOHead: React.FC<SEOProps> = ({
   title,
   description,
   keywords = "rental kamera, sewa kamera, rental fotografi, sewa DSLR, rental mirrorless",
-  image = "/og-default.jpg",
+  image = "/assets/logo_GPR.png",
   price,
   url = window.location.href,
   type = 'website',
@@ -166,7 +167,7 @@ export const useProductSEO = (product: any) => {
     title: `Sewa ${product.name}`,
     description: `Sewa ${product.name} berkualitas tinggi dari ${product.brand?.name || 'brand terpercaya'}. Harga mulai Rp ${product.price?.toLocaleString('id-ID')}/hari. Proses mudah dan cepat!`,
     keywords: `rental ${product.name}, sewa ${product.category?.name}, ${product.brand?.name}, sewa kamera ${product.category?.name}`,
-    image: product.thumbnail ? `${import.meta.env.VITE_STORAGE_BASE_URL}/${product.thumbnail}` : undefined,
+    image: product.thumbnail ? `${STORAGE_BASE_URL}/${product.thumbnail}` : undefined,
     price: product.price,
     type: 'product' as const,
     category: product.category?.name,

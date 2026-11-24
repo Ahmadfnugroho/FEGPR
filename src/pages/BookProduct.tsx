@@ -116,7 +116,7 @@ export default function BookProduct() {
         id="Banner"
         className="relative w-full h-[240px] flex items-center shrink-0 overflow-hidden -mb-[50px] parallax-container"
       >
-        <h1 className="text-center mx-auto font-extrabold text-[40px] leading-[60px] text-white mb-5 z-20">
+        <h1 className="text-center mx-auto font-extrabold text-[28px] sm:text-[40px] leading-[40px] sm:leading-[60px] px-4 text-white mb-5 z-20">
           Mulai Sewa Produk yang Anda Inginkan
         </h1>
         <div className="absolute w-full h-full bg-[linear-gradient(180deg,_rgba(0,0,0,0)_0%,#000000_91.83%)] z-10" />
@@ -130,9 +130,9 @@ export default function BookProduct() {
 
       <form
         onSubmit={handleSubmit}
-        className="relative flex justify-center max-w-[1130px] mx-auto gap-[30px] mb-20 z-20"
+        className="relative flex flex-col lg:flex-row lg:justify-center max-w-[1130px] mx-auto gap-[30px] px-4 lg:px-0 mb-20 z-20"
       >
-        <div className="flex flex-col shrink-0 w-[500px] h-fit rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[30px] bg-white">
+        <div className="flex flex-col w-full lg:shrink-0 lg:w-[500px] h-fit rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[30px] bg-white">
           <div className="flex items-center gap-4">
             <div className="flex shrink-0 w-[140px] h-[100px] rounded-[20px] overflow-hidden">
               <img
@@ -347,7 +347,7 @@ export default function BookProduct() {
           </div>
           <hr className="border-[#F6F5FD]" />
         </div>
-        <div className="flex flex-col shrink-0 w-[400px] h-fit rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[30px] bg-white">
+        <div className="flex flex-col w-full lg:shrink-0 lg:w-[400px] h-fit rounded-[20px] border border-[#E0DEF7] p-[30px] gap-[30px] bg-white">
           <h2 className="font-bold">Detail Order</h2>
           <div className="flex flex-col gap-5">
             <div className="flex items-center justify-between">

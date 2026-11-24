@@ -62,7 +62,7 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
   useEffect(() => {
     if (!product) {
       console.warn("🚨 [ProductCard] Product is null or undefined");
-      setValidatedPhotos(["/images/placeholder-product.png"]);
+      setValidatedPhotos(["/assets/logo_GPR.png"]);
       setHasPhotos(false);
       setValidationErrors(["Product is null or undefined"]);
       return;
@@ -86,7 +86,7 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
         "📷 [ProductCard] No valid photos found, using placeholder:",
         product.name
       );
-      setValidatedPhotos(["/images/placeholder-product.png"]);
+      setValidatedPhotos(["/assets/logo_GPR.png"]);
       setHasPhotos(false);
     } else {
       console.log("📷 [ProductCard] Valid photos found:", {
@@ -154,9 +154,9 @@ const ProductCard = memo(function ProductCard({ product }: ProductCardProps) {
                       // Fallback to placeholder
                       if (
                         e.currentTarget.src !==
-                        "/images/placeholder-product.png"
+                        "/assets/logo_GPR.png"
                       ) {
-                        e.currentTarget.src = "/images/placeholder-product.png";
+                        e.currentTarget.src = "/assets/logo_GPR.png";
                       }
                     }}
                   />
